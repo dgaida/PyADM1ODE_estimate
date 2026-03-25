@@ -1,12 +1,13 @@
 import numpy as np
 from typing import Tuple, Optional
 
+
 def covariance_intersection(
     mean1: np.ndarray,
     cov1: np.ndarray,
     mean2: np.ndarray,
     cov2: np.ndarray,
-    omega: Optional[float] = None
+    omega: Optional[float] = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Fusioniert zwei Zustandsschätzungen mittels Covariance Intersection (AP 4.4).
@@ -33,14 +34,14 @@ def covariance_intersection(
 
     if omega is None:
         # Einfache Suche nach optimalem omega (Minimierung der Determinante von cov_fused)
-        best_det = float('inf')
+        best_det = float("inf")
         best_omega = 0.5
         for o in np.linspace(0, 1, 11):
             temp_inv_cov = o * inv_cov1 + (1 - o) * inv_cov2
             # Determinante der invertierten Kovarianz maximieren = Determinante der Kovarianz minimieren
             det_inv = np.linalg.det(temp_inv_cov)
-            if det_inv > 0 and 1.0/det_inv < best_det:
-                best_det = 1.0/det_inv
+            if det_inv > 0 and 1.0 / det_inv < best_det:
+                best_det = 1.0 / det_inv
                 best_omega = o
         omega = best_omega
 

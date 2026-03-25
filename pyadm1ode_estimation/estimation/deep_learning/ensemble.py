@@ -1,5 +1,6 @@
 import numpy as np
-from typing import List, Optional, Tuple
+from typing import List, Tuple
+
 
 class DeepLearningEnsemble:
     """
@@ -11,6 +12,7 @@ class DeepLearningEnsemble:
     Each neural network in the ensemble represents a possible reality
     based on different model and substrate parameters.
     """
+
     def __init__(self, models: List = None):
         """
         Initialisiert das Ensemble.
@@ -21,7 +23,9 @@ class DeepLearningEnsemble:
         """
         self.models = models or []
 
-    def predict(self, history: np.ndarray, substrate_mixture: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def predict(
+        self, history: np.ndarray, substrate_mixture: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Berechnet die Zustandsschätzung als Wahrscheinlichkeitsverteilung.
         Calculates the state estimation as a probability distribution.
@@ -42,12 +46,11 @@ class DeepLearningEnsemble:
             # or raise an error if training is required.
             return np.zeros(37), np.eye(37)
 
-        predictions = []
-        for model in self.models:
-            # Placeholder for actual model prediction logic
-            # pred = model.predict(history, substrate_mixture)
-            # predictions.append(pred)
-            pass
+        # for model in self.models:
+        #     # Placeholder for actual model prediction logic
+        #     # pred = model.predict(history, substrate_mixture)
+        #     # predictions.append(pred)
+        #     pass
 
         # dummy logic for now
         # predictions = np.array(predictions)

@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.linalg import cholesky
 from scipy.integrate import solve_ivp
-from typing import Callable, List, Tuple, Optional
+from typing import Callable, List, Tuple
+
 
 class UnscentedKalmanFilter:
     """
@@ -11,6 +12,7 @@ class UnscentedKalmanFilter:
     Basierend auf Wan & Van Der Merwe (2000).
     Based on Wan & Van Der Merwe (2000).
     """
+
     def __init__(
         self,
         n_x: int,
@@ -21,7 +23,7 @@ class UnscentedKalmanFilter:
         R: np.ndarray,
         alpha: float = 1e-3,
         beta: float = 2.0,
-        kappa: float = 0.0
+        kappa: float = 0.0,
     ):
         """
         Initialisiert den UKF.
@@ -80,7 +82,9 @@ class UnscentedKalmanFilter:
 
         return sigmas
 
-    def predict(self, x: np.ndarray, P: np.ndarray, u: np.ndarray, dt: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def predict(
+        self, x: np.ndarray, P: np.ndarray, u: np.ndarray, dt: float
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Führt den Prädiktionsschritt aus.
         Perform prediction step.
@@ -110,7 +114,13 @@ class UnscentedKalmanFilter:
 
         return x_pred, P_pred, sigmas_f
 
-    def update(self, x_pred: np.ndarray, P_pred: np.ndarray, sigmas_f: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def update(
+        self,
+        x_pred: np.ndarray,
+        P_pred: np.ndarray,
+        sigmas_f: np.ndarray,
+        y: np.ndarray,
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Führt den Korrekturschritt (Update) mit der Messung y aus.
         Perform update step with measurement y.
@@ -146,18 +156,20 @@ class UnscentedKalmanFilter:
 
         return x_upd, P_upd
 
+
 class ADM1UKF:
     """
     UKF-Wrapper für das ADM1-Modell.
     UKF wrapper for the ADM1 model.
     """
+
     def __init__(
         self,
-        adm1_model, # Instanz von pyadm1.core.ADM1
+        adm1_model,  # Instanz von pyadm1.core.ADM1
         Q: np.ndarray,
         R: np.ndarray,
         measurement_indices: List[int],
-        **ukf_kwargs
+        **ukf_kwargs,
     ):
         """
         Initialisiert den ADM1-UKF.
@@ -170,7 +182,7 @@ class ADM1UKF:
             measurement_indices: Indizes der gemessenen Zustände / Indices of measured states
         """
         self.model = adm1_model
-        self.n_x = 37 # ADM1 Zustandsdimension
+        self.n_x = 37  # ADM1 Zustandsdimension
         self.n_y = len(measurement_indices)
         self.measurement_indices = measurement_indices
 
@@ -181,7 +193,7 @@ class ADM1UKF:
             h=self._measurement_model,
             Q=Q,
             R=R,
-            **ukf_kwargs
+            **ukf_kwargs,
         )
 
     def _process_model(self, x: np.ndarray, u: np.ndarray, dt: float) -> np.ndarray:
@@ -197,14 +209,7 @@ class ADM1UKF:
             return self.model.ADM1_ODE(t, y.tolist())
 
         # Integration über das Zeitintervall dt mittels BDF (geeignet für steife ODEs)
-        sol = solve_ivp(
-            ode_func,
-            (0, dt),
-            x,
-            method='BDF',
-            rtol=1e-6,
-            atol=1e-8
-        )
+        sol = solve_ivp(ode_func, (0, dt), x, method="BDF", rtol=1e-6, atol=1e-8)
 
         if not sol.success:
             # Fallback auf Euler, falls der Solver fehlschlägt (als Notlösung)
@@ -224,7 +229,9 @@ class ADM1UKF:
         """
         return x[self.measurement_indices]
 
-    def estimate(self, x: np.ndarray, P: np.ndarray, u: np.ndarray, y: np.ndarray, dt: float) -> Tuple[np.ndarray, np.ndarray]:
+    def estimate(
+        self, x: np.ndarray, P: np.ndarray, u: np.ndarray, y: np.ndarray, dt: float
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Führt einen kompletten UKF-Schritt (Prädiktion und Update) aus.
         Perform one complete UKF step (predict and update).
