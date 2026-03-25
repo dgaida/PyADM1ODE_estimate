@@ -1,0 +1,5 @@
+pyadm1
+numpy
+scipy
+pandas
+pythonnet
