@@ -1,32 +1,23 @@
-name: Auto Versioning & Badges
+name: Auto Version and Badges
+
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - master
-      - main
   push:
-    branches:
-      - master
-      - main
+    branches: [main, master]
 
 jobs:
-  versioning-and-badges:
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
+  version-and-badges:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Run Auto Versioning
-        if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
-        uses: dgaida/auto-version-action/auto-version@main
-
-      - name: Add Badges
+      - name: Auto Version and Badges
         uses: dgaida/auto-version-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-version: true
+          create-badge: true
+          md-list-fix: true
+          run-on-push: true
