@@ -27,11 +27,11 @@ Misst, wie gut die Vorhersagen des Netzwerks die ADM1-ODEs erfüllen. Es nutzt a
 
 ## Inputs and Outputs / Ein- und Ausgänge
 
-- **Inputs**: Time $ and time-dependent substrate feed (t)$.
-- **Outputs**: Estimated ADM1 state vector $\hat{x}(t)$ (37 components).
+- **Inputs**: Time $ and time-dependent substrate feed (t)$.  
+- **Outputs**: Estimated ADM1 state vector $\hat{x}(t)$ (37 components).  
 
-- **Eingänge**: Zeit $ und zeitabhängige Substratzufuhr (t)$.
-- **Ausgänge**: Geschätzter ADM1-Zustandsvektor $\hat{x}(t)$ (37 Komponenten).
+- **Eingänge**: Zeit $ und zeitabhängige Substratzufuhr (t)$.  
+- **Ausgänge**: Geschätzter ADM1-Zustandsvektor $\hat{x}(t)$ (37 Komponenten).  
 
 ## Integration in PyADM1ODE_estimation
 

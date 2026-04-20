@@ -2,12 +2,13 @@
 
 State estimation framework for PyADM1ODE biogas plant models.
 
-![Version](https://img.shields.io/badge/version-0.1.1-blue)
+![Version](https://img.shields.io/badge/version-0.1.2-blue)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Code Quality](https://github.com/dgaida/PyADM1ODE_estimate/actions/workflows/lint.yml/badge.svg)](https://github.com/dgaida/PyADM1ODE_estimate/actions/workflows/lint.yml)
 [![Tests](https://github.com/dgaida/PyADM1ODE_estimate/actions/workflows/tests.yml/badge.svg)](https://github.com/dgaida/PyADM1ODE_estimate/actions/workflows/tests.yml)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/dgaida/PyADM1ODE_estimate/graphs/commit-activity)
 ![Last commit](https://img.shields.io/github/last-commit/dgaida/PyADM1ODE_estimate)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dgaida.github.io/PyADM1ODE_estimate/)
 
 
 This repository implements advanced state estimation algorithms for the Anaerobic Digestion Model No. 1 (ADM1), focusing on agricultural biogas plants.
