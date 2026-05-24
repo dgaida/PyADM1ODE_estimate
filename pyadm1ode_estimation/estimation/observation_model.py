@@ -1,0 +1,199 @@
+"""Observation model — extracts predicted measurements from the plant.
+
+A channel is a triple
+
+  - ``extractor`` — pure function ``h_i(plant, x)`` returning the
+    prediction for one measurement;
+  - ``noise_std`` — measurement standard deviation;
+  - ``gate`` — optional time-varying flag deciding whether the
+    channel is observable at the current step.
+
+Built-in extractors cover the common SCADA signals of an agricultural
+biogas plant (total Q_gas, CHP electrical / thermal output, biogas
+consumption, gas-storage fill). Custom extractors can be passed for
+one-off sensors.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional
+
+import numpy as np
+
+if TYPE_CHECKING:
+    from pyadm1 import BiogasPlant
+
+
+Extractor = Callable[["BiogasPlant", np.ndarray], float]
+
+
+@dataclass
+class ObservationChannel:
+    """A single measurement channel.
+
+    Attributes:
+        name: Channel identifier. Should match the column in the
+            measurement DataFrame fed to the filter.
+        extractor: ``h(plant, x) -> float`` predicting this channel
+            from the current plant outputs and the augmented state.
+            Built-in shortcuts in :func:`built_in_extractor`.
+        noise_std: Measurement standard deviation (same units as the
+            extractor output).
+        gate_column: Optional column name in the measurement frame.
+            When set, the channel is only used at steps where
+            ``gate_predicate(value)`` is true.
+        gate_predicate: How to interpret the gate column.
+            ``"truthy"`` accepts non-zero / non-NaN; ``"finite"``
+            accepts non-NaN values only.
+    """
+
+    name: str
+    extractor: Extractor
+    noise_std: float
+    gate_column: Optional[str] = None
+    gate_predicate: str = "truthy"
+
+    def is_active(self, gate_value: Optional[float]) -> bool:
+        if self.gate_column is None:
+            return True
+        if gate_value is None:
+            return False
+        if isinstance(gate_value, float) and np.isnan(gate_value):
+            return False
+        if self.gate_predicate == "truthy":
+            return bool(gate_value)
+        if self.gate_predicate == "finite":
+            return bool(np.isfinite(gate_value))
+        raise ValueError(
+            f"Unknown gate_predicate '{self.gate_predicate}' for channel "
+            f"'{self.name}'."
+        )
+
+
+class ObservationModel:
+    """A bag of :class:`ObservationChannel` instances.
+
+    The filter calls :meth:`predict_active` with the current plant
+    and gate values; the method returns the channel names plus the
+    predicted vector + measurement-noise diagonal in matching order.
+    """
+
+    def __init__(self, channels: List[ObservationChannel]):
+        names = [c.name for c in channels]
+        if len(names) != len(set(names)):
+            raise ValueError("Duplicate channel names in ObservationModel.")
+        self.channels = list(channels)
+
+    def __len__(self) -> int:
+        return len(self.channels)
+
+    def active_channels(
+        self, gate_values: Dict[str, float]
+    ) -> List[ObservationChannel]:
+        return [
+            c
+            for c in self.channels
+            if c.is_active(gate_values.get(c.gate_column) if c.gate_column else None)
+        ]
+
+    def predict(
+        self,
+        plant: "BiogasPlant",
+        x: np.ndarray,
+        active: Optional[List[ObservationChannel]] = None,
+    ) -> np.ndarray:
+        """Evaluate ``h_i(plant, x)`` for every active channel.
+
+        Returns a ``(len(active),)`` vector in the order of ``active``.
+        """
+        chans = active if active is not None else self.channels
+        return np.array([float(c.extractor(plant, x)) for c in chans], dtype=float)
+
+    def R(self, active: Optional[List[ObservationChannel]] = None) -> np.ndarray:
+        chans = active if active is not None else self.channels
+        return np.diag([c.noise_std**2 for c in chans])
+
+
+# --------------------------------------------------------------------------
+# Built-in extractors for the standard channels of an agricultural biogas plant.
+# --------------------------------------------------------------------------
+
+
+def _digester_iter(plant: "BiogasPlant"):
+    for comp in plant.components.values():
+        if comp.component_type.value == "digester":
+            yield comp
+
+
+def _chp_iter(plant: "BiogasPlant"):
+    for comp in plant.components.values():
+        if comp.component_type.value == "chp":
+            yield comp
+
+
+def _heating_iter(plant: "BiogasPlant"):
+    for comp in plant.components.values():
+        if comp.component_type.value == "heating":
+            yield comp
+
+
+def extract_q_gas_total(plant: "BiogasPlant", x: np.ndarray) -> float:
+    return float(sum(d.outputs_data.get("Q_gas", 0.0) for d in _digester_iter(plant)))
+
+
+def extract_q_ch4_total(plant: "BiogasPlant", x: np.ndarray) -> float:
+    return float(sum(d.outputs_data.get("Q_ch4", 0.0) for d in _digester_iter(plant)))
+
+
+def extract_q_gas_consumed_total(plant: "BiogasPlant", x: np.ndarray) -> float:
+    return float(
+        sum(c.outputs_data.get("Q_gas_consumed", 0.0) for c in _chp_iter(plant))
+    )
+
+
+def extract_p_el_total(plant: "BiogasPlant", x: np.ndarray) -> float:
+    return float(sum(c.outputs_data.get("P_el", 0.0) for c in _chp_iter(plant)))
+
+
+def extract_p_th_used_total(plant: "BiogasPlant", x: np.ndarray) -> float:
+    return float(
+        sum(h.outputs_data.get("P_th_used", 0.0) for h in _heating_iter(plant))
+    )
+
+
+def make_state_extractor(channel_index: int) -> Extractor:
+    """Identity extractor — returns ``x[channel_index]``.
+
+    Used for direct observations of augmented input states (e.g.
+    ``hopper_dose`` when the load-cell sees a negative ΔW).
+    """
+
+    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+        return float(x[channel_index])
+
+    return extractor
+
+
+def make_stored_volume_extractor(digester_id: str) -> Extractor:
+    """Return the fractional fill of the named digester's gas dome."""
+
+    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+        comp = plant.components[digester_id]
+        gs = comp.outputs_data.get("gas_storage", {}) or {}
+        vol = gs.get("stored_volume_m3", float("nan"))
+        cap = float(getattr(comp, "V_gas", float("nan")))
+        if not cap or cap <= 0 or not np.isfinite(vol):
+            return float("nan")
+        return float(vol / cap)
+
+    return extractor
+
+
+BUILT_IN_EXTRACTORS: Dict[str, Extractor] = {
+    "Q_gas": extract_q_gas_total,
+    "Q_ch4": extract_q_ch4_total,
+    "Q_gas_consumed": extract_q_gas_consumed_total,
+    "P_el": extract_p_el_total,
+    "P_th_used": extract_p_th_used_total,
+}

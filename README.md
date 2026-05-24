@@ -28,15 +28,22 @@ PyADM1ODE_estimation/
 ├── pyadm1ode_estimation/       # Main package
 │   ├── estimation/             # Estimation algorithms
 │   │   ├── __init__.py
-│   │   ├── ukf.py              # Unscented Kalman Filter
-│   │   ├── deep_learning/      # Deep Learning models
+│   │   ├── base.py             # StateEstimator protocol + EstimationStep
+│   │   ├── state_vector.py     # StateChannel / StateVectorSpec
+│   │   ├── process_model.py    # ADM1ProcessModel (pyadm1 propagator)
+│   │   ├── observation_model.py# ObservationChannel / ObservationModel
+│   │   ├── twin.py             # Twin-experiment helpers
+│   │   ├── filters/            # Filter implementations
+│   │   │   └── ukf.py          # Unscented Kalman Filter (scaled, gated obs)
+│   │   ├── deep_learning/      # Deep Learning models (Ensembles, PINN)
 │   │   └── fusion/             # Fusion algorithms (Covariance Intersection)
+│   ├── artifacts/              # Handoff artifacts (calibration → estimation)
+│   │   └── calibration_artifact.py  # YAML format for calibrated parameters
 │   ├── utils/                  # Utility functions
 │   └── ...
-├── data/                       # Training and validation data
-├── examples/                   # Usage examples
+├── docs/                       # Documentation (MkDocs, bilingual)
+├── examples/                   # Usage examples (UKF, twin experiment)
 ├── tests/                      # Unit and integration tests
-├── scripts/                    # Data collection and training scripts
 ├── README.md
 ├── pyproject.toml
 └── requirements.txt
@@ -61,9 +68,65 @@ Note: This package requires [PyADM1ODE](https://github.com/dgaida/PyADM1ODE) to 
 ### Unscented Kalman Filter
 
 ```python
-from pyadm1ode_estimation.estimation.ukf import ADM1UKF
-# ... initialization and update loop
+from pyadm1ode_estimation.estimation import (
+    StateChannel, StateVectorSpec,
+    ADM1ProcessModel, ObservationChannel, ObservationModel,
+)
+from pyadm1ode_estimation.estimation.filters import UnscentedKalmanFilter
+
+# 1. Declare what to estimate (indices refer to the 41-state ADM1da vector).
+spec = StateVectorSpec(digester_id="primary", channels=[
+    StateChannel("S_ac",  kind="adm1", adm1_index=6,  initial=0.1,
+                 initial_std=0.3, process_noise_std=0.5),
+    StateChannel("X_ac",  kind="adm1", adm1_index=27, initial=1.2,
+                 initial_std=0.3, process_noise_std=0.1),
+    StateChannel("Q_solid", kind="input_flow", input_substrate_index=0,
+                 initial=35.0, initial_std=5.0, process_noise_std=0.5,
+                 drift_model="ou", ou_mean=35.0, ou_theta=0.1,
+                 lower=0.0, upper=80.0),
+])
+
+# 2. Wrap a pyadm1 BiogasPlant.
+process = ADM1ProcessModel(plant, spec)
+obs = ObservationModel(channels=[...])
+ukf = UnscentedKalmanFilter(process, obs, spec)
+
+# 3. Run the predict/update loop.
+for t, y in measurements:
+    ukf.predict(dt=1/24)
+    step = ukf.update(y, t=t)
 ```
+
+### Calibration handoff
+
+```python
+from pyadm1ode_estimation.artifacts import load_artifact, apply_to_plant
+artifact = load_artifact("calibrated/plant_2026-05-14.yaml")
+plant = build_plant(schema)            # your own plant builder
+apply_to_plant(artifact, plant, strict=True)
+```
+
+## Documentation
+
+Full documentation is built with MkDocs Material and published via GitHub Pages with a German/English language switcher and versioning via `mike`:
+
+[**dgaida.github.io/PyADM1ODE_estimate**](https://dgaida.github.io/PyADM1ODE_estimate/)
+
+Local sources live under [`docs/de/`](docs/de/) (default) and [`docs/en/`](docs/en/). Build locally:
+
+```bash
+pip install -e ".[docs]"
+mkdocs serve
+```
+
+Key pages:
+
+* [Home (DE)](docs/de/index.md) · [Home (EN)](docs/en/index.md)
+* [Getting started (DE)](docs/de/getting-started.md) · [Getting started (EN)](docs/en/getting-started.md)
+* [UKF in practice](docs/de/usage/ukf.md) · [Calibration artifact](docs/de/usage/calibration_artifact.md)
+* [Observability — Literature review (DE)](docs/de/observability/literature_review.md) · [(EN)](docs/en/observability/literature_review.md)
+* [Examples — methodology](docs/de/examples/index.md)
+* [ADM1da model overview](docs/de/theory/adm1.md)
 
 ## License
 

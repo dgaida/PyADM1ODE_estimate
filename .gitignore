@@ -41,3 +41,6 @@ venv.bak/
 # Data
 data/*.csv
 data/*.json
+
+# MkDocs built site
+site/

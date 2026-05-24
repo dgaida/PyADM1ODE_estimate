@@ -1,0 +1,139 @@
+site_name: PyADM1ODE Estimate
+site_description: State estimation framework for PyADM1ODE biogas plant models
+site_author: Daniel Gaida
+site_url: https://dgaida.github.io/PyADM1ODE_estimate/
+repo_url: https://github.com/dgaida/PyADM1ODE_estimate
+edit_uri: edit/main/docs/
+copyright: >
+  Copyright &copy; 2026 Daniel Gaida — part of the
+  <a href="https://dgaida.github.io/PyADM1ODE/latest/">PyADM1ODE ecosystem</a>
+
+theme:
+  name: material
+  language: de
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tooltips
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: folder
+      fallback_to_default: true
+      languages:
+        - locale: de
+          name: Deutsch
+          default: true
+          build: true
+        - locale: en
+          name: English
+          build: true
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          # Cross-references to other PyADM1ODE-ecosystem repos via
+          # Sphinx-style objects.inv. Unreachable URLs only emit a warning;
+          # the build still succeeds.
+          inventories:
+            - url: https://dgaida.github.io/PyADM1ODE/latest/objects.inv
+            - url: https://dgaida.github.io/PyADM1ODE_calibration/latest/objects.inv
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_category_heading: true
+            merge_init_into_class: true
+  - mermaid2:
+      arguments:
+        theme: default
+  - mike:
+      alias_type: symlink
+      canonical_version: latest
+
+extra:
+  version:
+    provider: mike
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Erste Schritte: getting-started.md
+  - Installation: installation.md
+  - Nutzung:
+      - Übersicht: usage/index.md
+      - UKF im Einsatz: usage/ukf.md
+      - Kalibrierungs-Artefakt: usage/calibration_artifact.md
+  - Observability:
+      - Übersicht: observability/index.md
+      - Literaturüberblick: observability/literature_review.md
+      - Sensor-Zustand-Abhängigkeiten: observability/sensor_state_dependencies.md
+  - Theorie:
+      - Übersicht: theory/index.md
+      - ADM1da-Modell: theory/adm1.md
+      - PINN: theory/pinn.md
+  - Beispiele:
+      - Übersicht: examples/index.md
+  - API-Referenz:
+      - Übersicht: api/index.md
+  - Entwicklung:
+      - Übersicht: development/index.md
+      - Ecosystem-Integration: development/ecosystem-integration.md
+  - Fehlerbehebung: troubleshooting.md
+  - Ecosystem:
+      - Übersicht: ecosystem.md
+      - PyADM1ODE (Basis): https://dgaida.github.io/PyADM1ODE/latest/
+      - PyADM1ODE_calibration: https://dgaida.github.io/PyADM1ODE_calibration/latest/
+
+# Validation
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn

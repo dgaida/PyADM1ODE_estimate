@@ -15,6 +15,7 @@ dependencies = [
     "scipy",
     "pandas",
     "pythonnet",
+    "pyyaml",
 ]
 
 [project.optional-dependencies]
@@ -27,6 +28,15 @@ dev = [
 deep_learning = [
     "torch",
     "scikit-learn",
+]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocs-static-i18n",
+    "mkdocstrings[python]",
+    "mkdocs-mermaid2-plugin",
+    "mike",
+    "pymdown-extensions",
 ]
 
 [tool.setuptools.packages.find]
