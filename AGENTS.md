@@ -19,7 +19,7 @@ Welcome to the **pyadm1ode_estimation** repository. This file contains specific 
 
 ## Key Files
 
-- `pyadm1ode_estimation/estimation/filters/ukf.py`: Production UKF with scaled sigma points and gated observations (pyadm1 BiogasPlant-based).  
+- `pyadm1ode_estimation/estimation/filters/sr_ukf.py`: Production Square-Root UKF (Wan & Van der Merwe 2001) with scaled sigma points and gated observations (pyadm1 BiogasPlant-based). Re-exported as `UnscentedKalmanFilter` from `filters/__init__.py` — the SR formulation is the only filter in the package.  
 - `pyadm1ode_estimation/estimation/process_model.py`: ADM1 process model wrapping pyadm1 for sigma-point propagation.  
 - `pyadm1ode_estimation/estimation/state_vector.py` / `observation_model.py`: Channel declarations for state and measurements.  
 - `pyadm1ode_estimation/estimation/twin.py`: Helpers for synthetic-truth twin experiments.  

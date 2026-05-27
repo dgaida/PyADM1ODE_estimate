@@ -30,16 +30,31 @@ Layers
 """
 
 from .base import EstimationStep, StateEstimator
+from .measurement_calendar import MeasurementCalendar, SampleRate
 from .observation_model import ObservationChannel, ObservationModel
 from .process_model import ADM1ProcessModel
+from .specs import (
+    InputSpec,
+    KineticSpec,
+    Quality,
+    SensorQualityProfile,
+    adm1da_full_spec,
+)
 from .state_vector import StateChannel, StateVectorSpec
 
 __all__ = [
     "ADM1ProcessModel",
     "EstimationStep",
+    "InputSpec",
+    "KineticSpec",
+    "MeasurementCalendar",
     "ObservationChannel",
     "ObservationModel",
+    "Quality",
+    "SampleRate",
+    "SensorQualityProfile",
     "StateChannel",
     "StateEstimator",
     "StateVectorSpec",
+    "adm1da_full_spec",
 ]

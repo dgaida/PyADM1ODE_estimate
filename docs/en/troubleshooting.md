@@ -45,11 +45,26 @@ factor of 2–3.
 * **Check bounds**: overly tight `lower`/`upper` bounds clip aggressively
   and suppress information.
 
-### `LinAlgError` during Cholesky decomposition
+### `LinAlgError` from `_cholupdate` downdate
 
-Posterior covariance is no longer SPD. The UKF in `filters/ukf.py` has
-eigenvalue flooring and jitter fallback built in — if that still fails,
-the `Q`/`R` scales are likely numerically inconsistent.
+The Square-Root UKF (`filters/sr_ukf.py`) propagates the Cholesky factor
+$S$ directly. During the update step a rank-1 downdate $S \to S'$ with
+$S'S'^\top = SS^\top - vv^\top$ is applied. When this downdate fails
+($S'$ would no longer be real), it means the filter is attempting to
+subtract *more* information than the prior covariance contains. Likely
+causes:
+
+* `Q` (process noise) is set noticeably smaller than the actual model
+  uncertainty → filter becomes overconfident, updates conflict
+* Sensor noise `R` declared too small → filter "trusts" the measurement
+  too much
+* Bug in the measurement model (e.g. an extractor systematically
+  produces wrong values and the innovation pattern is inconsistent with
+  the covariance structure)
+
+Unlike with the classical UKF, this failure is *informative*: it tells
+you structurally where the problem is, instead of masking it with
+eigenvalue flooring.
 
 ## Calibration artifact
 

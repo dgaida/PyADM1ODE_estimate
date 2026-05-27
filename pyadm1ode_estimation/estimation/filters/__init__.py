@@ -1,8 +1,12 @@
 """Filter implementations.
 
-Currently only the UKF (Phase 1); EKF and MHE are slated for Phase 3.
+The exported ``UnscentedKalmanFilter`` is the Square-Root UKF
+(Wan & Van der Merwe 2001) — see :mod:`sr_ukf` for the algorithmic
+details. The "SR" prefix is dropped from the public name because it
+is the sole filter in the package; callers never have to think about
+the square-root formulation as a separate variant.
 """
 
-from .ukf import UnscentedKalmanFilter
+from .sr_ukf import UnscentedKalmanFilter
 
 __all__ = ["UnscentedKalmanFilter"]

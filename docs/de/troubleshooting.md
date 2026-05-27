@@ -44,11 +44,25 @@ erhöhen.
 * **Bounds prüfen**: zu enge `lower`/`upper`-Bounds clippen aggressiv und
   unterdrücken Information.
 
-### `LinAlgError` bei Cholesky-Zerlegung
+### `LinAlgError` aus `_cholupdate`-Downdate
 
-Posterior-Kovarianz nicht mehr SPD. Der UKF in `filters/ukf.py` hat
-Eigenvalue-Flooring und Jitter-Fallback eingebaut — wenn das immer noch
-fehlschlägt, sind die `Q`/`R`-Skalen wahrscheinlich numerisch inkonsistent.
+Der Square-Root-UKF (`filters/sr_ukf.py`) speichert den Cholesky-Faktor
+$S$ direkt. Im Update-Schritt wird ein Rank-1-Downdate $S \to S'$ mit
+$S'S'^\top = SS^\top - vv^\top$ gemacht. Wenn dieses Downdate fehlschlägt
+($S'$ wäre nicht mehr reell), heißt das: der Filter versucht *mehr*
+Information abzuziehen, als die Prior-Kovarianz bereitstellt. Mögliche
+Ursachen:
+
+* `Q` (Process Noise) ist deutlich kleiner gesetzt als die tatsächliche
+  Modellunsicherheit → Filter wird zu sicher, Updates kollidieren
+* Sensor-Rauschen `R` zu klein angegeben → Filter „glaubt" der Messung
+  zu sehr
+* Bug im Messmodell (z.B. ein Extractor liefert systematisch falsche
+  Werte und die Innovation passt nicht zur Cov-Struktur)
+
+Anders als beim klassischen UKF ist dieser Fehler *informativ*: er sagt
+strukturell, wo das Problem liegt, statt mit Eigenvalue-Flooring zu
+maskieren.
 
 ## Calibration-Artifact
 

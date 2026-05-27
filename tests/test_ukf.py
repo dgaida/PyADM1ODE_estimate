@@ -180,3 +180,121 @@ class TestUKFLinear:
         step = ukf2.update({"y0": 5.0}, t=0.0, gate_values={"gate": 1.0})
         assert step.active_channels == ["y0"]
         assert ukf2.x_hat[0] > x_prev[0]
+
+
+class TestSquareRootProperties:
+    """SR-UKF specific tests: covariance is always exposed as ``P = SS^T``,
+    the Cholesky factor ``S`` is lower triangular at all times, and
+    ``reset`` reconstructs it correctly from a target ``P``.
+    """
+
+    @pytest.fixture
+    def ukf(self):
+        # Reuse the same setup as TestUKFLinear.setup but without
+        # generating measurements (we only need a working filter instance).
+        n = 3
+        spec = make_linear_spec(
+            n,
+            initial=0.0,
+            initial_std=1.0,
+            process_std=0.1,
+        )
+        F = np.eye(n)
+        process = LinearProcess(spec, F)
+
+        def make_extractor(i):
+            return lambda plant, x: float(x[i])
+
+        obs = ObservationModel(
+            channels=[
+                ObservationChannel(
+                    name=f"y{i}", extractor=make_extractor(i), noise_std=0.2
+                )
+                for i in range(2)
+            ]
+        )
+        return UnscentedKalmanFilter(process, obs, spec)
+
+    def test_S_is_lower_triangular(self, ukf):
+        S = ukf.S
+        # Upper triangle (strictly above diagonal) must be zero.
+        upper = np.triu(S, k=1)
+        np.testing.assert_allclose(upper, 0.0, atol=1e-12)
+
+    def test_P_equals_S_S_T(self, ukf):
+        P = ukf.P
+        SST = ukf.S @ ukf.S.T
+        np.testing.assert_allclose(P, SST, atol=1e-12)
+
+    def test_S_stays_lower_triangular_after_predict_update_cycles(self, ukf):
+        # After several predict/update cycles, the Cholesky factor must
+        # still be lower triangular. The QR + cholupdate path should
+        # produce a clean triangular S, not just an "almost triangular"
+        # one with rounding noise above the diagonal.
+        for k in range(5):
+            ukf.predict(dt=1.0)
+            ukf.update({"y0": 0.1 * k, "y1": -0.1 * k}, t=float(k))
+            S = ukf.S
+            np.testing.assert_allclose(np.triu(S, k=1), 0.0, atol=1e-10)
+            # And P = SS^T must still be symmetric and PSD by construction.
+            P = ukf.P
+            np.testing.assert_allclose(P, P.T, atol=1e-12)
+            assert np.linalg.eigvalsh(P).min() > -1e-12
+
+    def test_reset_recomputes_S_from_P(self, ukf):
+        # Reset to a custom P0 and verify that S = chol(P0) afterwards.
+        P0 = np.diag([4.0, 1.0, 9.0])  # eigenvalues 1, 4, 9 → cond=9
+        x0 = np.array([1.0, 2.0, 3.0])
+        ukf.reset(x0, P0)
+        np.testing.assert_allclose(ukf.x_hat, x0)
+        np.testing.assert_allclose(ukf.P, P0, atol=1e-12)
+        # S should be the diagonal Cholesky: diag(2, 1, 3).
+        expected_S = np.diag([2.0, 1.0, 3.0])
+        np.testing.assert_allclose(ukf.S, expected_S, atol=1e-12)
+
+
+class TestCholupdate:
+    """Direct tests of the internal _cholupdate primitive — verifies that
+    the rank-1 update/downdate produce mathematically correct results
+    and that downdate failure is reported as ``LinAlgError``.
+    """
+
+    def test_rank_one_update_matches_chol_of_full_matrix(self):
+        from pyadm1ode_estimation.estimation.filters.sr_ukf import _cholupdate
+
+        rng = np.random.default_rng(7)
+        # Build a random positive-definite P, take its Cholesky, then
+        # update by a random vector v. Compare to direct chol(P + vv^T).
+        A = rng.normal(size=(5, 5))
+        P = A @ A.T + np.eye(5)
+        S = np.linalg.cholesky(P)
+        v = rng.normal(size=5)
+
+        S_new = _cholupdate(S, v, sign=+1)
+
+        P_expected = P + np.outer(v, v)
+        np.testing.assert_allclose(S_new @ S_new.T, P_expected, atol=1e-10)
+        np.testing.assert_allclose(np.triu(S_new, k=1), 0.0, atol=1e-12)
+
+    def test_rank_one_downdate_matches_chol_of_full_matrix(self):
+        from pyadm1ode_estimation.estimation.filters.sr_ukf import _cholupdate
+
+        rng = np.random.default_rng(13)
+        A = rng.normal(size=(5, 5))
+        P = A @ A.T + 10.0 * np.eye(5)  # generous PSD margin
+        S = np.linalg.cholesky(P)
+        v = 0.1 * rng.normal(size=5)  # small enough that P - vv^T stays PSD
+
+        S_new = _cholupdate(S, v, sign=-1)
+
+        P_expected = P - np.outer(v, v)
+        np.testing.assert_allclose(S_new @ S_new.T, P_expected, atol=1e-10)
+
+    def test_downdate_fails_when_matrix_becomes_indefinite(self):
+        from pyadm1ode_estimation.estimation.filters.sr_ukf import _cholupdate
+
+        # Tiny P, large v — P - vv^T must go negative definite.
+        S = np.eye(3) * 0.1  # P = 0.01 * I
+        v = np.array([2.0, 0.0, 0.0])  # vv^T has 4.0 on (0,0) → downdate fails
+        with pytest.raises(np.linalg.LinAlgError, match="downdate failed"):
+            _cholupdate(S, v, sign=-1)

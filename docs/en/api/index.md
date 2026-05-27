@@ -10,7 +10,7 @@ Auto-generated API documentation via `mkdocstrings`.
     * `process_model` — `ADM1ProcessModel`
     * `observation_model` — `ObservationChannel`, `ObservationModel`
     * `twin` — twin experiment helpers
-    * `filters.ukf` — `UnscentedKalmanFilter`
+    * `filters.sr_ukf` — `UnscentedKalmanFilter` (Square-Root UKF)
 * **`pyadm1ode_estimation.artifacts`** — interface to calibration
     * `calibration_artifact` — `CalibrationArtifact`, `load_artifact`,
       `save_artifact`, `apply_to_plant`
