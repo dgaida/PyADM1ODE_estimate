@@ -1,27 +1,14 @@
 """Twin experiment for the 41-state Square-Root UKF.
 
-Sets up two independent copies of the multi-stage example plant
-(see :mod:`pyadm1ode_estimation.example_plants.multi_stage`):
+Runs two copies of the multi-stage example plant:
 
-* **Truth plant** — propagated forward with a known initial state
-  and the plant's nominal substrate feed. The full 41-state ADM1
-  trajectory plus the three substrate-input rates form the ground
-  truth that the filter has to recover.
-* **Filter plant** — starts from a perturbed initial state estimate
-  and only sees noisy observations of the Phase-1 sensor set
-  (``Q_gas`` + ``Q_ch4`` + ``pH`` + ``FOS/TAC``).
+* **Truth plant** — propagated with a known initial state and a noisy
+  nominal substrate feed; its full trajectory is the ground truth.
+* **Filter plant** — a UKF (built via :func:`build_ukf`) that starts from
+  a perturbed prior and only sees noisy sensor readings.
 
-The script writes diagnostic plots to ``output/twin_experiment/``:
-
-* ``trajectories_strong.png`` — six representative strong-observable
-  states (subset of subsystems A and D),
-* ``trajectories_weak.png`` — six representative weak / open-loop
-  states (subsystems B / C / E + the augmented substrate inputs),
-* ``observations.png`` — clean truth, noisy measurement, filter
-  prediction per sensor channel,
-* ``nis.png`` — NIS time series with the expected baseline,
-* ``coverage_summary.png`` — per-channel ``2σ`` coverage grouped by
-  quality class.
+Writes diagnostic plots (state trajectories, observations, production
+estimate, NIS and 2σ coverage) to ``output/twin_experiment/``.
 
 Usage::
 
@@ -38,6 +25,7 @@ from pathlib import Path
 from typing import Dict, List
 
 import numpy as np
+import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
@@ -46,17 +34,7 @@ if str(REPO_ROOT) not in sys.path:
 from pyadm1ode_estimation.estimation import (  # noqa: E402
     ADM1ProcessModel,
     InputSpec,
-    ObservationChannel,
-    ObservationModel,
-    adm1da_full_spec,
-)
-from pyadm1ode_estimation.estimation.filters import (  # noqa: E402
-    UnscentedKalmanFilter,
-)
-from pyadm1ode_estimation.estimation.observation_model import (  # noqa: E402
-    extract_q_ch4_total,
-    extract_q_gas_total,
-    make_state_extractor,
+    build_ukf,
 )
 from pyadm1ode_estimation.estimation.sensors import (  # noqa: E402
     SensorAdapter,
@@ -64,7 +42,6 @@ from pyadm1ode_estimation.estimation.sensors import (  # noqa: E402
 )
 from pyadm1ode_estimation.estimation.twin import (  # noqa: E402
     coverage_within_2sigma,
-    propagate_truth,
     run_filter,
 )
 from pyadm1ode_estimation.example_plants import build_multi_stage_plant  # noqa: E402
@@ -73,284 +50,18 @@ from pyadm1ode_estimation.example_plants import build_multi_stage_plant  # noqa:
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "output" / "twin_experiment"
 DIGESTER_ID = "primary"
 
+# Multi-stage example mix: 40 m³/d split 0.67 / 0.32 / 0.01.
+SUBSTRATES = [
+    InputSpec("maize_silage", substrate_index=0, initial_flow=26.8),
+    InputSpec("slurry", substrate_index=1, initial_flow=12.8),
+    InputSpec("cereal_silage", substrate_index=2, initial_flow=0.4),
+]
+# Phase-1 sensor set: gas + methane + pH + one dosing sensor per substrate.
+SENSORS = ["q_gas", "q_ch4", "ph", "substrate_dose"]
 
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--warmup-days",
-        type=float,
-        default=30.0,
-        help="Pre-simulate the plant for this many days before the twin "
-        "starts, so the filter sees a settled operating point and "
-        "not the initial-transient peak (default 30 d). Set to 0 "
-        "to start the filter immediately after build.",
-    )
-    parser.add_argument(
-        "--duration-days",
-        type=float,
-        default=5.0,
-        help="Length of the twin / UKF run after warm-up (default 5 d).",
-    )
-    parser.add_argument(
-        "--dt-hours",
-        type=float,
-        default=1.0,
-        help="Filter step interval (default 1 h).",
-    )
-    parser.add_argument(
-        "--warmup-dt-hours",
-        type=float,
-        default=24.0,
-        help="Integration step for the warm-up phase (default 24 h). "
-        "Coarse is OK — only the steady-state matters.",
-    )
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument(
-        "--initial-perturbation-relative",
-        type=float,
-        default=0.05,
-        help="Initial UKF prior perturbation relative to truth (default "
-        "0.05 = 5 %% Gaussian noise on every channel). Set to 0 for "
-        "perfect initialisation — useful to verify that the UKF's "
-        "first predict step reproduces the truth's first step.",
-    )
-    parser.add_argument(
-        "--plot-from-day",
-        type=float,
-        default=0.0,
-        help="Skip this many days from the start of the trajectory when "
-        "plotting (burn-in for filter convergence). Diagnostics "
-        "(coverage, NIS) are still computed over the full run.",
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=DEFAULT_OUTPUT_DIR,
-        help=f"Plot output directory (default {DEFAULT_OUTPUT_DIR}).",
-    )
-    return parser.parse_args()
-
-
-# ---------------------------------------------------------------------------
-# Sensor set
-# ---------------------------------------------------------------------------
-#
-# Five channels:
-#   - Q_gas, Q_ch4  : gas-side, computed from outputs_data
-#   - pH            : computed inside pyadm1, NaN-safe wrapper
-#   - 3 substrate feed sensors (one per substrate slot) : direct observation
-#     of the augmented input-flow channels in the state vector. Closes the
-#     identifiability gap exposed by the previous 4-sensor run (filter could
-#     not distinguish "doubled substrate + doubled biomass" from "nominal
-#     substrate + nominal biomass" — both produce the same gas / pH / FOSTAC).
-#
-# FOS/TAC has been dropped: under the 30-d-warmup operating point its
-# information content was redundant with pH (both proxy the same charge-
-# balance state) and its noisy sigma-point evaluation introduced filter
-# instability.
-#
-# Note on PyADM1ODE sensor classes: the upstream package provides
-# ``PhysicalSensor`` / ``ChemicalSensor`` / ``GasSensor`` with realistic
-# noise, drift, response-time and sampling models. They are designed for
-# *forward simulation* (passive observers), not for UKF sigma-point
-# evaluation (where calling sensor.step() 89× per filter step would
-# corrupt the sensor's drift / sampling state). For this twin we use
-# simple, deterministic extractors here and let ``add_measurement_noise``
-# apply the channel noise on the truth measurements — equivalent to a
-# PhysicalSensor with ``response_time=0``, ``drift_rate=0``,
-# ``sample_interval=dt``. The PyADM1ODE sensors can be wired in
-# separately (on the truth-side only) to reproduce their richer error
-# model — see the comment block below ``build_obs_model``.
-
-
-def _make_ph_extractor(digester_id: str):
-    def extractor(plant, x):  # noqa: ARG001
-        val = plant.components[digester_id].outputs_data.get("pH", float("nan"))
-        return 7.0 if not np.isfinite(val) else float(val)
-
-    return extractor
-
-
-def _channel_index(spec, name: str) -> int:
-    """Look up the position of a named channel in the state vector."""
-    for i, c in enumerate(spec.channels):
-        if c.name == name:
-            return i
-    raise KeyError(f"Channel '{name}' not in spec")
-
-
-def build_obs_model(spec) -> ObservationModel:
-    # Substrate-flow indices in the augmented state vector. The names
-    # match the InputSpec names from build_spec().
-    i_maize = _channel_index(spec, "maize_silage")
-    i_slurry = _channel_index(spec, "slurry")
-    i_cereal = _channel_index(spec, "cereal_silage")
-
-    return ObservationModel(
-        channels=[
-            ObservationChannel(
-                name="Q_gas",
-                extractor=extract_q_gas_total,
-                noise_std=10.0,
-            ),
-            ObservationChannel(
-                name="Q_ch4",
-                extractor=extract_q_ch4_total,
-                noise_std=5.0,
-            ),
-            ObservationChannel(
-                name="pH",
-                extractor=_make_ph_extractor(DIGESTER_ID),
-                noise_std=0.05,
-            ),
-            # Substrate dosing sensors — simulate a hopper / pump-flow meter
-            # on each substrate line. Typical industrial dosing equipment
-            # has ~5 % relative uncertainty; we set noise_std to 5 % of the
-            # nominal feed rate.
-            ObservationChannel(
-                name="Q_maize_silage",
-                extractor=make_state_extractor(i_maize),
-                noise_std=2.0,  # 5 % of 40.2 m³/d
-            ),
-            ObservationChannel(
-                name="Q_slurry",
-                extractor=make_state_extractor(i_slurry),
-                noise_std=1.0,  # 5 % of 19.2 m³/d
-            ),
-            ObservationChannel(
-                name="Q_cereal_silage",
-                extractor=make_state_extractor(i_cereal),
-                noise_std=0.1,  # ~17 % of 0.6 m³/d (small slot, hard to dose)
-            ),
-        ]
-    )
-
-
-# ---------------------------------------------------------------------------
-# PyADM1ODE truth-side sensors (drift, response lag, sampling, noise)
-# ---------------------------------------------------------------------------
-
-
-def build_truth_sensors(seed: int) -> Dict[str, SensorAdapter]:
-    """Construct realistic ``PhysicalSensor`` instances for the truth side.
-
-    Each sensor's ``measurement_noise`` matches the corresponding
-    ``ObservationChannel.noise_std`` in :func:`build_obs_model` so the
-    UKF's ``R`` matrix is consistent with the actual instrumentation
-    noise. Drift and response-time add bias / lag effects that the
-    filter's white-noise R model does NOT capture — they make the
-    twin closer to real-world plant operation.
-
-    Returns a dict ``{channel_name: SensorAdapter}`` that can be
-    passed straight to :func:`measure_truth_with_sensors`.
-    """
-    from pyadm1.components.sensors.physical import (  # type: ignore[import-not-found]
-        PhysicalSensor,
-    )
-
-    def _flow_sensor(component_id, signal_key, noise, drift, seed_off):
-        # Use sensor_type="flow" for any volume-flow channel. The
-        # signal_key tells the sensor which key to read from inputs;
-        # we pass that exact key in measure_truth_with_sensors.
-        sensor = PhysicalSensor(
-            component_id=component_id,
-            sensor_type="flow",
-            signal_key=signal_key,
-            measurement_noise=float(noise),
-            drift_rate=float(drift),
-            response_time=30.0 / 86400.0,  # 30 s lag
-            sample_interval=0.0,  # continuous (1 sample per dt)
-            rng_seed=seed + seed_off,
-        )
-        return SensorAdapter(sensor, signal_key=signal_key)
-
-    return {
-        # Gas-side: 30 s response, no drift (NDIR flow meters are stable).
-        "Q_gas": _flow_sensor(
-            "q_gas_sensor",
-            "Q_gas",
-            noise=10.0,
-            drift=0.0,
-            seed_off=0,
-        ),
-        "Q_ch4": _flow_sensor(
-            "q_ch4_sensor",
-            "Q_ch4",
-            noise=5.0,
-            drift=0.0,
-            seed_off=1,
-        ),
-        # pH probe: ~60 s response, small drift (electrodes age slowly).
-        "pH": SensorAdapter(
-            PhysicalSensor(
-                component_id="ph_sensor",
-                sensor_type="pH",
-                signal_key="pH",
-                measurement_noise=0.05,
-                drift_rate=0.005,  # ~0.005 pH / day
-                response_time=60.0 / 86400.0,  # 60 s
-                sample_interval=0.0,
-                rng_seed=seed + 2,
-            ),
-            signal_key="pH",
-        ),
-        # Substrate dosing scales / pump-flow meters: small drift,
-        # 5 s response (mechanical inertia).
-        "Q_maize_silage": _flow_sensor(
-            "q_maize_sensor",
-            "Q_maize_silage",
-            noise=2.0,
-            drift=0.01,
-            seed_off=3,
-        ),
-        "Q_slurry": _flow_sensor(
-            "q_slurry_sensor",
-            "Q_slurry",
-            noise=1.0,
-            drift=0.005,
-            seed_off=4,
-        ),
-        "Q_cereal_silage": _flow_sensor(
-            "q_cereal_sensor",
-            "Q_cereal_silage",
-            noise=0.1,
-            drift=0.002,
-            seed_off=5,
-        ),
-    }
-
-
-# ---------------------------------------------------------------------------
-# Spec
-# ---------------------------------------------------------------------------
-
-
-def build_spec():
-    """Full 41-state spec for the multi-stage plant.
-
-    The substrate-input channels match the ``_SUBSTRATE_MIX`` defined
-    in :mod:`pyadm1ode_estimation.example_plants.multi_stage`. If that
-    mix changes, the InputSpecs here have to follow.
-    """
-    return adm1da_full_spec(
-        digester_id=DIGESTER_ID,
-        substrate_inputs=[
-            InputSpec("maize_silage", substrate_index=0, initial_flow=40.2),
-            InputSpec("slurry", substrate_index=1, initial_flow=19.2),
-            InputSpec("cereal_silage", substrate_index=2, initial_flow=0.6),
-        ],
-    )
-
-
-# Quality-class index lists for the 41 ADM1 channels — copied from
-# pyadm1ode_estimation/estimation/specs.py::_STATE_BLOCKS so this
-# script can group channels for plotting without importing private
-# constants.
+# Quality-class index lists for the 41 ADM1 channels (mirrors
+# specs.py::_STATE_BLOCKS so plotting can group channels without
+# importing private constants).
 QUALITY_BLOCKS: Dict[str, List[int]] = {
     "methanogenesis": [6, 7, 8, 9, 27, 28, 37, 38, 39, 40],
     "charge_balance": [29, 30, 31, 32, 33, 34, 35, 36],
@@ -364,21 +75,81 @@ QUALITY_BLOCKS: Dict[str, List[int]] = {
 }
 
 
-# ---------------------------------------------------------------------------
-# Plotting
-# ---------------------------------------------------------------------------
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--warmup-days", type=float, default=30.0,
+        help="Pre-simulate the plant for this many days so the filter starts "
+        "from a settled operating point (default 30 d, 0 to skip).",
+    )
+    parser.add_argument(
+        "--duration-days", type=float, default=5.0,
+        help="Length of the twin / UKF run after warm-up (default 5 d).",
+    )
+    parser.add_argument(
+        "--dt-hours", type=float, default=1.0,
+        help="Filter step interval (default 1 h).",
+    )
+    parser.add_argument(
+        "--warmup-dt-hours", type=float, default=24.0,
+        help="Integration step for the warm-up phase (default 24 h).",
+    )
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--initial-perturbation-relative", type=float, default=0.05,
+        help="Relative Gaussian noise on the UKF prior (default 0.05; 0 = "
+        "perfect initialisation).",
+    )
+    parser.add_argument(
+        "--substrate-noise-relative", type=float, default=0.10,
+        help="Relative per-step Gaussian noise on the truth substrate feed "
+        "(default 0.10; models dosing/kg-to-m³ uncertainty, 0 = constant).",
+    )
+    parser.add_argument(
+        "--plot-from-day", type=float, default=0.0,
+        help="Skip this many days at the start when plotting (burn-in). "
+        "Diagnostics are still computed over the full run.",
+    )
+    parser.add_argument(
+        "--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR,
+        help=f"Plot output directory (default {DEFAULT_OUTPUT_DIR}).",
+    )
+    return parser.parse_args()
+
+
+def build_truth_sensors(obs, seed: int) -> Dict[str, SensorAdapter]:
+    """One realistic ``PhysicalSensor`` per observation channel.
+
+    Each sensor's ``measurement_noise`` is taken from the channel's
+    ``noise_std`` so the UKF's ``R`` stays consistent with the actual
+    instrumentation. Drift / response lag add bias the filter's
+    white-noise model does not capture, bringing the twin closer to a
+    real plant. The UKF itself never touches these sensors.
+    """
+    from pyadm1.components.sensors.physical import (  # type: ignore[import-not-found]
+        PhysicalSensor,
+    )
+
+    sensors: Dict[str, SensorAdapter] = {}
+    for off, ch in enumerate(obs.channels):
+        is_ph = ch.name == "pH"
+        sensor = PhysicalSensor(
+            component_id=f"{ch.name}_sensor",
+            sensor_type="pH" if is_ph else "flow",
+            signal_key=ch.name,
+            measurement_noise=float(ch.noise_std),
+            drift_rate=0.005 if is_ph else 0.0,  # pH electrodes age slowly
+            response_time=(60.0 if is_ph else 30.0) / 86400.0,  # 60 s / 30 s
+            sample_interval=0.0,  # one sample per dt
+            rng_seed=seed + off,
+        )
+        sensors[ch.name] = SensorAdapter(sensor, signal_key=ch.name)
+    return sensors
 
 
 def _robust_ylim(*series, percentile=(1.0, 99.0), pad=0.15):
-    """Compute a Y-axis limit that ignores extreme outliers.
-
-    The UKF's initial sigma-point evaluation at t=0 can produce a
-    huge ŷ spike that's an order of magnitude above the steady-state
-    signal. Letting matplotlib autoscale onto this spike compresses
-    the rest of the data into an invisible band. We use percentile-
-    based limits (default 1st–99th) so the spike stays in the plot
-    (as a single excursion above the axis) but doesn't dominate it.
-    """
+    """Percentile-based Y-limit so the t=0 sigma-point spike on ŷ / x̂ does
+    not flatten the steady-state trajectory."""
     finite_vals = []
     for s in series:
         if s is None:
@@ -397,16 +168,7 @@ def _robust_ylim(*series, percentile=(1.0, 99.0), pad=0.15):
     return lo - pad * span, hi + pad * span
 
 
-def plot_trajectory_grid(
-    time,
-    truth,
-    x_hat,
-    std,
-    spec,
-    indices,
-    title,
-    output_path,
-):
+def plot_trajectory_grid(time, truth, x_hat, std, spec, indices, title, output_path):
     import matplotlib
 
     matplotlib.use("Agg")
@@ -427,17 +189,11 @@ def plot_trajectory_grid(
             time,
             x_hat[:, idx] - 2.0 * std[:, idx],
             x_hat[:, idx] + 2.0 * std[:, idx],
-            color="C0",
-            alpha=0.15,
-            label=r"$\pm 2\sigma$",
+            color="C0", alpha=0.15, label=r"$\pm 2\sigma$",
         )
-        # Percentile-based Y-limit so the t=0 sigma-point spike on
-        # x_hat does not flatten the steady-state trajectory.
         ylim = _robust_ylim(
-            truth[:, idx],
-            x_hat[:, idx],
-            x_hat[:, idx] - 2.0 * std[:, idx],
-            x_hat[:, idx] + 2.0 * std[:, idx],
+            truth[:, idx], x_hat[:, idx],
+            x_hat[:, idx] - 2.0 * std[:, idx], x_hat[:, idx] + 2.0 * std[:, idx],
         )
         if ylim is not None:
             ax.set_ylim(*ylim)
@@ -462,40 +218,146 @@ def plot_observations(obs_clean, obs_noisy, steps, time, output_path):
     channels = list(obs_clean.columns)
     fig, axes = plt.subplots(2, 3, figsize=(15, 8))
     for ax, name in zip(axes.flat, channels):
+        ax.plot(obs_clean.index, obs_clean[name].values, "k-", lw=1.5, label="clean truth")
         ax.plot(
-            obs_clean.index, obs_clean[name].values, "k-", lw=1.5, label="clean truth"
-        )
-        ax.plot(
-            obs_noisy.index,
-            obs_noisy[name].values,
-            "rx",
-            markersize=6,
-            label="noisy measurement",
-            alpha=0.7,
+            obs_noisy.index, obs_noisy[name].values, "rx",
+            markersize=6, label="noisy measurement", alpha=0.7,
         )
         y_pred = np.array([s.y_pred.get(name, np.nan) for s in steps])
         ax.plot(time, y_pred, "C0-", lw=1.1, label=r"$\hat{y}$")
-        # Percentile-based Y-limit so the t=0 ŷ spike does not
-        # dominate. clean truth + noisy measurements determine the
-        # axis scale; the spike (one or two outlier ŷ points) shows
-        # up as an out-of-plot excursion.
-        ylim = _robust_ylim(
-            obs_clean[name].values,
-            obs_noisy[name].values,
-            y_pred,
-        )
+        ylim = _robust_ylim(obs_clean[name].values, obs_noisy[name].values, y_pred)
         if ylim is not None:
             ax.set_ylim(*ylim)
         ax.set_xlabel("time [d]")
         ax.set_ylabel(name)
         ax.legend(loc="best", fontsize=8)
         ax.grid(alpha=0.3)
-    # Hide any unused subplots (if we have fewer channels than panels).
-    for ax in axes.flat[len(channels) :]:
+    for ax in axes.flat[len(channels):]:
         ax.set_visible(False)
-    fig.suptitle(
-        "Observations — truth, noisy measurement, filter prediction", fontsize=13
-    )
+    fig.suptitle("Observations — truth, noisy measurement, filter prediction", fontsize=13)
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=110, bbox_inches="tight")
+    plt.close(fig)
+
+
+def evaluate_h_at_xhat(warmed_up_plant, spec, obs, x_hat_history, channel_names,
+                       dt_hours: float = 1.0):
+    """Deterministic ``h(x̂_k)`` per step — the Jensen-bias-free production
+    estimate (a single plant evaluation at the posterior mean, vs the UKF's
+    sigma-point-averaged ŷ). Each call runs the plant for ``dt_hours`` so the
+    gas phase equilibrates as it does in the truth propagation."""
+    plant_copy = copy.deepcopy(warmed_up_plant)
+    process = ADM1ProcessModel(plant_copy, spec)
+    process.snapshot()
+
+    name_to_chan = {c.name: c for c in obs.channels}
+    extractors = [name_to_chan[name].extractor for name in channel_names]
+
+    dt = dt_hours / 24.0
+    y_det = np.zeros((len(x_hat_history), len(channel_names)))
+    for k in range(len(x_hat_history)):
+        # Restore baseline, apply x̂, run one dt, read outputs — without
+        # process.step(), so the read-back never overwrites x̂.
+        process.restore()
+        process._apply_state(spec.clip(x_hat_history[k]))
+        plant_copy.step(dt)
+        for j, ex in enumerate(extractors):
+            y_det[k, j] = float(ex(plant_copy, x_hat_history[k]))
+    return y_det
+
+
+def plot_production_estimate(obs_clean, obs_noisy, steps, time, x_hat_history,
+                             warmed_up_plant, spec, obs, output_path):
+    """Gas + methane production: truth, raw + smoothed sensor, and the
+    deterministic ``h(x̂)`` model estimate, with cumulative production and
+    end-of-run error below."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    channels = ["Q_gas", "Q_ch4"]
+    print("  Computing deterministic h(x_hat) per step ...")
+    y_det = evaluate_h_at_xhat(warmed_up_plant, spec, obs, x_hat_history, channels)
+
+    fig, axes = plt.subplots(2, 2, figsize=(13, 8), sharex=True)
+    for col, name in enumerate(channels):
+        ax_rate = axes[0, col]
+        truth_series = obs_clean[name].values
+        noisy_series = obs_noisy[name].values
+        y_hat = y_det[:, col]
+
+        # Rolling mean of the noisy measurement — the operator's "actual"
+        # production reading, free of model bias.
+        sensor_series = pd.Series(noisy_series, index=obs_noisy.index)
+        window = max(3, len(sensor_series) // 40)
+        y_smoothed = sensor_series.rolling(
+            window=window, center=True, min_periods=1,
+        ).mean().values
+        y_sigma = np.array([s.y_std.get(name, np.nan) for s in steps])
+
+        ax_rate.plot(obs_clean.index, truth_series, "k-", lw=1.8, label="truth")
+        ax_rate.plot(
+            obs_noisy.index, noisy_series, "rx", markersize=4,
+            label="sensor (raw)", alpha=0.4,
+        )
+        ax_rate.plot(
+            obs_noisy.index, y_smoothed, "C3-", lw=1.4,
+            label=f"sensor (smoothed, {window}-pt)",
+        )
+        ax_rate.plot(time, y_hat, "C2-", lw=1.2, label=r"$h(\hat{x})$ (model)", alpha=0.85)
+        with_band = np.isfinite(y_hat) & np.isfinite(y_sigma)
+        if with_band.any():
+            ax_rate.fill_between(
+                np.asarray(time)[with_band],
+                (y_hat - y_sigma)[with_band], (y_hat + y_sigma)[with_band],
+                color="C2", alpha=0.12, label=r"$h(\hat{x}) \pm 1\sigma$",
+            )
+        ylim = _robust_ylim(truth_series, noisy_series, y_hat, y_smoothed)
+        if ylim is not None:
+            ax_rate.set_ylim(*ylim)
+        ax_rate.set_ylabel(f"{name} [m³/d]")
+        ax_rate.set_title(f"{name} — instantaneous rate")
+        ax_rate.legend(loc="best", fontsize=8)
+        ax_rate.grid(alpha=0.3)
+
+        ax_cum = axes[1, col]
+        t_arr = np.asarray(obs_clean.index, dtype=float)
+
+        def _cumulative(values, time_axis):
+            v = np.asarray(values, dtype=float)
+            dt_arr = np.diff(time_axis, prepend=time_axis[0])
+            return np.cumsum(np.where(np.isfinite(v), v, 0.0) * dt_arr)
+
+        cum_truth = _cumulative(truth_series, t_arr)
+        cum_hxhat = _cumulative(y_hat, np.asarray(time, dtype=float))
+        cum_sensor = _cumulative(y_smoothed, t_arr)
+
+        ax_cum.plot(t_arr, cum_truth, "k-", lw=1.8, label="truth")
+        ax_cum.plot(t_arr, cum_sensor, "C3-", lw=1.4, label="sensor (smoothed)")
+        ax_cum.plot(time, cum_hxhat, "C2-", lw=1.2, label=r"$h(\hat{x})$ (model)", alpha=0.85)
+        if len(t_arr) and len(cum_hxhat):
+            err_sensor = (cum_sensor[-1] - cum_truth[-1]) / max(cum_truth[-1], 1e-12) * 100.0
+            err_model = (cum_hxhat[-1] - cum_truth[-1]) / max(cum_truth[-1], 1e-12) * 100.0
+            ax_cum.text(
+                0.55, 0.18, f"sensor cum.: {err_sensor:+.1f} %",
+                transform=ax_cum.transAxes, fontsize=9,
+                bbox=dict(boxstyle="round", facecolor="white", edgecolor="C3", alpha=0.8),
+            )
+            ax_cum.annotate(
+                f"model cum.: {err_model:+.1f} %",
+                xy=(time[-1], cum_hxhat[-1]), xytext=(0.55, 0.05),
+                textcoords="axes fraction", fontsize=10,
+                bbox=dict(boxstyle="round", facecolor="white", edgecolor="C2", alpha=0.8),
+            )
+        ax_cum.set_xlabel("time [d]")
+        ax_cum.set_ylabel(f"cumulative {name} [m³]")
+        ax_cum.set_title(f"{name} — cumulative production")
+        ax_cum.legend(loc="best", fontsize=9)
+        ax_cum.grid(alpha=0.3)
+
+    fig.suptitle("Gas + methane production: truth vs deterministic UKF estimate", fontsize=13)
     fig.tight_layout()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=110, bbox_inches="tight")
@@ -513,13 +375,8 @@ def plot_nis(steps, time, output_path):
     fig, ax = plt.subplots(figsize=(11, 5))
     ax.plot(time, nis, "C2-o", lw=1.2, markersize=4, label="NIS")
     if n_active > 0:
-        ax.axhline(
-            float(n_active),
-            color="k",
-            ls="--",
-            alpha=0.6,
-            label=f"expected NIS = {n_active}",
-        )
+        ax.axhline(float(n_active), color="k", ls="--", alpha=0.6,
+                   label=f"expected NIS = {n_active}")
     ax.set_xlabel("time [d]")
     ax.set_ylabel("NIS")
     ax.set_title("Normalized Innovation Squared")
@@ -538,23 +395,16 @@ def plot_coverage_summary(coverage, spec, output_path):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    # Group coverage by quality block.
-    block_means = {}
-    for block, indices in QUALITY_BLOCKS.items():
-        block_means[block] = float(np.mean([coverage[i] for i in indices]))
-
+    block_means = {
+        block: float(np.mean([coverage[i] for i in indices]))
+        for block, indices in QUALITY_BLOCKS.items()
+    }
     fig, ax = plt.subplots(figsize=(11, 5))
     names = list(block_means.keys())
     values = [block_means[n] * 100.0 for n in names]
     bars = ax.bar(names, values, color="C0", alpha=0.7)
     for bar, v in zip(bars, values):
-        ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            v + 1,
-            f"{v:.0f} %",
-            ha="center",
-            fontsize=9,
-        )
+        ax.text(bar.get_x() + bar.get_width() / 2, v + 1, f"{v:.0f} %", ha="center", fontsize=9)
     ax.axhline(80.0, color="g", ls="--", alpha=0.5, label="80 % (strong target)")
     ax.axhline(40.0, color="orange", ls="--", alpha=0.5, label="40 % (weak target)")
     ax.axhline(20.0, color="r", ls="--", alpha=0.5, label="20 % (open-loop target)")
@@ -570,30 +420,62 @@ def plot_coverage_summary(coverage, spec, output_path):
     plt.close(fig)
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-
-
 def _warmup(plant, warmup_days, warmup_dt_hours, label):
-    """Run pyadm1's native simulate() to reach a settled operating point.
-
-    No observations recorded — we just want to advance the plant
-    state past the substrate-input discontinuity at t = 0 so the
-    UKF sees a quasi-stable trajectory rather than the initial
-    Q_gas spike.
-    """
+    """Advance the plant past the t=0 substrate discontinuity to a settled
+    operating point (no observations recorded)."""
     if warmup_days <= 0:
         return
-    print(
-        f"  Warming up {label} plant: {warmup_days:.0f} d "
-        f"at dt = {warmup_dt_hours:.0f} h ..."
-    )
+    print(f"  Warming up {label} plant: {warmup_days:.0f} d at dt = {warmup_dt_hours:.0f} h ...")
     plant.simulate(
         duration=float(warmup_days),
         dt=float(warmup_dt_hours) / 24.0,
-        save_interval=float(warmup_days),  # only keep the final snapshot
+        save_interval=float(warmup_days),
     )
+
+
+def _propagate_truth_with_substrate_noise(spec, truth_process, obs, x0, dt_hours,
+                                          n_steps, rng, substrate_noise_relative,
+                                          dt_stub=1e-5):
+    """Propagate the truth trajectory with per-step Gaussian noise on the
+    augmented substrate-input channels (models the operator's dosing
+    uncertainty). Returns ``(time, states, obs_clean)`` like
+    :func:`twin.propagate_truth`; the augmented channels in ``states`` hold
+    the actually delivered (noisy) substrate values."""
+    dt = dt_hours / 24.0
+    n_state = len(spec)
+    aug_indices = spec.kind_indices("input_flow")
+    nominal = np.array([x0[i] for i in aug_indices], dtype=float)
+
+    # Truth substrate trajectory: substrate_truth[k] is fed during step k→k+1.
+    if substrate_noise_relative > 0.0:
+        noise = rng.normal(
+            0.0, substrate_noise_relative * np.abs(nominal),
+            size=(n_steps + 1, len(aug_indices)),
+        )
+    else:
+        noise = np.zeros((n_steps + 1, len(aug_indices)))
+    substrate_truth = np.clip(nominal[None, :] + noise, a_min=0.0, a_max=None)
+
+    states = np.zeros((n_steps + 1, n_state))
+    states[0] = x0.copy()
+    for k_aug, i_aug in enumerate(aug_indices):
+        states[0, i_aug] = substrate_truth[0, k_aug]
+
+    truth_process.refresh_outputs(states[0], dt_stub=dt_stub)
+    obs_rows = [[float(c.extractor(truth_process.plant, states[0])) for c in obs.channels]]
+
+    x = states[0].copy()
+    for k in range(n_steps):
+        for k_aug, i_aug in enumerate(aug_indices):
+            x[i_aug] = substrate_truth[k, k_aug]
+        x = truth_process.step(x, dt)
+        states[k + 1] = x
+        truth_process.refresh_outputs(x, dt_stub=dt_stub)
+        obs_rows.append([float(c.extractor(truth_process.plant, x)) for c in obs.channels])
+
+    time_arr = np.arange(n_steps + 1, dtype=float) * dt
+    obs_clean = pd.DataFrame(obs_rows, index=time_arr, columns=[c.name for c in obs.channels])
+    return time_arr, states, obs_clean
 
 
 def main() -> int:
@@ -603,107 +485,61 @@ def main() -> int:
 
     print("Twin experiment — multi-stage example, 41-state SR-UKF")
     print(f"  Warm-up: {args.warmup_days:.0f} d (no filter)")
-    print(
-        f"  Filter horizon: {args.duration_days:.1f} d  |  "
-        f"dt = {args.dt_hours:.1f} h  |  {n_steps} steps"
-    )
+    print(f"  Filter horizon: {args.duration_days:.1f} d  |  "
+          f"dt = {args.dt_hours:.1f} h  |  {n_steps} steps")
 
-    spec = build_spec()
-    obs = build_obs_model(spec)
+    # ---- Truth + filter plants -----------------------------------------
+    # The filter plant is a deepcopy of the warmed-up truth plant, so the
+    # UKF model is bit-identical to the truth at t=0; a third copy is kept
+    # pristine for the deterministic h(x̂) production estimate.
+    print("\nBuilding + warming up truth plant ...")
+    truth_plant = build_multi_stage_plant()
+    _warmup(truth_plant, args.warmup_days, args.warmup_dt_hours, "truth")
+    filter_plant = copy.deepcopy(truth_plant)
+    det_h_plant = copy.deepcopy(truth_plant)
+
+    # ---- UKF: the whole setup in one call ------------------------------
+    ukf = build_ukf(
+        filter_plant,
+        digester_id=DIGESTER_ID,
+        substrates=SUBSTRATES,
+        sensors=SENSORS,
+        initial_uncertainty_relative=max(args.initial_perturbation_relative, 1e-3),
+    )
+    spec, obs = ukf.spec, ukf.obs
+    x_truth0 = ukf.x_hat.copy()  # build_ukf set this to the (warmed-up) plant state
     print(f"  State vector: {len(spec)} channels  ({len(spec) - 41} augmented)")
     print(f"  Observation channels: {[c.name for c in obs.channels]}")
 
-    # ---- Truth ---------------------------------------------------------
-    print("\nBuilding truth plant ...")
-    truth_plant = build_multi_stage_plant()
-    _warmup(truth_plant, args.warmup_days, args.warmup_dt_hours, "truth")
-
+    # ---- Propagate truth + measure -------------------------------------
+    print(f"\nPropagating truth for {args.duration_days:.1f} d "
+          f"(substrate noise: {args.substrate_noise_relative * 100:.0f} % per step) ...")
     truth_process = ADM1ProcessModel(truth_plant, spec)
     truth_process.snapshot()
-    # Read the warmed-up ADM1 state into the spec channel order. The
-    # augmented input-flow channels keep their spec initial values
-    # (the plant doesn't expose them as state — we declare them).
-    x_truth0 = spec.read_adm1_state(truth_plant)
-    aug_starts_at = 41
-    for i, c in enumerate(spec.channels[aug_starts_at:], start=aug_starts_at):
-        x_truth0[i] = c.initial
-
-    # ---- Filter ---------------------------------------------------------
-    # Deep-copy the warmed-up truth plant for the filter. Guarantees that
-    # the filter's plant model is bit-identical to the truth at the moment
-    # the UKF starts estimating. Side-effect: the UKF's first predict step
-    # produces exactly the truth's first ODE step (modulo UKF transformation
-    # error from sigma-point spread) when the initial perturbation is 0.
-    # Also saves one full warm-up.
-    print("\nBuilding filter plant (deepcopy of warmed-up truth plant) ...")
-    filter_plant = copy.deepcopy(truth_plant)
-
-    filter_process = ADM1ProcessModel(filter_plant, spec)
-    filter_process.snapshot()
-
-    # ---- Propagate truth + measure -------------------------------------
-    print(f"\nPropagating truth for {args.duration_days:.1f} d ...")
-    time, truth, obs_clean = propagate_truth(
-        spec,
-        truth_process,
-        obs,
-        x_truth0,
-        dt_hours=args.dt_hours,
-        n_steps=n_steps,
+    time, truth, obs_clean = _propagate_truth_with_substrate_noise(
+        spec, truth_process, obs, x_truth0,
+        dt_hours=args.dt_hours, n_steps=n_steps, rng=rng,
+        substrate_noise_relative=args.substrate_noise_relative,
     )
 
-    # Truth-side sensor pipeline: each PyADM1ODE sensor sees the clean
-    # truth signal and produces a noisy measurement with drift, lag and
-    # sampling. This is the *next-state-with-noise* measurement the
-    # filter sees. The UKF itself never touches the sensors.
     print("Stepping truth-side sensors (drift + lag + noise) ...")
-    truth_sensors = build_truth_sensors(seed=args.seed)
-    obs_noisy = measure_truth_with_sensors(obs_clean, truth_sensors)
+    obs_noisy = measure_truth_with_sensors(obs_clean, build_truth_sensors(obs, args.seed))
 
-    ukf = UnscentedKalmanFilter(filter_process, obs, spec)
+    # ---- Perturb the prior (build_ukf starts at the exact truth) -------
     if args.initial_perturbation_relative > 0.0:
-        perturbation = rng.normal(
-            0.0,
-            args.initial_perturbation_relative * (np.abs(x_truth0) + 1e-6),
+        pert = rng.normal(
+            0.0, args.initial_perturbation_relative * (np.abs(x_truth0) + 1e-6),
             size=len(spec),
         )
-        print(
-            f"\nInitial perturbation: ±{args.initial_perturbation_relative * 100:.0f} %"
-            " relative Gaussian noise on every channel."
-        )
+        ukf.reset(spec.clip(x_truth0 + pert), ukf.P)
+        print(f"\nInitial perturbation: ±{args.initial_perturbation_relative * 100:.0f} % "
+              "Gaussian noise on the prior.")
     else:
-        perturbation = np.zeros_like(x_truth0)
-        print(
-            "\nInitial perturbation: 0 (perfect initialisation — UKF's"
-            " first predict should match truth's first step)."
-        )
-    x0 = spec.clip(x_truth0 + perturbation)
-
-    # Initial covariance P0: we use a TIGHT P0 matching the actual
-    # perturbation, not the spec's default initial_cov(). The spec
-    # default encodes "filter starts without knowing the truth"
-    # (factors 0.20–0.80 × magnitude), which is realistic on a real
-    # plant but inappropriate here: deepcopy gives us x̂[0] ≈ x_truth[0]
-    # exactly, so the actual uncertainty is just the perturbation σ.
-    # Using the bloated default would spread sigma points ±130 % of
-    # |x| and produce a huge t=0 ŷ spike for nonlinear gas-flow channels.
-    sigma_init = max(args.initial_perturbation_relative, 1e-3)
-    p0_diag = (sigma_init * (np.abs(x_truth0) + 1e-6)) ** 2
-    P0 = np.diag(p0_diag)
-    ukf.reset(x0, P0)
-    print(
-        f"Initial covariance: tight P0 with sigma = {sigma_init * 100:.1f} % "
-        "x |x| per channel (matches the perturbation level)."
-    )
+        print("\nInitial perturbation: 0 (perfect initialisation).")
 
     print(f"Running UKF for {n_steps + 1} steps ...")
     x_hat, std, steps = run_filter(
-        ukf,
-        spec,
-        obs,
-        obs_noisy,
-        gate_frame=None,
-        dt_hours=args.dt_hours,
+        ukf, spec, obs, obs_noisy, gate_frame=None, dt_hours=args.dt_hours,
     )
 
     # ---- Diagnostics ---------------------------------------------------
@@ -716,33 +552,18 @@ def main() -> int:
     print("\n--- Per-quality-block coverage ---")
     for block, indices in QUALITY_BLOCKS.items():
         block_cov = float(np.mean([coverage[i] for i in indices]))
-        print(
-            f"  {block:30s}  n={len(indices):2d}  "
-            f"2sigma-cov = {100 * block_cov:5.1f} %"
-        )
+        print(f"  {block:30s}  n={len(indices):2d}  2sigma-cov = {100 * block_cov:5.1f} %")
+    print(f"\n  Mean NIS = {nis_mean:.2f}  "
+          f"(target {0.5 * n_active:.1f} – {2.0 * n_active:.1f} for {n_active} channels)")
 
-    print(
-        f"\n  Mean NIS = {nis_mean:.2f}  "
-        f"(target {0.5 * n_active:.1f} – {2.0 * n_active:.1f} for "
-        f"{n_active} channels)"
-    )
-
-    # ---- Plot slice (burn-in for filter convergence) -------------------
-    # Diagnostics (coverage, NIS) are over the FULL run; only the visual
-    # plots get cropped so we don't waste vertical axes on the initial
-    # UKF transient.
+    # ---- Plot slice (visual burn-in; diagnostics use the full run) -----
     plot_mask = time >= args.plot_from_day
-    n_kept = int(plot_mask.sum())
     if args.plot_from_day > 0:
-        print(
-            f"\n  Plot burn-in: skipping first {len(time) - n_kept} steps "
-            f"(t < {args.plot_from_day:.1f} d). "
-            f"Plotting {n_kept} of {len(time)} samples."
-        )
-    time_p = time[plot_mask]
-    truth_p = truth[plot_mask]
-    x_hat_p = x_hat[plot_mask]
-    std_p = std[plot_mask]
+        print(f"\n  Plot burn-in: skipping t < {args.plot_from_day:.1f} d "
+              f"({int(plot_mask.sum())} of {len(time)} samples kept).")
+    time_p, truth_p, x_hat_p, std_p = (
+        time[plot_mask], truth[plot_mask], x_hat[plot_mask], std[plot_mask],
+    )
     obs_clean_p = obs_clean.loc[obs_clean.index >= args.plot_from_day]
     obs_noisy_p = obs_noisy.loc[obs_noisy.index >= args.plot_from_day]
     steps_p = [s for s in steps if s.t >= args.plot_from_day]
@@ -750,40 +571,27 @@ def main() -> int:
     # ---- Plots ---------------------------------------------------------
     output_dir = args.output_dir
     print(f"\nWriting plots to {output_dir} ...")
-
-    # Strong: 6 picks from methanogenesis + charge_balance
     plot_trajectory_grid(
-        time_p,
-        truth_p,
-        x_hat_p,
-        std_p,
-        spec,
+        time_p, truth_p, x_hat_p, std_p, spec,
         indices=[6, 8, 27, 35, 38, 40],
         title="Strong-observable states (A + D fused)",
         output_path=output_dir / "trajectories_strong.png",
     )
-    # Weak / open-loop: 6 picks
     plot_trajectory_grid(
-        time_p,
-        truth_p,
-        x_hat_p,
-        std_p,
-        spec,
+        time_p, truth_p, x_hat_p, std_p, spec,
         indices=[0, 18, 22, 10, 11, 41],  # last is the first input_flow channel
         title="Medium / weak / open-loop states + 1 substrate input",
         output_path=output_dir / "trajectories_weak.png",
     )
-    plot_observations(
-        obs_clean_p,
-        obs_noisy_p,
-        steps_p,
-        time_p,
-        output_path=output_dir / "observations.png",
+    plot_observations(obs_clean_p, obs_noisy_p, steps_p, time_p,
+                      output_path=output_dir / "observations.png")
+    plot_production_estimate(
+        obs_clean_p, obs_noisy_p, steps_p, time_p,
+        x_hat_history=x_hat_p, warmed_up_plant=det_h_plant,
+        spec=spec, obs=obs, output_path=output_dir / "production_estimate.png",
     )
     plot_nis(steps_p, time_p, output_path=output_dir / "nis.png")
-    plot_coverage_summary(
-        coverage, spec, output_path=output_dir / "coverage_summary.png"
-    )
+    plot_coverage_summary(coverage, spec, output_path=output_dir / "coverage_summary.png")
 
     print("Done.")
     return 0

@@ -25,7 +25,7 @@ Topology::
 The substrate mix is a four-component co-digestion typical for
 mid-sized agricultural plants. Energy-crop silage, two manure
 streams (solid + liquid), and cereal whole-plant silage. Nominal
-total dosing rate 60 m³/d.
+total dosing rate 40 m³/d.
 
 This builder is intended as a realistic but generic example.
 """
@@ -70,7 +70,7 @@ _SUBSTRATE_MIX = {
 }
 
 #: Operator-typical nominal daily total dosing [m³/d].
-_NOMINAL_DAILY_DOSING_M3 = 60.0
+_NOMINAL_DAILY_DOSING_M3 = 40.0
 
 #: Feedstock substrate slots. Unused slots are zero.
 _MAX_SUBSTRATE_SLOTS = 10

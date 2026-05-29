@@ -110,6 +110,7 @@ nav:
   - Nutzung:
       - Übersicht: usage/index.md
       - UKF im Einsatz: usage/ukf.md
+      - Twin-Experimente: usage/twin_experiments.md
       - Kalibrierungs-Artefakt: usage/calibration_artifact.md
   - Observability:
       - Übersicht: observability/index.md

@@ -4,12 +4,16 @@ Praktische Anleitungen, wie das Repo im realen Betrieb genutzt wird.
 
 ## Inhalt
 
-* [UKF im Einsatz](ukf.md) — Wie man einen `UnscentedKalmanFilter` für eine
-  konkrete Anlage konfiguriert: `StateVectorSpec` aufsetzen,
-  `ObservationModel`-Kanäle definieren, Online-Schleife schreiben.
-* [Kalibrierungs-Artefakt](calibration_artifact.md) — Wie das YAML-Format zwischen
-  Kalibrierung und Schätzung aussieht und wie der Filter es beim Hochfahren
-  aufträgt.
+* [UKF im Einsatz](ukf.md) — Wie man den UKF für eine
+  konkrete Anlage konfiguriert: `adm1da_full_spec()`-Factory,
+  `ObservationModel`-Kanäle, `MeasurementCalendar` für sparse
+  Lab-Messungen, Online-Schleife.
+* [Twin-Experimente](twin_experiments.md) — End-to-End-Validierung gegen
+  eine bekannte Wahrheit. Das vorgefertigte `run_twin_experiment.py`
+  und Interpretation der Diagnose-Plots.
+* [Kalibrierungs-Artefakt](calibration_artifact.md) — Wie das YAML-Format
+  zwischen Kalibrierung und Schätzung aussieht und wie der Filter es
+  beim Hochfahren aufträgt.
 
 ## Gesamtbild
 
@@ -29,15 +33,23 @@ Live-Sensoren ──────────────────────
 
 Schritte für ein neues Setup:
 
-1. **Plant-Topologie** aus `pyadm1ode_calibration.plants` oder eigener
-   Implementierung holen.
+1. **Plant** über PyADM1ODE bauen — entweder die Beispiel-Builder
+   `build_simple_plant()` / `build_multi_stage_plant()` aus
+   `example_plants/` oder einen eigenen über die
+   PyADM1ODE-`PlantConfigurator`-API.
 2. **Kalibriertes Artefakt** via `load_artifact(...)` einlesen und mit
-   `apply_to_plant(...)` auftragen.
-3. **State-Vektor-Spec** aufsetzen — welche ADM1-Indizes und welche
-   augmentierten Eingangsraten sollen geschätzt werden?
-   (Siehe [Observability-Literaturüberblick](../observability/literature_review.md)
-   für die Sensor-→-Zustands-Logik.)
-4. **Observation-Model** mit den verfügbaren Sensorkanälen verdrahten —
-   `BUILT_IN_EXTRACTORS` deckt die gängigen Q_gas/P_el-Signale ab.
-5. **UKF** instanziieren, in der Online-Schleife abwechselnd `predict()`
-   und `update()` aufrufen.
+   `apply_to_plant(...)` auf die Plant auftragen.
+3. **State-Vektor-Spec** über die `adm1da_full_spec()`-Factory bauen,
+   liefert alle 41 ADM1-States mit Observability-basierten Defaults.
+   Substrat-Eingänge als `InputSpec`-Liste anhängen. Bei besonderer
+   Sensorik per `SensorQualityProfile` einzelne Blöcke aufwerten.
+4. **Observation-Model** mit den verfügbaren Sensorkanälen verdrahten.
+   Eingebaute Extractor-Funktionen decken Q_gas, Q_ch4, P_el, P_th_used,
+   stored_volume und State-Auslesungen ab.
+5. **MeasurementCalendar** für die Sample-Rate-Verwaltung anhängen,
+   wenn Messungen mit unterschiedlichen Raten kommen.
+6. **SR-UKF** instanziieren (= aktueller `UnscentedKalmanFilter`),
+   `ukf.reset(x0, P0)` mit realistischer Initial-Kovarianz, in der
+   Online-Schleife abwechselnd `predict()` und `update()` aufrufen.
+7. Vor Produktiv-Einsatz: **Twin-Experiment** laufen lassen, NIS-Mean
+   und Coverage prüfen (siehe [Twin-Experimente](twin_experiments.md)).

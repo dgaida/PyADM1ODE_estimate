@@ -274,8 +274,11 @@ class UnscentedKalmanFilter:
         dt_stub: float = 1e-5,
     ) -> EstimationStep:
         gate_values = gate_values or {}
+        # Forgiving key matching (case/separator-insensitive, optional Q_
+        # prefix). Returns a dict keyed by the exact channel names.
+        y = self.obs.match_measurements(y)
         active = self.obs.active_channels(gate_values)
-        active = [c for c in active if c.name in y and np.isfinite(y[c.name])]
+        active = [c for c in active if c.name in y]
 
         if not active:
             return EstimationStep(
@@ -299,6 +302,28 @@ class UnscentedKalmanFilter:
         for i, s in enumerate(sigma):
             self.process.refresh_outputs(s, dt_stub=dt_stub)
             y_sigma[i] = self.obs.predict(self.process.plant, s, active=active)
+
+        # Drop channels whose model prediction is non-finite at any sigma
+        # point: the model cannot reliably predict them this step, so they
+        # must not correct the state (same outcome as a missing measurement).
+        # A single bad sigma-point evaluation would otherwise poison the
+        # whole unscented transform — and individual sigma points cannot be
+        # skipped (the UT needs all 2n+1 to reconstruct mean + covariance).
+        finite_cols = np.isfinite(y_sigma).all(axis=0)
+        if not finite_cols.all():
+            active = [c for c, keep in zip(active, finite_cols) if keep]
+            if not active:
+                return EstimationStep(
+                    t=t,
+                    x_hat=self.x_hat.copy(),
+                    P=self.P,
+                    y_pred={},
+                    innovation={},
+                    nis=float("nan"),
+                    active_channels=[],
+                )
+            y_sigma = y_sigma[:, finite_cols]
+            m = len(active)
 
         y_pred = np.sum(self._w_m[:, None] * y_sigma, axis=0)
         y_diff = y_sigma - y_pred  # (2n+1, m)
@@ -360,11 +385,18 @@ class UnscentedKalmanFilter:
         self.process.refresh_outputs(self.x_hat, dt_stub=dt_stub)
         self.process.snapshot()
 
+        # Per-channel innovation std: sqrt(diag(S)) with S = S_y · S_y^T.
+        # Includes both state-driven uncertainty (sigma-point spread of
+        # h) and the measurement noise R. Cheap diagonal extraction.
+        s_diag = np.sum(S_y * S_y, axis=1)
+        y_std_arr = np.sqrt(np.maximum(s_diag, 0.0))
+
         return EstimationStep(
             t=t,
             x_hat=self.x_hat.copy(),
             P=self.P,
             y_pred={c.name: float(y_pred[i]) for i, c in enumerate(active)},
+            y_std={c.name: float(y_std_arr[i]) for i, c in enumerate(active)},
             innovation={c.name: float(innov[i]) for i, c in enumerate(active)},
             nis=nis,
             active_channels=[c.name for c in active],

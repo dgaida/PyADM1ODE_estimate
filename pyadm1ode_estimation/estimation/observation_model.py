@@ -16,6 +16,7 @@ one-off sensors.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional
 
@@ -26,6 +27,24 @@ if TYPE_CHECKING:
 
 
 Extractor = Callable[["BiogasPlant", np.ndarray], float]
+
+_SEP_RE = re.compile(r"[\s_\-]+")
+
+
+def _normalize_key(key: str) -> str:
+    """Case- and separator-insensitive form of a channel/measurement key.
+
+    ``"Q_gas"``, ``"q gas"`` and ``"qgas"`` all collapse to ``"qgas"``.
+    """
+    return _SEP_RE.sub("", str(key).strip().lower())
+
+
+def _loose_key(key: str) -> str:
+    """Like :func:`_normalize_key` but also drops a leading ``q`` flow
+    prefix, so ``"Q_maize_silage"`` matches the bare substrate name
+    ``"maize_silage"`` and ``"Q_gas"`` matches ``"gas"``."""
+    norm = _normalize_key(key)
+    return norm[1:] if norm.startswith("q") and len(norm) > 1 else norm
 
 
 @dataclass
@@ -87,6 +106,44 @@ class ObservationModel:
 
     def __len__(self) -> int:
         return len(self.channels)
+
+    def match_measurements(self, y: Dict[str, float]) -> Dict[str, float]:
+        """Resolve a user measurement dict onto canonical channel names.
+
+        Matching is forgiving: case- and separator-insensitive, and the
+        ``Q_`` flow prefix is optional — so ``"q_gas"``, ``"Q_gas"`` and
+        ``"gas"`` all map to channel ``"Q_gas"``, and ``"maize_silage"``
+        maps to ``"Q_maize_silage"``. A key is only assigned when the
+        match is *unambiguous*; ambiguous keys (e.g. one value that could
+        belong to two channels) and keys matching no channel are ignored,
+        as are non-finite values.
+
+        Returns a new dict keyed by the exact ``ObservationChannel.name``.
+        """
+        norm_to_keys: Dict[str, List[str]] = {}
+        loose_to_keys: Dict[str, List[str]] = {}
+        for k in y:
+            norm_to_keys.setdefault(_normalize_key(k), []).append(k)
+            loose_to_keys.setdefault(_loose_key(k), []).append(k)
+
+        # A loose channel form is only usable if no other channel shares it.
+        chan_loose: Dict[str, List[str]] = {}
+        for c in self.channels:
+            chan_loose.setdefault(_loose_key(c.name), []).append(c.name)
+
+        resolved: Dict[str, float] = {}
+        for c in self.channels:
+            cand = norm_to_keys.get(_normalize_key(c.name))
+            if cand is None:
+                loose = _loose_key(c.name)
+                if len(chan_loose[loose]) == 1:
+                    cand = loose_to_keys.get(loose)
+            if not cand or len(cand) != 1:
+                continue  # unmatched or ambiguous → skip this channel
+            val = y[cand[0]]
+            if np.isfinite(val):
+                resolved[c.name] = float(val)
+        return resolved
 
     def active_channels(
         self, gate_values: Dict[str, float]

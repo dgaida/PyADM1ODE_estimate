@@ -181,6 +181,39 @@ class TestUKFLinear:
         assert step.active_channels == ["y0"]
         assert ukf2.x_hat[0] > x_prev[0]
 
+    def test_channel_with_nonfinite_prediction_is_dropped(self, setup):
+        # A channel whose extractor (model prediction) returns NaN must be
+        # dropped for that step — the good channel still updates.
+        ukf, spec, _F, _H, noise_std, _y_seq = setup
+
+        obs = ObservationModel(
+            channels=[
+                ObservationChannel("y0", lambda p, x: float(x[0]), noise_std),
+                ObservationChannel("ybad", lambda p, x: float("nan"), noise_std),
+            ]
+        )
+        ukf2 = UnscentedKalmanFilter(ukf.process, obs, spec)
+        x_prev = ukf2.x_hat.copy()
+        step = ukf2.update({"y0": 5.0, "ybad": 5.0}, t=0.0)
+        assert step.active_channels == ["y0"]
+        assert ukf2.x_hat[0] > x_prev[0]
+
+    def test_all_predictions_nonfinite_means_no_correction(self, setup):
+        # If every active channel predicts NaN, the state is left at the
+        # prior (no correction), exactly like a fully missing measurement.
+        ukf, spec, _F, _H, noise_std, _y_seq = setup
+
+        obs = ObservationModel(
+            channels=[ObservationChannel("ybad", lambda p, x: float("nan"), noise_std)]
+        )
+        ukf2 = UnscentedKalmanFilter(ukf.process, obs, spec)
+        x_prev = ukf2.x_hat.copy()
+        P_prev = ukf2.P.copy()
+        step = ukf2.update({"ybad": 5.0}, t=0.0)
+        assert step.active_channels == []
+        np.testing.assert_allclose(ukf2.x_hat, x_prev)
+        np.testing.assert_allclose(ukf2.P, P_prev)
+
 
 class TestSquareRootProperties:
     """SR-UKF specific tests: covariance is always exposed as ``P = SS^T``,

@@ -20,6 +20,12 @@ class EstimationStep:
         y_pred: Predicted measurement value for each channel that
             had an observation in this step. Empty dict on a pure
             predict-only step.
+        y_std: Standard deviation of the predicted measurement,
+            ``sqrt(diag(S))`` where ``S = Cov(h(sigma)) + R`` is the
+            full innovation covariance. Includes both state-driven
+            uncertainty (state covariance propagated through ``h``)
+            and the sensor noise ``R``. Useful for plotting predicted
+            measurement bands.
         innovation: ``y_obs - y_pred`` per active channel.
         nis: Normalised innovation squared
             ``ν^T S^{-1} ν`` summed across active channels. ``nan``
@@ -32,6 +38,7 @@ class EstimationStep:
     x_hat: np.ndarray
     P: np.ndarray
     y_pred: Dict[str, float] = field(default_factory=dict)
+    y_std: Dict[str, float] = field(default_factory=dict)
     innovation: Dict[str, float] = field(default_factory=dict)
     nis: float = float("nan")
     active_channels: list = field(default_factory=list)

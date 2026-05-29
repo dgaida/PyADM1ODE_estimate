@@ -13,13 +13,24 @@ complexity:
   heating circuits. A realistic agricultural-AD topology used for
   end-to-end estimator validation.
 
-The builders return ready-to-simulate plant instances; estimator
+In addition, :func:`build_example_sensor_defs` provides a realistic
+SCADA-tag → UKF-channel mapping for the multi-stage plant. It is the
+reference for writing custom :class:`SensorChannelDef` lists against
+the :mod:`pyadm1ode_estimation.io` data pipeline.
+
+The plant builders return ready-to-simulate plant instances; estimator
 setup (StateVectorSpec, ObservationModel, MeasurementCalendar) is
 constructed separately by the caller using
 :func:`pyadm1ode_estimation.estimation.adm1da_full_spec`.
 """
 
 from .multi_stage import build_multi_stage_plant
+from .sensor_defs import build_example_sensor_defs, example_scada_columns
 from .simple import build_simple_plant
 
-__all__ = ["build_simple_plant", "build_multi_stage_plant"]
+__all__ = [
+    "build_simple_plant",
+    "build_multi_stage_plant",
+    "build_example_sensor_defs",
+    "example_scada_columns",
+]

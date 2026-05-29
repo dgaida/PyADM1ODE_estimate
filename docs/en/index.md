@@ -59,35 +59,47 @@ Live sensors ──────────────────────�
 
 ```python
 from pyadm1ode_estimation.estimation import (
-    StateChannel, StateVectorSpec,
-    ADM1ProcessModel, ObservationChannel, ObservationModel,
+    ADM1ProcessModel,
+    InputSpec,
+    ObservationChannel,
+    ObservationModel,
+    adm1da_full_spec,
 )
 from pyadm1ode_estimation.estimation.filters import UnscentedKalmanFilter
-from pyadm1ode_estimation.artifacts import load_artifact, apply_to_plant
+from pyadm1ode_estimation.estimation.observation_model import (
+    extract_q_gas_total, extract_q_ch4_total,
+)
+from pyadm1ode_estimation.example_plants import build_multi_stage_plant
 
-# 1. Load the calibrated model
-artifact = load_artifact("calibrated/plant_2026-05-14.yaml")
-plant = build_plant(schema)            # your own plant builder
-apply_to_plant(artifact, plant, strict=True)
+# 1. Build the plant (example or your own PyADM1ODE builder)
+plant = build_multi_stage_plant()
 
-# 2. Declare the state vector
-spec = StateVectorSpec(digester_id="primary", channels=[
-    StateChannel("X_ac", kind="adm1", adm1_index=27,
-                 initial=1.2, initial_std=0.3, process_noise_std=0.1),
-    StateChannel("Q_solid", kind="input_flow", input_substrate_index=0,
-                 initial=35.0, initial_std=5.0, process_noise_std=0.5,
-                 drift_model="ou", ou_mean=35.0, ou_theta=0.1),
+# 2. Full 41-state spec with substrate augmentation
+spec = adm1da_full_spec(
+    digester_id="primary",
+    substrate_inputs=[
+        InputSpec("maize_silage",  substrate_index=0, initial_flow=26.8),
+        InputSpec("slurry",        substrate_index=1, initial_flow=12.8),
+        InputSpec("cereal_silage", substrate_index=2, initial_flow=0.4),
+    ],
+)
+
+# 3. Process + observation models
+process = ADM1ProcessModel(plant, spec)
+obs = ObservationModel(channels=[
+    ObservationChannel("Q_gas", extract_q_gas_total, noise_std=10.0),
+    ObservationChannel("Q_ch4", extract_q_ch4_total, noise_std=5.0),
 ])
 
-# 3. Set up the UKF and run it
-process = ADM1ProcessModel(plant, spec)
-obs = ObservationModel(channels=[...])
+# 4. Set up the SR-UKF and run it
 ukf = UnscentedKalmanFilter(process, obs, spec)
-
 for t, y in measurements:
     ukf.predict(dt=1/24)
     step = ukf.update(y, t=t)
 ```
+
+More details: [UKF in practice](usage/ukf.md) and
+[twin experiments](usage/twin_experiments.md).
 
 ## Related projects
 
