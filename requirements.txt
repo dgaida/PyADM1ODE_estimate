@@ -1,4 +1,4 @@
-pyadm1
+pyadm1 @ git+https://github.com/dgaida/PyADM1ODE.git
 numpy
 scipy
 pandas
