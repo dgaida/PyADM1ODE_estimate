@@ -1,0 +1,4783 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="State estimation framework for PyADM1ODE biogas plant models">
+      
+      
+        <meta name="author" content="Daniel Gaida">
+      
+      
+        <link rel="canonical" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/en/observability/sensor_state_dependencies/">
+      
+      
+        <link rel="prev" href="../literature_review/">
+      
+      
+        <link rel="next" href="../../theory/">
+      
+      
+        
+          <link rel="alternate" href="../../../observability/sensor_state_dependencies/" hreflang="de">
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Sensor-Zustand-Abhängigkeiten - PyADM1ODE Estimate</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sensorstate-dependencies-in-adm1da" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="PyADM1ODE Estimate" class="md-header__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PyADM1ODE Estimate
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Sensor-Zustand-Abhängigkeiten
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../observability/sensor_state_dependencies/" hreflang="de" class="md-select__link">
+              Deutsch
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Erste Schritte
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../usage/" class="md-tabs__link">
+          
+  
+  
+  Nutzung
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Observability
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../theory/" class="md-tabs__link">
+          
+  
+  
+  Theorie
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../examples/" class="md-tabs__link">
+          
+  
+  
+  Beispiele
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API-Referenz
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../development/" class="md-tabs__link">
+          
+  
+  
+  Entwicklung
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../troubleshooting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Fehlerbehebung
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ecosystem/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="PyADM1ODE Estimate" class="md-nav__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PyADM1ODE Estimate
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Erste Schritte
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nutzung
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Nutzung
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/ukf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UKF im Einsatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/twin_experiments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Twin-Experimente
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/calibration_artifact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kalibrierungs-Artefakt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Observability
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../literature_review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Literaturüberblick
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensor-Zustand-Abhängigkeiten
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensor-Zustand-Abhängigkeiten
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#methodology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methodology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notation-and-symbols" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notation and symbols
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Notation and symbols">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#state-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subscripts-compound-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Subscripts (compound classes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observable-quantities-outputs-measurement-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observable quantities (outputs / measurement models)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reaction-rates-rho-in-the-code-rho_" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reaction rates $\rho$ (in the code: Rho_*)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inhibition-factors-i-values-in-0-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inhibition factors $I$ (values in [0, 1])
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#measurement-model-equations-from-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measurement-model equations (from the code)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Measurement-model equations (from the code)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gas-volume-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gas volume flows
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pH
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vfa-and-tac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VFA and TAC
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-online-measurements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A — Online measurements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A — Online measurements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a1-standard-scada-most-plants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A.1 Standard SCADA (most plants)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a2-online-gas-analytics-ndir-multi-gas-sensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A.2 Online gas analytics (NDIR multi-gas sensor)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a3-online-liquid-phase-premium-instrumentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A.3 Online liquid-phase (premium instrumentation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b-lab-analytics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B — Lab analytics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B — Lab analytics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b1-standard-ad-routine-typ-weekly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B.1 Standard AD routine (typ. weekly)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b2-extended-analytics-typ-weekly-to-monthly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B.2 Extended analytics (typ. weekly to monthly)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b3-substrate-analytics-for-s_in-of-the-influent-balance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B.3 Substrate analytics (for s_in of the influent balance)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c-research-specialized-methods-for-completeness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C — Research / specialized methods (for completeness)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ode-coupling-structure-who-depends-on-whom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ODE coupling structure — who depends on whom
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ODE coupling structure — who depends on whom">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gas-phase-odes-l-914-918" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gas-phase ODEs (L. 914-918)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methane-chain-s_ch4-ode-l-828-834" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methane chain (S_ch4 ODE, L. 828-834)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acetate-chain-s_ac-ode-l-805-815" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acetate chain (S_ac ODE, L. 805-815)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nitrogen-chain-s_nh4-ode-l-840-853" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nitrogen chain (S_nh4 ODE, L. 840-853)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#particulate-pools-l-856-893" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Particulate pools (L. 856-893)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#master-table-sensor-exposed-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Master table: sensor → exposed states
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Master table: sensor → exposed states">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#online-sensors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Online sensors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Online sensors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dissolved-components-0-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dissolved components (0-11)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biomass-augmented-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Biomass + augmented inputs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#charge-balance-gas-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Charge balance + gas phase
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lab-analytics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab analytics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lab analytics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dissolved-components-0-11_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dissolved components (0-11)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biomass-charge-balance-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Biomass + charge balance (lab)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implications-for-the-ukf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implications for the UKF
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implications for the UKF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rules-of-thumb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules of thumb
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-ukf-cannot-do-regardless-of-instrumentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the UKF cannot do, regardless of instrumentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#latency-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Latency assessment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#strike-goldd-applicability-for-adm1da" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        STRIKE-GOLDD applicability for ADM1da
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="STRIKE-GOLDD applicability for ADM1da">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-data-from-the-literature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference data from the literature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#our-own-pythonsympy-benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Our own Python/sympy benchmark
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#results-phase-1-sensor-set-q_gas-ch4co2-ndir-ph-online-fostac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results (Phase-1 sensor set: $Q_{gas}$ + CH4/CO2 NDIR + pH online + FOS/TAC)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consequence-for-ukf-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequence for UKF design
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theorie
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theorie
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/adm1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADM1da-Modell
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/pinn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PINN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Beispiele
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Beispiele
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API-Referenz
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API-Referenz
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entwicklung
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Entwicklung
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/ecosystem-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem-Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fehlerbehebung
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ecosystem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://dgaida.github.io/PyADM1ODE/latest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PyADM1ODE (Basis)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://dgaida.github.io/PyADM1ODE_calibration/latest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PyADM1ODE_calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#methodology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methodology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notation-and-symbols" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notation and symbols
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Notation and symbols">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#state-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subscripts-compound-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Subscripts (compound classes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observable-quantities-outputs-measurement-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observable quantities (outputs / measurement models)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reaction-rates-rho-in-the-code-rho_" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reaction rates $\rho$ (in the code: Rho_*)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inhibition-factors-i-values-in-0-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inhibition factors $I$ (values in [0, 1])
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#measurement-model-equations-from-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measurement-model equations (from the code)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Measurement-model equations (from the code)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gas-volume-flows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gas volume flows
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pH
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vfa-and-tac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VFA and TAC
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-online-measurements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A — Online measurements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A — Online measurements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a1-standard-scada-most-plants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A.1 Standard SCADA (most plants)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a2-online-gas-analytics-ndir-multi-gas-sensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A.2 Online gas analytics (NDIR multi-gas sensor)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a3-online-liquid-phase-premium-instrumentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A.3 Online liquid-phase (premium instrumentation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b-lab-analytics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B — Lab analytics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B — Lab analytics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b1-standard-ad-routine-typ-weekly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B.1 Standard AD routine (typ. weekly)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b2-extended-analytics-typ-weekly-to-monthly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B.2 Extended analytics (typ. weekly to monthly)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b3-substrate-analytics-for-s_in-of-the-influent-balance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B.3 Substrate analytics (for s_in of the influent balance)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c-research-specialized-methods-for-completeness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C — Research / specialized methods (for completeness)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ode-coupling-structure-who-depends-on-whom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ODE coupling structure — who depends on whom
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ODE coupling structure — who depends on whom">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gas-phase-odes-l-914-918" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gas-phase ODEs (L. 914-918)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methane-chain-s_ch4-ode-l-828-834" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methane chain (S_ch4 ODE, L. 828-834)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acetate-chain-s_ac-ode-l-805-815" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acetate chain (S_ac ODE, L. 805-815)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nitrogen-chain-s_nh4-ode-l-840-853" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nitrogen chain (S_nh4 ODE, L. 840-853)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#particulate-pools-l-856-893" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Particulate pools (L. 856-893)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#master-table-sensor-exposed-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Master table: sensor → exposed states
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Master table: sensor → exposed states">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#online-sensors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Online sensors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Online sensors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dissolved-components-0-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dissolved components (0-11)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biomass-augmented-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Biomass + augmented inputs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#charge-balance-gas-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Charge balance + gas phase
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lab-analytics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab analytics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lab analytics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dissolved-components-0-11_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dissolved components (0-11)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biomass-charge-balance-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Biomass + charge balance (lab)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implications-for-the-ukf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implications for the UKF
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implications for the UKF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rules-of-thumb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules of thumb
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-ukf-cannot-do-regardless-of-instrumentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the UKF cannot do, regardless of instrumentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#latency-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Latency assessment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#strike-goldd-applicability-for-adm1da" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        STRIKE-GOLDD applicability for ADM1da
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="STRIKE-GOLDD applicability for ADM1da">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reference-data-from-the-literature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference data from the literature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#our-own-pythonsympy-benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Our own Python/sympy benchmark
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#results-phase-1-sensor-set-q_gas-ch4co2-ndir-ph-online-fostac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results (Phase-1 sensor set: $Q_{gas}$ + CH4/CO2 NDIR + pH online + FOS/TAC)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consequence-for-ukf-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequence for UKF design
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="sensorstate-dependencies-in-adm1da">Sensor–state dependencies in ADM1da<a class="headerlink" href="#sensorstate-dependencies-in-adm1da" title="Permanent link">&para;</a></h1>
+<p>This document is <strong>step 2</strong> of the observability analysis:
+the concrete reconciliation of the published literature
+(<a href="../literature_review/">step 1</a>) with <em>our</em> ADM1da implementation in
+<a href="https://github.com/dgaida/PyADM1ODE/blob/main/pyadm1/core/adm1.py"><code>pyadm1.core.adm1</code></a>.</p>
+<p>Goal: for each measurement channel, document which of the 41 ADM1da
+states appear directly in the measurement equation and which become
+observable only indirectly through the model's dynamics. From this
+follows the rationale for which states a UKF can realistically estimate
+when only certain sensors are available.</p>
+<p>Measurements are split by <strong>availability</strong> — an online sensor delivers
+innovation every second, lab analytics every few days, research-grade
+methods maybe once per year.</p>
+<h2 id="methodology">Methodology<a class="headerlink" href="#methodology" title="Permanent link">&para;</a></h2>
+<p>A state $x_i$ is observable from a measurement $y = h(x)$ only if either</p>
+<ol>
+<li><strong>directly</strong> $x_i$ appears explicitly in $h(x)$ (nonzero derivative in<br />
+   the measurement model), or  </li>
+<li><strong>indirectly</strong> $x_i$ appears in the right-hand side $\dot x_j = f_j(x)$<br />
+   of some directly observed $x_j$ — then $\dot y$ carries information
+   about $x_i$. The mechanism iterates: after $k$ steps, $x_i$ appears in
+   $y^{(k)}$ if a chain of length $k$ exists through the Jacobian
+   (Lie derivatives, see Hellmann et al. 2023).</li>
+</ol>
+<p>In practice:</p>
+<ul>
+<li><strong>D = direct</strong> — immediate observability in a single update step.  </li>
+<li><strong>I₁ = 1-step indirect</strong> — observability after at least one time step<br />
+  with dynamics in between.  </li>
+<li><strong>I₂+ = k-step indirect</strong> — reconstructible only with very accurate<br />
+  model dynamics and a long observation window; in practice often
+  inseparable from model errors.  </li>
+<li><strong>C = correlative</strong> — no direct model expression, but empirically<br />
+  coupled (e.g. conductivity ↔ ionic strength).</li>
+</ul>
+<p>The tables below cite code locations in <code>pyadm1/core/adm1.py</code> (line
+numbers refer to v0.3.4).</p>
+<h2 id="notation-and-symbols">Notation and symbols<a class="headerlink" href="#notation-and-symbols" title="Permanent link">&para;</a></h2>
+<p>Glossary of the most important quantities so the equations and tables
+below stay readable. The full 41-state index map is in
+<a href="../../theory/adm1/">Theory → ADM1da model</a>.</p>
+<h3 id="state-classes">State classes<a class="headerlink" href="#state-classes" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Prefix</th>
+<th>Meaning</th>
+<th>Typical unit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$S_\bullet$</td>
+<td>dissolved species (solute) in the liquid</td>
+<td>kg COD/m³ or kmol/m³</td>
+</tr>
+<tr>
+<td>$X_\bullet$</td>
+<td>particulate species (biomass, solid pools)</td>
+<td>kg COD/m³</td>
+</tr>
+<tr>
+<td>$p_{\text{gas},\bullet}$</td>
+<td>partial pressure of a gas-phase species</td>
+<td>bar</td>
+</tr>
+<tr>
+<td>$p_{\text{total}}$ (= pTOTAL)</td>
+<td>total gas pressure in the headspace, state index 40</td>
+<td>bar</td>
+</tr>
+</tbody>
+</table>
+<h3 id="subscripts-compound-classes">Subscripts (compound classes)<a class="headerlink" href="#subscripts-compound-classes" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>su</td>
+<td>sugars (monosaccharides)</td>
+</tr>
+<tr>
+<td>aa</td>
+<td>amino acids</td>
+</tr>
+<tr>
+<td>fa</td>
+<td>long-chain fatty acids (LCFA)</td>
+</tr>
+<tr>
+<td>va</td>
+<td>valeric acid / valerate (C5)</td>
+</tr>
+<tr>
+<td>bu</td>
+<td>butyric acid / butyrate (C4)</td>
+</tr>
+<tr>
+<td>pro</td>
+<td>propionic acid / propionate (C3)</td>
+</tr>
+<tr>
+<td>ac</td>
+<td>acetic acid / acetate (C2)</td>
+</tr>
+<tr>
+<td>h2</td>
+<td>hydrogen</td>
+</tr>
+<tr>
+<td>ch4</td>
+<td>methane</td>
+</tr>
+<tr>
+<td>co2</td>
+<td>inorganic carbon (= S_IC)</td>
+</tr>
+<tr>
+<td>nh4</td>
+<td>ammonium nitrogen (= S_IN)</td>
+</tr>
+<tr>
+<td>nh3</td>
+<td>free ammonia</td>
+</tr>
+<tr>
+<td>hco3</td>
+<td>bicarbonate HCO₃⁻</td>
+</tr>
+<tr>
+<td>_ion (suffix)</td>
+<td>dissociated ionic form of a VFA (e.g. $S_{ac_ion}$ = acetate anion)</td>
+</tr>
+<tr>
+<td>cation, anion</td>
+<td>sum of all strong cations / anions [kmol/m³]</td>
+</tr>
+<tr>
+<td>I</td>
+<td>inert (dissolved $S_I$ or particulate $X_I$)</td>
+</tr>
+<tr>
+<td>ch / pr / li</td>
+<td>carbohydrates / proteins / lipids</td>
+</tr>
+<tr>
+<td>PS / PF / S</td>
+<td>pool class: slow-disintegrating / fast-disintegrating / hydrolysable</td>
+</tr>
+<tr>
+<td>c4</td>
+<td>C4-acid degraders (valerate / butyrate utilizers)</td>
+</tr>
+<tr>
+<td>bac</td>
+<td>bacterial biomass (generic)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="observable-quantities-outputs-measurement-models">Observable quantities (outputs / measurement models)<a class="headerlink" href="#observable-quantities-outputs-measurement-models" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$Q_{\text{gas}}$</td>
+<td>total biogas volume flow [m³/d]</td>
+</tr>
+<tr>
+<td>$Q_{\text{CH4}}$, $Q_{\text{CO2}}$</td>
+<td>methane / CO₂ volume flow [m³/d]</td>
+</tr>
+<tr>
+<td>$P_{\text{gas}}$</td>
+<td>sum of dry partial pressures $p_{\text{gas,h2}} + p_{\text{gas,ch4}} + p_{\text{gas,co2}}$ [bar]</td>
+</tr>
+<tr>
+<td>$p_{\text{total}}$</td>
+<td>total gas pressure as an integrated model state (index 40)</td>
+</tr>
+<tr>
+<td>$p_{\text{gas,h2o}}$</td>
+<td>water-vapour saturation pressure — a temperature-dependent parameter, <strong>not</strong> a state</td>
+</tr>
+<tr>
+<td>pH</td>
+<td>$-\log_{10}(S_H)$ with $S_H$ from the Newton solution of the charge balance</td>
+</tr>
+<tr>
+<td>VFA</td>
+<td>sum of volatile fatty acids as HAc equivalent [g HAc/L]</td>
+</tr>
+<tr>
+<td>TAC</td>
+<td>total alkalinity (titrated to pH 5) [g CaCO₃/L]</td>
+</tr>
+<tr>
+<td>FOS/TAC</td>
+<td>ratio of VFA to TAC — Nordmann early-warning indicator</td>
+</tr>
+<tr>
+<td>$Q_{\text{solid}}$, $Q_{\text{liquid}}$</td>
+<td>augmented substrate feed rates [m³/d] — not ADM1 states but part of the extended state vector</td>
+</tr>
+</tbody>
+</table>
+<h3 id="reaction-rates-rho-in-the-code-rho_">Reaction rates $\rho$ (in the code: <code>Rho_*</code>)<a class="headerlink" href="#reaction-rates-rho-in-the-code-rho_" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\rho_{\text{dis,PS}}$, $\rho_{\text{dis,PF}}$</td>
+<td>disintegration rates ($X_{PS} \to X_S$, $X_{PF} \to X_S$)</td>
+</tr>
+<tr>
+<td>$\rho_{\text{hyd,ch/pr/li}}$</td>
+<td>hydrolysis rates ($X_S \to S$)</td>
+</tr>
+<tr>
+<td>$\rho_{\text{su}}, \rho_{\text{aa}}, \rho_{\text{fa}}, \rho_{\text{c4}}, \rho_{\text{pro}}, \rho_{\text{ac}}, \rho_{\text{h2}}$</td>
+<td>substrate uptake rates (Monod kinetics × biomass × inhibition)</td>
+</tr>
+<tr>
+<td>$\rho_{\text{dec,}\bullet}$</td>
+<td>biomass decay rates</td>
+</tr>
+<tr>
+<td>$\rho_{A,\bullet}$</td>
+<td>acid-base reaction rates (very fast, $k_{AB} = 10^8$)</td>
+</tr>
+<tr>
+<td>$\rho_{T,\text{h2}}, \rho_{T,\text{ch4}}, \rho_{T,\text{co2}}$</td>
+<td>gas-liquid transfer rates (Henry's law)</td>
+</tr>
+<tr>
+<td>$\rho_{T,11}$</td>
+<td>bulk gas outflow from the headspace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="inhibition-factors-i-values-in-0-1">Inhibition factors $I$ (values in [0, 1])<a class="headerlink" href="#inhibition-factors-i-values-in-0-1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$I_{\text{pH,aa}}, I_{\text{pH,ac}}, I_{\text{pH,h2}}$</td>
+<td>pH inhibition (Hill type, exponent 1-3 per pool)</td>
+</tr>
+<tr>
+<td>$I_{\text{IN}}$</td>
+<td>N limitation: $S_{IN}/(K_{S,IN}+S_{IN})$</td>
+</tr>
+<tr>
+<td>$I_{\text{h2,fa/c4/pro}}$</td>
+<td>H₂ inhibition for LCFA, C4, propionate degraders</td>
+</tr>
+<tr>
+<td>$I_{\text{nh3}}, I_{\text{nh3,pro}}$</td>
+<td>NH₃ inhibition for acetoclasts and propionate degraders</td>
+</tr>
+<tr>
+<td>$I_{\text{HAc}}, I_{\text{HPr}}$</td>
+<td>inhibition by undissociated acetic / propionic acid</td>
+</tr>
+<tr>
+<td>$I_{\text{co2,h2}}$</td>
+<td>CO₂ inhibition of the H₂-producing pathways</td>
+</tr>
+</tbody>
+</table>
+<h3 id="key-parameters">Key parameters<a class="headerlink" href="#key-parameters" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$k_{m,\bullet}$, $K_{S,\bullet}$</td>
+<td>maximum Monod rate and half-saturation constant</td>
+</tr>
+<tr>
+<td>$k_{\text{dec,}\bullet}$</td>
+<td>decay rate per biomass pool [d⁻¹]</td>
+</tr>
+<tr>
+<td>$k_{\text{dis,PS/PF}}$, $k_{\text{hyd,ch/pr/li}}$</td>
+<td>disintegration / hydrolysis rates [d⁻¹]</td>
+</tr>
+<tr>
+<td>$Y_\bullet$</td>
+<td>biomass yield per substrate COD [-]</td>
+</tr>
+<tr>
+<td>$K_{a,\bullet}$</td>
+<td>acid dissociation constants</td>
+</tr>
+<tr>
+<td>$K_{H,\text{ch4/co2/h2}}$</td>
+<td>Henry constants (gas solubility)</td>
+</tr>
+<tr>
+<td>$K_w$</td>
+<td>ionic product of water</td>
+</tr>
+<tr>
+<td>$k_{L}a$</td>
+<td>gas-liquid transfer coefficient [d⁻¹]</td>
+</tr>
+<tr>
+<td>$k_p$</td>
+<td>gas-outlet flow coefficient (pipe flow)</td>
+</tr>
+<tr>
+<td>$V_{\text{liq}}$, $V_{\text{gas}}$</td>
+<td>liquid / gas-phase volume [m³]</td>
+</tr>
+<tr>
+<td>$T_{\text{ad}}$</td>
+<td>operating temperature (adiabatic) [K]</td>
+</tr>
+<tr>
+<td>$R$, $RT$</td>
+<td>gas constant / product $R \cdot T_{\text{ad}}$</td>
+</tr>
+<tr>
+<td>$M_{\text{HAc}}$</td>
+<td>60 g/mol (acetate molar mass) for VFA conversion</td>
+</tr>
+<tr>
+<td>64, 112, 160, 208</td>
+<td>COD equivalents for acetate / propionate / butyrate / valerate [g COD/mol]</td>
+</tr>
+<tr>
+<td>$f_{\bullet}$</td>
+<td>stoichiometric product fractions (e.g. $f_{\text{ac,su}} = 0.41$)</td>
+</tr>
+<tr>
+<td>$N_{\text{bac}}, N_{\text{aa}}, N_I$</td>
+<td>nitrogen contents per biomass / amino-acid / inert pool [kmol N/kg COD]</td>
+</tr>
+<tr>
+<td>$D_{\text{in}}, D_{\text{out}}$</td>
+<td>dilution rates $Q/V_{\text{liq}}$ [d⁻¹]</td>
+</tr>
+<tr>
+<td>$S_H$</td>
+<td>$H^+$ concentration from the Newton solution of the charge balance</td>
+</tr>
+</tbody>
+</table>
+<h2 id="measurement-model-equations-from-the-code">Measurement-model equations (from the code)<a class="headerlink" href="#measurement-model-equations-from-the-code" title="Permanent link">&para;</a></h2>
+<h3 id="gas-volume-flows">Gas volume flows<a class="headerlink" href="#gas-volume-flows" title="Permanent link">&para;</a></h3>
+<p>From <a href="https://github.com/dgaida/PyADM1ODE/blob/main/pyadm1/core/adm1.py#L431-L467"><code>ADM1.calc_gas</code></a>:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># L. 451-454</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">q_gas</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">k_p</span> <span class="o">*</span> <span class="p">(</span><span class="n">p_total_wet</span> <span class="o">-</span> <span class="n">p_ext</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">RT</span><span class="o">/</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">NQ</span><span class="p">)</span> <span class="o">*</span> <span class="n">V_liq</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="mf">0.0</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># L. 456-460</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">p_gas</span>    <span class="o">=</span> <span class="n">pi_Sh2</span> <span class="o">+</span> <span class="n">pi_Sch4</span> <span class="o">+</span> <span class="n">pi_Sco2</span>          <span class="c1"># = p_gas_h2 + p_gas_ch4 + p_gas_co2</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">q_ch4</span>    <span class="o">=</span> <span class="n">q_gas</span> <span class="o">*</span> <span class="n">pi_Sch4</span> <span class="o">/</span> <span class="p">(</span><span class="n">p_gas</span> <span class="o">+</span> <span class="n">p_gas_h2o</span><span class="p">)</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">q_co2</span>    <span class="o">=</span> <span class="n">q_gas</span> <span class="o">*</span> <span class="n">pi_Sco2</span> <span class="o">/</span> <span class="p">(</span><span class="n">p_gas</span> <span class="o">+</span> <span class="n">p_gas_h2o</span><span class="p">)</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Observable</th>
+<th>Directly depends on</th>
+<th>Idx</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$Q_{\text{gas}}$</td>
+<td>pTOTAL</td>
+<td>40</td>
+</tr>
+<tr>
+<td>$P_{\text{gas}}$</td>
+<td>$p_{\text{gas_h2}}$, $p_{\text{gas_ch4}}$, $p_{\text{gas_co2}}$</td>
+<td>37, 38, 39</td>
+</tr>
+<tr>
+<td>$Q_{\text{CH4}}$</td>
+<td>pTOTAL, $p_{\text{gas_h2}}$, $p_{\text{gas_ch4}}$, $p_{\text{gas_co2}}$</td>
+<td>37, 38, 39, 40</td>
+</tr>
+<tr>
+<td>$Q_{\text{CO2}}$</td>
+<td>pTOTAL, $p_{\text{gas_h2}}$, $p_{\text{gas_ch4}}$, $p_{\text{gas_co2}}$</td>
+<td>37, 38, 39, 40</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ph">pH<a class="headerlink" href="#ph" title="Permanent link">&para;</a></h3>
+<p>From <a href="https://github.com/dgaida/PyADM1ODE/blob/main/pyadm1/core/adm1.py#L1031-L1056"><code>ADM1._calc_ph</code></a>:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># L. 1046-1048</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">vfa_anions</span> <span class="o">=</span> <span class="n">S_ac_ion</span><span class="o">/</span><span class="mi">64</span> <span class="o">+</span> <span class="n">S_pro_ion</span><span class="o">/</span><span class="mi">112</span> <span class="o">+</span> <span class="n">S_bu_ion</span><span class="o">/</span><span class="mi">160</span> <span class="o">+</span> <span class="n">S_va_ion</span><span class="o">/</span><span class="mi">208</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">fixed</span>      <span class="o">=</span> <span class="n">S_cation</span> <span class="o">-</span> <span class="n">S_anion</span> <span class="o">+</span> <span class="p">(</span><span class="n">S_nh4</span> <span class="o">-</span> <span class="n">S_nh3</span><span class="p">)</span> <span class="o">-</span> <span class="n">S_hco3</span> <span class="o">-</span> <span class="n">vfa_anions</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Newton: f(S_H) = fixed + S_H − K_w/S_H = 0</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">pH</span> <span class="o">=</span> <span class="o">-</span><span class="n">log10</span><span class="p">(</span><span class="n">S_H</span><span class="p">)</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Observable</th>
+<th>Directly depends on</th>
+<th>Idx</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pH</td>
+<td>$S_{nh4}, S_{nh3}, S_{hco3}, S_{ac_ion}, S_{pro_ion}, S_{bu_ion}, S_{va_ion}, S_{cation}, S_{anion}$</td>
+<td>10, 36, 35, 34, 33, 32, 31, 29, 30</td>
+</tr>
+</tbody>
+</table>
+<h3 id="vfa-and-tac">VFA and TAC<a class="headerlink" href="#vfa-and-tac" title="Permanent link">&para;</a></h3>
+<p>From
+<a href="https://github.com/dgaida/PyADM1ODE/blob/main/pyadm1/components/biological/digester.py#L338-L400"><code>Digester._compute_indicators</code></a>:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># L. 362-367  VFA in g HAc-eq / m³</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">vfa</span> <span class="o">=</span> <span class="n">M_HAc</span> <span class="o">*</span> <span class="p">(</span><span class="n">S_ac</span><span class="o">/</span><span class="mi">64</span> <span class="o">+</span> <span class="n">S_pro</span><span class="o">/</span><span class="mi">112</span> <span class="o">+</span> <span class="n">S_bu</span><span class="o">/</span><span class="mi">160</span> <span class="o">+</span> <span class="n">S_va</span><span class="o">/</span><span class="mi">208</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># L. 389-399  TAC in g CaCO3 / m³ (endpoint pH 5)</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># combines: free NH3/NH4, HCO3/CO2, all VFA ions, S_cation/S_anion.</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Observable</th>
+<th>Directly depends on</th>
+<th>Idx</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VFA sum</td>
+<td>$S_{va}, S_{bu}, S_{pro}, S_{ac}$</td>
+<td>3, 4, 5, 6</td>
+</tr>
+<tr>
+<td>VFA individual (HPLC)</td>
+<td>per acid individually</td>
+<td>3, 4, 5 or 6</td>
+</tr>
+<tr>
+<td>TAC</td>
+<td>$S_{va}, S_{bu}, S_{pro}, S_{ac}, S_{co2}, S_{nh4}, S_{cation}, S_{anion}, S_{va_ion}, S_{bu_ion}, S_{pro_ion}, S_{ac_ion}, S_{hco3}, S_{nh3}$</td>
+<td>3-6, 9, 10, 29-36</td>
+</tr>
+<tr>
+<td>FOS/TAC</td>
+<td>Union of VFA and TAC</td>
+<td>ditto</td>
+</tr>
+</tbody>
+</table>
+<h2 id="a-online-measurements">A — Online measurements<a class="headerlink" href="#a-online-measurements" title="Permanent link">&para;</a></h2>
+<p>Continuously available, second-to-minute innovation. This list covers
+the typical SCADA instrumentation of an agricultural biogas plant plus
+optional upgrades.</p>
+<h3 id="a1-standard-scada-most-plants">A.1 Standard SCADA (most plants)<a class="headerlink" href="#a1-standard-scada-most-plants" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Sensor</th>
+<th>What is measured</th>
+<th>Direct ADM1da-state link</th>
+<th>Class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q_gas (thermal / turbine flowmeter)</td>
+<td>biogas volume flow [m³/d]</td>
+<td>pTOTAL (40)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>Gas storage level (% filled)</td>
+<td>storage Δ over time → contribution to Q_gas</td>
+<td>as Q_gas</td>
+<td>reconstructive</td>
+</tr>
+<tr>
+<td>Flare on/off</td>
+<td>status; boundary for Q_gas balance</td>
+<td>— (boundary)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>p_head</td>
+<td>headspace pressure [mbar/bar]</td>
+<td>pTOTAL (40)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>T_reactor (PT100 in digester)</td>
+<td>fermenter temperature</td>
+<td>— (boundary, scales kinetics via Arrhenius)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>T_ambient, T_inlet</td>
+<td>heat-balance boundary</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Substrate load cell / pump counter</td>
+<td>$-\Delta W$ → Q_feed (solid or liquid)</td>
+<td>$Q_{solid}$ / $Q_{liquid}$ (augmented)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>CHP Q_ch4 consumption</td>
+<td>methane consumption per CHP [m³/h]</td>
+<td>pTOTAL + p_gas_ch4 (40, 38) via $\eta$</td>
+<td>I₁</td>
+</tr>
+<tr>
+<td>CHP P_el (electrical power)</td>
+<td>electrical output [kW]</td>
+<td>as Q_ch4, derived via $\eta_{el}$</td>
+<td>I₁</td>
+</tr>
+<tr>
+<td>Stirrer current / power</td>
+<td>mixer — viscosity proxy</td>
+<td>— (no ADM1 coupling)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Heating power</td>
+<td>thermal output [kW]</td>
+<td>— (boundary)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="a2-online-gas-analytics-ndir-multi-gas-sensor">A.2 Online gas analytics (NDIR multi-gas sensor)<a class="headerlink" href="#a2-online-gas-analytics-ndir-multi-gas-sensor" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Sensor</th>
+<th>What is measured</th>
+<th>Direct ADM1da-state link</th>
+<th>Class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CH₄ fraction in biogas (NDIR)</td>
+<td>$p_{gas,ch4}/p_{gas}$ [%]</td>
+<td>$p_{gas,ch4}$ (38)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>CO₂ fraction in biogas (NDIR)</td>
+<td>$p_{gas,co2}/p_{gas}$ [%]</td>
+<td>$p_{gas,co2}$ (39)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>H₂ fraction in biogas (TCD/electrochem)</td>
+<td>$p_{gas,h2}/p_{gas}$ [ppm-%]</td>
+<td>$p_{gas,h2}$ (37)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>O₂ fraction in biogas</td>
+<td>quality check (air leakage)</td>
+<td>— (no ADM1 state)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>H₂S fraction in biogas</td>
+<td>hydrogen sulfide [ppm]</td>
+<td>— (no ADM1 state; desulfurization)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="a3-online-liquid-phase-premium-instrumentation">A.3 Online liquid-phase (premium instrumentation)<a class="headerlink" href="#a3-online-liquid-phase-premium-instrumentation" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Sensor</th>
+<th>What is measured</th>
+<th>Direct ADM1da-state link</th>
+<th>Class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pH probe (glass electrode, ISFET)</td>
+<td>liquid pH</td>
+<td>9 charge-balance states (10, 29-36)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>ORP / redox potential</td>
+<td>reduction potential [mV]</td>
+<td>$S_{h2}$ (7), methanogenic activity</td>
+<td>C</td>
+</tr>
+<tr>
+<td>Conductivity (EC)</td>
+<td>electrical conductivity [µS/cm]</td>
+<td>$S_{cation} + S_{anion}$ + all ion species</td>
+<td>C</td>
+</tr>
+<tr>
+<td>Online TAC (FOS titrator)</td>
+<td>alkalinity [g CaCO₃/L]</td>
+<td>as lab TAC, see below</td>
+<td>D</td>
+</tr>
+<tr>
+<td>Online VFA (HPLC online)</td>
+<td>individual acids [g/L]</td>
+<td>$S_{va}, S_{bu}, S_{pro}, S_{ac}$ individually (3-6)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>Online NH₄⁺ (ion-selective electrode)</td>
+<td>ammonium [g/L]</td>
+<td>$S_{nh4}$ (10)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>Level / V_liq</td>
+<td>fill level</td>
+<td>— (constant in current model)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h2 id="b-lab-analytics">B — Lab analytics<a class="headerlink" href="#b-lab-analytics" title="Permanent link">&para;</a></h2>
+<p>Periodic (daily, weekly, monthly). Delivers sample-and-hold values; the
+UKF uses them as <strong>gated observations</strong> at sporadic times.</p>
+<h3 id="b1-standard-ad-routine-typ-weekly">B.1 Standard AD routine (typ. weekly)<a class="headerlink" href="#b1-standard-ad-routine-typ-weekly" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Lab quantity</th>
+<th>Method</th>
+<th>Direct ADM1da-state link</th>
+<th>Class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pH (lab)</td>
+<td>glass electrode</td>
+<td>as online pH</td>
+<td>D</td>
+</tr>
+<tr>
+<td>VFA (FOS titration Nordmann)</td>
+<td>titrimetric</td>
+<td>VFA sum: $S_{va}, S_{bu}, S_{pro}, S_{ac}$ as sum</td>
+<td>D-sum</td>
+</tr>
+<tr>
+<td>TAC (alkalinity titration)</td>
+<td>titrimetric</td>
+<td>as above (TAC entry)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>FOS/TAC</td>
+<td>derived</td>
+<td>ratio</td>
+<td>D</td>
+</tr>
+<tr>
+<td>TS (total solids)</td>
+<td>drying oven</td>
+<td>$X_I$ directly, particulate pools as sum</td>
+<td>I₁(Σ)</td>
+</tr>
+<tr>
+<td>VS / oTS (loss on ignition)</td>
+<td>ignition at 550 °C</td>
+<td>analogous to TS, without mineral ash</td>
+<td>I₁(Σ)</td>
+</tr>
+<tr>
+<td>NH₄-N</td>
+<td>indophenol or IC</td>
+<td>$S_{nh4}$ (10)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>Conductivity (lab)</td>
+<td>EC meter</td>
+<td>$S_{cation} + S_{anion}$ sum</td>
+<td>C</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b2-extended-analytics-typ-weekly-to-monthly">B.2 Extended analytics (typ. weekly to monthly)<a class="headerlink" href="#b2-extended-analytics-typ-weekly-to-monthly" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Lab quantity</th>
+<th>Method</th>
+<th>Direct ADM1da-state link</th>
+<th>Class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Individual VFA (acetate, propionate, n-/iso-butyrate, n-/iso-valerate)</td>
+<td>HPLC or GC</td>
+<td>$S_{ac}$ (6), $S_{pro}$ (5), $S_{bu}$ (4), $S_{va}$ (3) each</td>
+<td>D per acid</td>
+</tr>
+<tr>
+<td>TKN (Total Kjeldahl Nitrogen)</td>
+<td>Kjeldahl digestion</td>
+<td>$S_{nh4} + S_{nh3} + N$ content of all biomass and protein pools</td>
+<td>D-sum over N</td>
+</tr>
+<tr>
+<td>COD total</td>
+<td>photometric</td>
+<td>sum of all COD species</td>
+<td>I₁(Σ)</td>
+</tr>
+<tr>
+<td>COD dissolved (filtered 0.45 µm)</td>
+<td>as above</td>
+<td>only dissolved COD: $S_{su, aa, fa, va, bu, pro, ac, h2, ch4, I}$ sum</td>
+<td>I₁(Σ-dissolved)</td>
+</tr>
+<tr>
+<td>COD particulate</td>
+<td>COD_total − COD_dissolved</td>
+<td>particulate pools sum</td>
+<td>I₁(Σ-part.)</td>
+</tr>
+<tr>
+<td>Cation inventory (Na⁺, K⁺, Ca²⁺, Mg²⁺)</td>
+<td>IC or ICP-OES</td>
+<td>$S_{cation}$ (29)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>Anion inventory (Cl⁻, SO₄²⁻, PO₄³⁻, NO₃⁻)</td>
+<td>IC</td>
+<td>$S_{anion}$ (30)</td>
+<td>D</td>
+</tr>
+<tr>
+<td>BOD5</td>
+<td>5-day respiration test</td>
+<td>biodegradable COD fraction</td>
+<td>I₂(Σ)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b3-substrate-analytics-for-s_in-of-the-influent-balance">B.3 Substrate analytics (for s_in of the influent balance)<a class="headerlink" href="#b3-substrate-analytics-for-s_in-of-the-influent-balance" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Lab quantity</th>
+<th>What it delivers</th>
+<th>Direct ADM1da-input link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Substrate TS, oTS, COD</td>
+<td>per-substrate characterization</td>
+<td>s_in[i] for particulate / inert pools per substrate slot</td>
+</tr>
+<tr>
+<td>Substrate NH₄-N, TKN</td>
+<td>nitrogen contribution</td>
+<td>s_in[10], s_in[11]</td>
+</tr>
+<tr>
+<td>Substrate disintegration fractions</td>
+<td>from profiles or lab BMP test</td>
+<td>f_ch_xc, f_pr_xc, f_li_xc, f_xi_xc, f_si_xc — feeds the calibration artifact, not state</td>
+</tr>
+</tbody>
+</table>
+<p>Substrate analytics does not affect the filter state directly, but the
+<strong>influent vector</strong> $s_{in}$ — i.e. it shifts the initial condition of
+the mass balance, not the state itself. A wrongly parametrized influent
+leads to chronic filter biases.</p>
+<h2 id="c-research-specialized-methods-for-completeness">C — Research / specialized methods (for completeness)<a class="headerlink" href="#c-research-specialized-methods-for-completeness" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>What is measured</th>
+<th>Direct ADM1da-state link</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>qPCR / 16S rRNA sequencing</td>
+<td>biomass populations quantitatively</td>
+<td>$X_{su}, X_{aa}, X_{fa}, X_{c4}, X_{pro}, X_{ac}, X_{h2}$ (22-28) individually</td>
+<td>expensive (~€100/sample), weeks lead time — rare in production</td>
+</tr>
+<tr>
+<td>GC-MS for LCFA / trace VFA</td>
+<td>individual LCFA species, trace acids</td>
+<td>$S_{fa}$ (2) and finer subscale</td>
+<td>research</td>
+</tr>
+<tr>
+<td>In-situ H₂ probe (headspace)</td>
+<td>online $p_{gas,h2}$</td>
+<td>$p_{gas,h2}$ (37)</td>
+<td>see A.2</td>
+</tr>
+<tr>
+<td>Trace-element analytics (Fe, Co, Ni, Mo, Se)</td>
+<td>important for kinetics</td>
+<td>— (no ADM1 state, affects $k_{m,*}$)</td>
+<td>as calibration hint</td>
+</tr>
+<tr>
+<td>H₂S dissolved, sulfate, sulfide</td>
+<td>sulfur inhibition</td>
+<td>— (not in ADM1da)</td>
+<td>for Hill-extended models</td>
+</tr>
+<tr>
+<td>BMP test (batch methane potential)</td>
+<td>specific methane yield per substrate</td>
+<td>$f_{*}$ fractions, k_dis per substrate</td>
+<td>input to calibration artifact</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ode-coupling-structure-who-depends-on-whom">ODE coupling structure — who depends on whom<a class="headerlink" href="#ode-coupling-structure-who-depends-on-whom" title="Permanent link">&para;</a></h2>
+<p>The right-hand side of every differential equation contains further
+states. The dependencies below are extracted from
+<a href="https://github.com/dgaida/PyADM1ODE/blob/main/pyadm1/core/adm1.py#L540-L962"><code>ADM_ODE</code></a>:</p>
+<h3 id="gas-phase-odes-l-914-918">Gas-phase ODEs (L. 914-918)<a class="headerlink" href="#gas-phase-odes-l-914-918" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">diff_p_h2</span>  <span class="o">=</span> <span class="n">Rho_T_h2</span>  <span class="o">*</span> <span class="n">RT</span><span class="o">/</span><span class="mi">16</span> <span class="err">−</span> <span class="n">p_gas_h2</span><span class="o">/</span><span class="n">pTOTAL</span>  <span class="o">*</span> <span class="n">Rho_T_11</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">diff_p_ch4</span> <span class="o">=</span> <span class="n">Rho_T_ch4</span> <span class="o">*</span> <span class="n">RT</span><span class="o">/</span><span class="mi">64</span> <span class="err">−</span> <span class="n">p_gas_ch4</span><span class="o">/</span><span class="n">pTOTAL</span> <span class="o">*</span> <span class="n">Rho_T_11</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">diff_p_co2</span> <span class="o">=</span> <span class="n">Rho_T_co2</span> <span class="o">*</span> <span class="n">RT</span>    <span class="err">−</span> <span class="n">p_gas_co2</span><span class="o">/</span><span class="n">pTOTAL</span> <span class="o">*</span> <span class="n">Rho_T_11</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">diff_pTOT</span>  <span class="o">=</span> <span class="n">RT</span><span class="o">/</span><span class="mi">16</span> <span class="o">*</span> <span class="n">Rho_T_h2</span> <span class="o">+</span> <span class="n">RT</span><span class="o">/</span><span class="mi">64</span> <span class="o">*</span> <span class="n">Rho_T_ch4</span> <span class="o">+</span> <span class="n">RT</span> <span class="o">*</span> <span class="n">Rho_T_co2</span> <span class="err">−</span> <span class="n">Rho_T_11</span>
+</span></code></pre></div>
+<p>with (L. 712-723):</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">Rho_T_h2</span>  <span class="o">=</span> <span class="n">k_L_a</span> <span class="o">*</span> <span class="p">(</span><span class="n">S_h2</span>  <span class="o">-</span> <span class="mi">16</span><span class="o">*</span><span class="n">p_gas_h2</span> <span class="o">/</span><span class="p">(</span><span class="n">RT</span><span class="o">*</span><span class="n">K_H_h2</span> <span class="p">))</span> <span class="o">*</span> <span class="n">V_liq</span><span class="o">/</span><span class="n">V_gas</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">Rho_T_ch4</span> <span class="o">=</span> <span class="n">k_L_a</span> <span class="o">*</span> <span class="p">(</span><span class="n">S_ch4</span> <span class="o">-</span> <span class="mi">64</span><span class="o">*</span><span class="n">p_gas_ch4</span><span class="o">/</span><span class="p">(</span><span class="n">RT</span><span class="o">*</span><span class="n">K_H_ch4</span><span class="p">))</span> <span class="o">*</span> <span class="n">V_liq</span><span class="o">/</span><span class="n">V_gas</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">Rho_T_co2</span> <span class="o">=</span> <span class="n">k_L_a</span> <span class="o">*</span> <span class="p">(</span><span class="n">S_co2_free</span> <span class="o">-</span> <span class="n">p_gas_co2</span><span class="o">/</span><span class="p">(</span><span class="n">RT</span><span class="o">*</span><span class="n">K_H_co2</span><span class="p">))</span> <span class="o">*</span> <span class="n">V_liq</span><span class="o">/</span><span class="n">V_gas</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">S_co2_free</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">S_co2</span> <span class="o">-</span> <span class="n">S_hco3</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">Rho_T_11</span>  <span class="o">=</span> <span class="n">k_p</span> <span class="o">*</span> <span class="p">(</span><span class="n">pTOTAL</span> <span class="o">+</span> <span class="n">p_gas_h2o</span> <span class="err">−</span> <span class="n">p_ext</span><span class="p">)</span> <span class="o">*</span> <span class="n">V_liq</span><span class="o">/</span><span class="n">V_gas</span>
+</span></code></pre></div>
+<p><strong>→ A gas-flow measurement directly exposes within one time step:</strong>
+pTOTAL (D), $p_{gas,h2/ch4/co2}$ (1-step indirect via $\dot p_{TOT}$),
+$S_{h2}, S_{ch4}, S_{co2}, S_{hco3}$ (all via $\rho_T$ terms).</p>
+<h3 id="methane-chain-s_ch4-ode-l-828-834">Methane chain (S_ch4 ODE, L. 828-834)<a class="headerlink" href="#methane-chain-s_ch4-ode-l-828-834" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">diff_S_ch4</span> <span class="o">=</span> <span class="n">D_in·s_in</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">-</span> <span class="n">D_out·S_ch4</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_ac</span><span class="p">)</span><span class="err">·</span><span class="n">Rho_ac</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_h2</span><span class="p">)</span><span class="err">·</span><span class="n">Rho_h2</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>             <span class="o">-</span> <span class="n">V_gas</span><span class="o">/</span><span class="n">V_liq</span> <span class="err">·</span> <span class="n">Rho_T_ch4</span>
+</span></code></pre></div>
+<p>with $\rho_{ac} = k_{m,ac}\cdot S_{ac}/(K_{S,ac}+S_{ac})\cdot X_{ac}\cdot I_{ac}$
+and $\rho_{h2} = k_{m,h2}\cdot S_{h2}/(K_{S,h2}+S_{h2})\cdot X_{h2}\cdot I_{h2}$
+(L. 686-687).</p>
+<p><strong>→ Additionally reachable from Q_CH4 after 2 steps:</strong> $X_{ac}, X_{h2},
+S_{ac}$, and all inhibition factors $I_{ac}$ (= all ions + $S_{nh3}$).</p>
+<h3 id="acetate-chain-s_ac-ode-l-805-815">Acetate chain (S_ac ODE, L. 805-815)<a class="headerlink" href="#acetate-chain-s_ac-ode-l-805-815" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">diff_S_ac</span> <span class="o">=</span> <span class="n">D_in·s_in</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">-</span> <span class="n">D_out·S_ac</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>            <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_su</span><span class="p">)</span><span class="err">·</span><span class="n">f_ac_su</span>  <span class="err">·</span> <span class="n">Rho_su</span>      <span class="c1"># X_su, S_su</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>            <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_aa</span><span class="p">)</span><span class="err">·</span><span class="n">f_ac_aa</span>  <span class="err">·</span> <span class="n">Rho_aa</span>      <span class="c1"># X_aa, S_aa</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>            <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_fa</span><span class="p">)</span><span class="err">·</span><span class="mf">0.7</span>      <span class="err">·</span> <span class="n">Rho_fa</span>      <span class="c1"># X_fa, S_fa</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>            <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_c4</span><span class="p">)</span><span class="err">·</span><span class="mf">0.31</span>     <span class="err">·</span> <span class="n">Rho_c4_va</span>   <span class="c1"># X_c4, S_va</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>            <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_c4</span><span class="p">)</span><span class="err">·</span><span class="mf">0.8</span>      <span class="err">·</span> <span class="n">Rho_c4_bu</span>   <span class="c1"># X_c4, S_bu</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>            <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_pro</span><span class="p">)</span><span class="err">·</span><span class="mf">0.57</span>    <span class="err">·</span> <span class="n">Rho_pro</span>     <span class="c1"># X_pro, S_pro</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>            <span class="o">-</span> <span class="n">Rho_ac</span>
+</span></code></pre></div>
+<p><strong>→ A VFA measurement (sees $S_{ac}$ directly) after one step exposes:</strong>
+$S_{su}, S_{aa}, S_{fa}, S_{va}, S_{bu}, S_{pro}$ and $X_{su}, X_{aa},
+X_{fa}, X_{c4}, X_{pro}, X_{ac}$.</p>
+<h3 id="nitrogen-chain-s_nh4-ode-l-840-853">Nitrogen chain (S_nh4 ODE, L. 840-853)<a class="headerlink" href="#nitrogen-chain-s_nh4-ode-l-840-853" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">diff_S_nh4</span> <span class="o">=</span> <span class="n">D_in·s_in</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">-</span> <span class="n">D_out·S_nh4</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>             <span class="o">-</span> <span class="n">Y_su·N_bac·Rho_su</span> <span class="o">+</span> <span class="p">(</span><span class="n">N_aa</span> <span class="o">-</span> <span class="n">Y_aa·N_bac</span><span class="p">)</span><span class="err">·</span><span class="n">Rho_aa</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>             <span class="o">-</span> <span class="n">Y_fa·N_bac·Rho_fa</span> <span class="o">-</span> <span class="o">...</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>             <span class="o">+</span> <span class="p">(</span><span class="n">N_bac</span> <span class="o">-</span> <span class="n">f_pr_bac·N_aa</span> <span class="o">-</span> <span class="n">f_p_bac·N_I</span><span class="p">)</span><span class="err">·</span><span class="n">sum_decay</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>             <span class="o">+</span> <span class="n">Rho_A_IN</span>
+</span></code></pre></div>
+<p><strong>→ NH4-N measurement additionally exposes:</strong> all biomass decay pools,
+$S_{nh3}$ via $\rho_{A,IN}$, and via $S_H$ the entire pH algebra.</p>
+<h3 id="particulate-pools-l-856-893">Particulate pools (L. 856-893)<a class="headerlink" href="#particulate-pools-l-856-893" title="Permanent link">&para;</a></h3>
+<p>Disintegration X_PS_<em> → X_S_</em> and hydrolysis X_S_<em> → S_su/aa/fa act on
+</em><em>sums</em><em> — the ch/pr/li split appears identically everywhere and is
+therefore </em><em>not separable</em>* with aggregated measurements (TS, VS, COD).</p>
+<h2 id="master-table-sensor-exposed-states">Master table: sensor → exposed states<a class="headerlink" href="#master-table-sensor-exposed-states" title="Permanent link">&para;</a></h2>
+<p>Synthesis of direct + 1-step indirect dependencies, separated by
+availability. Symbols: <strong>D</strong> direct · <strong>I₁</strong> 1-step · <strong>I₂+</strong> multi-step
+· <strong>C</strong> correlative · <strong>Σ</strong> only separable as sum · <em>(blank)</em> no
+realistic path.</p>
+<h3 id="online-sensors">Online sensors<a class="headerlink" href="#online-sensors" title="Permanent link">&para;</a></h3>
+<h4 id="dissolved-components-0-11">Dissolved components (0-11)<a class="headerlink" href="#dissolved-components-0-11" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Sensor</th>
+<th>S_su</th>
+<th>S_aa</th>
+<th>S_fa</th>
+<th>S_va</th>
+<th>S_bu</th>
+<th>S_pro</th>
+<th>S_ac</th>
+<th>S_h2</th>
+<th>S_ch4</th>
+<th>S_co2</th>
+<th>S_nh4</th>
+<th>S_I</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q_gas</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>I₁</td>
+<td>I₁</td>
+<td>I₁</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Q_ch4 (NDIR)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>I₂</td>
+<td>I₁</td>
+<td>I₁</td>
+<td>I₂</td>
+<td>I₂</td>
+<td></td>
+</tr>
+<tr>
+<td>Q_co2 (NDIR)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>I₂</td>
+<td></td>
+<td></td>
+<td>I₁</td>
+<td>I₂</td>
+<td></td>
+</tr>
+<tr>
+<td>H₂ gas (NDIR)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>I₁</td>
+<td></td>
+<td>I₂</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>pH (online)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td></td>
+</tr>
+<tr>
+<td>Conductivity</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>C</td>
+<td></td>
+</tr>
+<tr>
+<td>ORP</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>C</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Online VFA (HPLC)</td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Online NH₄⁺ (ISE)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td></td>
+</tr>
+<tr>
+<td>CHP Q_ch4</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>I₂</td>
+<td>I₁</td>
+<td>I₁</td>
+<td>I₂</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="biomass-augmented-inputs">Biomass + augmented inputs<a class="headerlink" href="#biomass-augmented-inputs" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Sensor</th>
+<th>X_su</th>
+<th>X_aa</th>
+<th>X_fa</th>
+<th>X_c4</th>
+<th>X_pro</th>
+<th>X_ac</th>
+<th>X_h2</th>
+<th>Q_solid</th>
+<th>Q_liquid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q_gas</td>
+<td>I₂+</td>
+<td>I₂+</td>
+<td>I₂+</td>
+<td>I₂+</td>
+<td>I₂+</td>
+<td>I₂</td>
+<td>I₂</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Q_ch4</td>
+<td>I₂+</td>
+<td>I₂+</td>
+<td>I₂+</td>
+<td>I₂+</td>
+<td>I₂</td>
+<td>I₁</td>
+<td>I₁</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Online VFA</td>
+<td>I₁</td>
+<td>I₁</td>
+<td>I₁</td>
+<td>I₁</td>
+<td>I₁</td>
+<td>I₁</td>
+<td>I₂+</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Hopper load cell</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td></td>
+</tr>
+<tr>
+<td>Pre-pit level / pump counter</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+</tr>
+</tbody>
+</table>
+<h4 id="charge-balance-gas-phase">Charge balance + gas phase<a class="headerlink" href="#charge-balance-gas-phase" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Sensor</th>
+<th>S_cation</th>
+<th>S_anion</th>
+<th>S_va_ion</th>
+<th>S_bu_ion</th>
+<th>S_pro_ion</th>
+<th>S_ac_ion</th>
+<th>S_hco3</th>
+<th>S_nh3</th>
+<th>p_gas_h2</th>
+<th>p_gas_ch4</th>
+<th>p_gas_co2</th>
+<th>pTOTAL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q_gas</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>I₁</td>
+<td></td>
+<td>I₁</td>
+<td>I₁</td>
+<td>I₁</td>
+<td>D</td>
+</tr>
+<tr>
+<td>Q_ch4</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>I₂</td>
+<td></td>
+<td>D</td>
+<td>D</td>
+<td>I₁</td>
+<td>D</td>
+</tr>
+<tr>
+<td>Q_co2</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>I₁</td>
+<td></td>
+<td>D</td>
+<td>I₁</td>
+<td>D</td>
+<td>D</td>
+</tr>
+<tr>
+<td>H₂ gas</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td></td>
+<td></td>
+<td>I₁</td>
+</tr>
+<tr>
+<td>p_head</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+</tr>
+<tr>
+<td>pH (online)</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Conductivity</td>
+<td>C</td>
+<td>C</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Online VFA</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="lab-analytics">Lab analytics<a class="headerlink" href="#lab-analytics" title="Permanent link">&para;</a></h3>
+<h4 id="dissolved-components-0-11_1">Dissolved components (0-11)<a class="headerlink" href="#dissolved-components-0-11_1" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Lab quantity</th>
+<th>S_su</th>
+<th>S_aa</th>
+<th>S_fa</th>
+<th>S_va</th>
+<th>S_bu</th>
+<th>S_pro</th>
+<th>S_ac</th>
+<th>S_h2</th>
+<th>S_ch4</th>
+<th>S_co2</th>
+<th>S_nh4</th>
+<th>S_I</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VFA sum (FOS)</td>
+<td></td>
+<td></td>
+<td></td>
+<td>D-Σ</td>
+<td>D-Σ</td>
+<td>D-Σ</td>
+<td>D-Σ</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>TAC</td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td></td>
+<td></td>
+<td>D</td>
+<td>D</td>
+<td></td>
+</tr>
+<tr>
+<td>FOS/TAC</td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td></td>
+<td></td>
+<td>D</td>
+<td>D</td>
+<td></td>
+</tr>
+<tr>
+<td>pH (lab)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td></td>
+</tr>
+<tr>
+<td>NH₄-N (lab)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td></td>
+</tr>
+<tr>
+<td>Individual VFA (HPLC)</td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>TKN</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>D-Σ</td>
+<td></td>
+</tr>
+<tr>
+<td>TS / VS (lab)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>I₂</td>
+</tr>
+<tr>
+<td>COD total</td>
+<td>I₁(Σ)</td>
+<td>I₁(Σ)</td>
+<td>I₁(Σ)</td>
+<td>I₁(Σ)</td>
+<td>I₁(Σ)</td>
+<td>I₁(Σ)</td>
+<td>I₁(Σ)</td>
+<td>I₁(Σ)</td>
+<td>I₁(Σ)</td>
+<td></td>
+<td></td>
+<td>I₁(Σ)</td>
+</tr>
+<tr>
+<td>COD dissolved</td>
+<td>D-Σ-diss</td>
+<td>D-Σ-diss</td>
+<td>D-Σ-diss</td>
+<td>D-Σ-diss</td>
+<td>D-Σ-diss</td>
+<td>D-Σ-diss</td>
+<td>D-Σ-diss</td>
+<td>D-Σ-diss</td>
+<td>D-Σ-diss</td>
+<td></td>
+<td></td>
+<td>D-Σ-diss</td>
+</tr>
+<tr>
+<td>Anion inventory</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Cation inventory</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Substrate TS/oTS/COD</td>
+<td>(s_in[*] — influent, not state directly)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="biomass-charge-balance-lab">Biomass + charge balance (lab)<a class="headerlink" href="#biomass-charge-balance-lab" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Lab quantity</th>
+<th>X_PS_<em> / X_PF_</em> / X_S_*</th>
+<th>X_I</th>
+<th>X_su-h2</th>
+<th>S_cation</th>
+<th>S_anion</th>
+<th>S_*_ion</th>
+<th>S_hco3</th>
+<th>S_nh3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TS / VS</td>
+<td>I₁(Σ)</td>
+<td>D</td>
+<td>I₂+</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>COD particulate</td>
+<td>D-Σ-part.</td>
+<td>D-Σ-part.</td>
+<td>D-Σ-part.</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>TAC</td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+</tr>
+<tr>
+<td>TKN</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>I₁</td>
+</tr>
+<tr>
+<td>Anion inventory</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td>D?</td>
+<td>D</td>
+<td></td>
+</tr>
+<tr>
+<td>Cation inventory</td>
+<td></td>
+<td></td>
+<td></td>
+<td>D</td>
+<td></td>
+<td></td>
+<td></td>
+<td>I₁</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Note on anion/cation inventory: $S_{cation}$ and $S_{anion}$ are
+<strong>lumped</strong> in the model as kmol/m³. A species-resolved inventory
+(Na⁺, K⁺, …) gives the pool sum directly; individual species do not
+exist in the state vector.</p>
+</blockquote>
+<h2 id="implications-for-the-ukf">Implications for the UKF<a class="headerlink" href="#implications-for-the-ukf" title="Permanent link">&para;</a></h2>
+<h3 id="rules-of-thumb">Rules of thumb<a class="headerlink" href="#rules-of-thumb" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Only standard SCADA (Q_gas, CHP, T, hopper, pre-pit)</strong>  </p>
+<ul>
+<li>directly estimable: pTOTAL, $Q_{solid}, Q_{liquid}$ (augmented)  </li>
+<li>1-step: $S_{h2/ch4/co2}, S_{hco3}, p_{gas,*}$  </li>
+<li>2-step: $X_{ac}, X_{h2}, S_{ac}$  </li>
+<li>Effectively 6-8 separable dimensions, $X_{ac}$/$X_{h2}$ partially<br />
+  degenerate.</li>
+</ul>
+</li>
+<li>
+<p><strong>+ NDIR gas analytics (CH₄/CO₂ fraction online)</strong>  </p>
+<ul>
+<li>$X_{ac}$ vs $X_{h2}$ separable (via CH₄/CO₂ ratio).  </li>
+<li>$S_{co2}$ vs $S_{hco3}$ cleaner separation.  </li>
+<li>Optional H₂ sensor: makes $p_{gas,h2}$ directly observable.  </li>
+</ul>
+</li>
+<li>
+<p><strong>+ pH probe</strong>  </p>
+<ul>
+<li>9 charge-balance states directly observable.  </li>
+<li>Newton iteration in the update disappears — algebraically clean.  </li>
+</ul>
+</li>
+<li>
+<p><strong>+ FOS/TAC routine lab (daily/weekly)</strong>  </p>
+<ul>
+<li>VFA sum + alkalinity sum directly.  </li>
+<li>Acetate-methanogen chain robustly observable.  </li>
+<li>Early-warning indicators quantitatively available.  </li>
+</ul>
+</li>
+<li>
+<p><strong>+ Individual VFA (HPLC, monthly)</strong>  </p>
+<ul>
+<li>$S_{ac}, S_{pro}, S_{bu}, S_{va}$ individually rather than as sum.  </li>
+<li>Separates acetoclast vs propionate-driven inhibitions.  </li>
+</ul>
+</li>
+<li>
+<p><strong>+ NH4-N + TKN</strong>  </p>
+<ul>
+<li>$S_{nh4}$ directly, NH3 inhibition $I_{nh3}$ quantifiable.  </li>
+<li>Decisive for nitrogen-rich substrates (poultry manure, abattoir<br />
+  waste).</li>
+</ul>
+</li>
+<li>
+<p><strong>+ Cation/anion inventory (monthly)</strong>  </p>
+<ul>
+<li>$S_{cation}, S_{anion}$ directly — otherwise very hard to observe.  </li>
+</ul>
+</li>
+</ol>
+<h3 id="what-the-ukf-cannot-do-regardless-of-instrumentation">What the UKF cannot do, regardless of instrumentation<a class="headerlink" href="#what-the-ukf-cannot-do-regardless-of-instrumentation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Separate individual ch/pr/li fractions.</strong> Disintegration and<br />
+  hydrolysis rates act on sums; the split remains prior-determined —
+  solution only via qPCR or substrate profiles.  </li>
+<li><strong>$X_I$/$S_I$ accumulation in hours.</strong> Inert pools have time constants<br />
+  of weeks to months — no innovation, no update.  </li>
+<li><strong>Substrate-specific disintegration online.</strong> Even with lab VFA and<br />
+  pH, the split between X_PS and X_PF (slow/fast) remains weakly
+  observable. Solution: the calibration artifact sets these parameters,
+  the filter does not co-estimate them.  </li>
+<li><strong>Individual biomass populations</strong> without qPCR — only summary<br />
+  effects through the gas-flow response are measured.</li>
+</ul>
+<h3 id="latency-assessment">Latency assessment<a class="headerlink" href="#latency-assessment" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Measurement set</th>
+<th>Update rate</th>
+<th>Reaction time to plant upset</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q_gas only</td>
+<td>seconds</td>
+<td>minutes — very fast</td>
+</tr>
+<tr>
+<td>+ NDIR + pH</td>
+<td>seconds</td>
+<td>immediate on pH shift</td>
+</tr>
+<tr>
+<td>+ FOS/TAC routine lab</td>
+<td>daily</td>
+<td>1-2 day delay — UKF must bridge with prior</td>
+</tr>
+<tr>
+<td>+ Individual VFA / NH4-N / cations</td>
+<td>weekly-monthly</td>
+<td>very slow correction; more a bias anchor than reaction</td>
+</tr>
+<tr>
+<td>+ qPCR</td>
+<td>annually or rare</td>
+<td>validation, no reaction</td>
+</tr>
+</tbody>
+</table>
+<h2 id="strike-goldd-applicability-for-adm1da">STRIKE-GOLDD applicability for ADM1da<a class="headerlink" href="#strike-goldd-applicability-for-adm1da" title="Permanent link">&para;</a></h2>
+<p>Short: <strong>not directly for the full 41-state model.</strong></p>
+<h3 id="reference-data-from-the-literature">Reference data from the literature<a class="headerlink" href="#reference-data-from-the-literature" title="Permanent link">&para;</a></h3>
+<p>Hellmann et al. (2023) empirically show, using the STRIKE_GOLDD toolbox (Matlab):</p>
+<table>
+<thead>
+<tr>
+<th>Model class</th>
+<th>States</th>
+<th>FISPO time</th>
+<th>ORC-DF time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ADM1-R4</td>
+<td>11</td>
+<td>3 s</td>
+<td>7 s</td>
+</tr>
+<tr>
+<td>BMR3+ABC</td>
+<td>13</td>
+<td>12 s</td>
+<td>5 s</td>
+</tr>
+<tr>
+<td>ADM1-R3</td>
+<td>17</td>
+<td>11,959 s (≈ 3.3 h)</td>
+<td>811 s</td>
+</tr>
+<tr>
+<td>ADM1-R2</td>
+<td>&gt;17</td>
+<td><strong>no result</strong> (toolbox aborts)</td>
+<td><strong>no result</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="our-own-pythonsympy-benchmark">Our own Python/sympy benchmark<a class="headerlink" href="#our-own-pythonsympy-benchmark" title="Permanent link">&para;</a></h3>
+<p>We rebuilt the STRIKE-GOLDD algorithm directly in Python/sympy
+(<code>observability_experiment/subsystem_checker.py</code>): symbolic Lie
+derivatives + numerical rank check at a random sample point
+(Sedoglavic 2002). Exactly what ORC-DF does internally, but without
+the Matlab↔Octave↔Python bridge.</p>
+<p>A direct analysis of all 41 states is not practical: Lie-derivative
+complexity grows exponentially (a polynomial fit from synthetic test
+runs with n = 4, 6, 8 gives $t \propto 4.04^{n}$ seconds and
+$m \propto 3.39^{n}$ MiB; already at n = 16 the RAM demand exceeds
+256 GiB). Hellmann (2023) stops at n = 17 for the same reason.</p>
+<p><strong>Solution: divide-and-conquer over five subsystems + one
+super-subsystem.</strong> The full model is decomposed along its topological
+structure (gas / acidogenesis / hydrolysis / charge balance /
+nitrogen) into blocks; each block is analysed in isolation, couplings
+are resolved via <em>known inputs</em>.</p>
+<h3 id="results-phase-1-sensor-set-q_gas-ch4co2-ndir-ph-online-fostac">Results (Phase-1 sensor set: $Q_{gas}$ + CH4/CO2 NDIR + pH online + FOS/TAC)<a class="headerlink" href="#results-phase-1-sensor-set-q_gas-ch4co2-ndir-ph-online-fostac" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Subsystem</th>
+<th>n</th>
+<th>n_out</th>
+<th>iters</th>
+<th>rank</th>
+<th>verdict</th>
+<th>wall</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A — Gas + methanogenesis</td>
+<td>11</td>
+<td>3</td>
+<td>3</td>
+<td>11</td>
+<td><strong>observable</strong></td>
+<td>0.7 s</td>
+</tr>
+<tr>
+<td>B — Acidogenesis</td>
+<td>9</td>
+<td>1</td>
+<td>5</td>
+<td>6</td>
+<td>partial (sympy toolchain limit; ceiling ≈ 9)</td>
+<td>51 min</td>
+</tr>
+<tr>
+<td>C — Disintegration / hydrolysis</td>
+<td>10</td>
+<td>3</td>
+<td>12</td>
+<td>7</td>
+<td>partial (PS/PF split truly non-separable)</td>
+<td>1.4 s</td>
+</tr>
+<tr>
+<td>D — Charge balance / pH</td>
+<td>8</td>
+<td>2</td>
+<td>3</td>
+<td>8</td>
+<td><strong>observable</strong></td>
+<td>5.6 min</td>
+</tr>
+<tr>
+<td>E — Nitrogen + $S_I$</td>
+<td>2</td>
+<td>2</td>
+<td>0</td>
+<td>2</td>
+<td><strong>observable</strong> (open-loop)</td>
+<td>&lt; 0.1 s</td>
+</tr>
+<tr>
+<td><strong>A+D fused (Variante II)</strong></td>
+<td><strong>18</strong></td>
+<td><strong>5</strong></td>
+<td><strong>3</strong></td>
+<td><strong>18</strong></td>
+<td><strong>observable, no handshake assumptions</strong></td>
+<td><strong>17.8 min</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Total: ≈ 80 min compute, all runs inside the 1-hour-per-subsystem budget.</p>
+<p><strong>Key findings:</strong></p>
+<ul>
+<li>
+<p><strong>A+D fused</strong> is the strongest composite proof: 18 of 41 states,<br />
+  including the full pH algebra
+  $S_H = (-fixed + \sqrt{fixed^2 + 4 K_w})/2$ and the inhibition
+  factors $I_{ac}, I_{h2}, I_{HAc}, I_{nh3}$, are structurally
+  observable without any "opaque" boundary inputs. So the gas phase,
+  methanogenesis, and the complete acid-base chemistry are provably
+  estimatable.</p>
+</li>
+<li>
+<p><strong>C exposes the real structural deficit</strong>: TS and VS alone cannot<br />
+  separate carbohydrates, proteins and lipids (rank 4/10). With
+  COD-weighted measurement (1.03 / 1.5 / 2.9 gCOD/gVS for ch/pr/li)
+  the rank rises to 7/10; the remaining three deficits are the PS/PF
+  splits (slow vs. fast degradable), which are fundamentally not
+  resolvable from process measurements and must be fixed by
+  substrate characterization in the lab.</p>
+</li>
+<li>
+<p><strong>B is toolchain-limited, not physically limited</strong>: $S_{fa}, X_{fa}$<br />
+  were removed as analytically decoupled (they flow via $\rho_{fa}$
+  into $S_{ac}, S_{h2}$ and thus into A, not into the VFA sum that
+  FOS measures). The rank growth $1 \to 2 \to 3 \to 4 \to 5 \to 6$
+  is steady at +1 per iteration; at iter 6 SymPy hits a CPython
+  buffer limit (<code>bytesobject.c:3219</code>). The pattern strongly suggests
+  the structural rank is 9, but only rank 6 is provable inside the
+  current toolchain.</p>
+</li>
+<li>
+<p><strong>E</strong> (S_nh4, S_I) is <em>open-loop observable</em>: every RHS element is<br />
+  available via A+B+C+D, so the output Jacobian already reaches rank
+  2 without Lie iteration. But without an NH4-N measurement there is
+  no innovation channel; drift in the UKF must be caught by an
+  OU prior.</p>
+</li>
+</ul>
+<p><strong>Composite balance:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Provably observable</th>
+<th>Plausibly observable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A+D fused</td>
+<td>18 / 18</td>
+<td>18 / 18</td>
+</tr>
+<tr>
+<td>B (substrate side)</td>
+<td>5 / 9</td>
+<td>9 / 9 (sympy limit)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>7 / 10</td>
+<td>7 / 10 (PS/PF deficit is real)</td>
+</tr>
+<tr>
+<td>E</td>
+<td>2 / 2 (open-loop)</td>
+<td>2 / 2</td>
+</tr>
+<tr>
+<td><strong>ADM1da total</strong></td>
+<td><strong>32 / 41</strong></td>
+<td><strong>36 / 41</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The remaining 5–9 states are: three PS/PF splits in C (lab
+characterization required), two nitrogen states in E (correction
+channel only with NH4-N), and 0–4 biomass states in B (structurally
+likely observable, unprovable inside the current toolchain).</p>
+<p>Full details and reproduction instructions:
+<code>observability_experiment/results.md</code>.</p>
+<h3 id="consequence-for-ukf-design">Consequence for UKF design<a class="headerlink" href="#consequence-for-ukf-design" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Direct innovation channel</strong> for 30 states: 18 A+D + 5<br />
+  acidogenesis substrates + 7 hydrolysis modes.  </li>
+<li><strong>Open-loop propagation</strong> for 11 states: 4 acidogenesis biomasses<br />
+  (X_su, X_aa, X_c4, X_pro), 3 PS/PF splits in C, 2 nitrogen states
+  in E, 2 FA states (S_fa, X_fa observed slowly via A). Model them
+  as OU-drift channels in <code>StateVectorSpec</code>.</li>
+</ul>
+<h2 id="sources">Sources<a class="headerlink" href="#sources" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pyadm1/core/adm1.py</code> (v0.3.4) — all line citations refer to this.  </li>
+<li><code>pyadm1/components/biological/digester.py</code> — VFA/TAC computation.  </li>
+<li>Hellmann, S. et al. (2023). <em>Observability and Identifiability<br />
+  Analyses of Process Models for Agricultural Anaerobic Digestion
+  Plants.</em> arXiv:2301.05068v3.  </li>
+<li>Haugen, F. et al. (2014). <em>State Estimation and Model-Based Control of<br />
+  a Pilot Anaerobic Digestion Reactor.</em> J. Control Sci. Eng., 572621.  </li>
+<li>Villaverde, A. F. (2022). <em>STRIKE_GOLDD 4.0.</em> arXiv:2207.07346.  </li>
+<li>Wolf, C., Gaida, D., Bongards, M. (2014). <em>Online-measurement systems<br />
+  for agricultural and industrial AD plants — a review and practice
+  test.</em> Compendium :metabolon.  </li>
+<li><a href="../literature_review/">Step 1: Observability literature review</a>  </li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Daniel Gaida — part of the <a href="https://dgaida.github.io/PyADM1ODE/latest/">PyADM1ODE ecosystem</a>
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

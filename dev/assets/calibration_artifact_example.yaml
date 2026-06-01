@@ -1,0 +1,137 @@
+# Example calibration artifact for a generic agricultural biogas plant.
+# Beispiel-Kalibrierungs-Artefakt für eine generische Anlage.
+#
+# This file is written by pyadm1ode_calibration after an optimization run
+# and read by pyadm1ode_estimation when the live filter starts up.
+# See pyadm1ode_estimation.artifacts.calibration_artifact for the API.
+#
+# The state vector follows ADM1da (Schlattmann 2011), 41 components.
+# Index map: see pyadm1/core/adm1.py module docstring.
+
+schema_version: 1
+
+metadata:
+  plant_id: plant_id_xyz
+  calibration_run_id: 2026-05-14-3w
+  timestamp: 2026-05-14T12:30:00Z
+  data_window_start: 2026-04-01
+  data_window_end: 2026-04-21
+  adm1_version: "ADM1da-0.3.4"
+  calibration_version: "0.2.0"
+  fitted_against:
+    - Q_gas
+    - Q_gas_consumed
+    - P_el
+  notes: "3-week window."
+
+# Per-digester overrides written into adm1._kinetic.
+# Keys must match the parameter names that pyadm1 actually carries
+# (see ADMParams.get_kinetic_params); unknown keys trigger a warning
+# during apply_to_plant.
+kinetic:
+  primary:
+    k_dis_PS: 0.045        # slow disintegration
+    k_dis_PF: 0.42         # fast disintegration
+    k_hyd_ch: 4.2          # carbohydrate hydrolysis
+    k_hyd_pr: 4.0
+    k_hyd_li: 3.8
+    k_m_su: 32.0           # sugar uptake
+    k_m_ac: 8.5            # acetate uptake (key for X_ac performance)
+    k_dec_ac: 0.038        # acetate degrader decay (ADM1da default 0.04)
+  secondary:
+    k_dis_PS: 0.038
+    k_dis_PF: 0.40
+    k_hyd_ch: 3.9
+
+# Per-substrate disintegration / composition fractions.
+# Outer key matches the plant-builder's substrate identifier; inner dict
+# carries the fitted fractions. Currently informational — the plant builder
+# is responsible for reading this section directly.
+substrates:
+  maize_silage_milk_ripeness:
+    f_ch_xc: 0.55
+    f_pr_xc: 0.20
+    f_li_xc: 0.10
+    f_xi_xc: 0.10
+    f_si_xc: 0.05
+  cattle_manure_solid:
+    f_ch_xc: 0.30
+    f_pr_xc: 0.30
+    f_li_xc: 0.10
+    f_xi_xc: 0.20
+    f_si_xc: 0.10
+
+# Per-digester ADM1da state at the end of the calibration window.
+# Used as prior mean for the filter's initial x_hat. Accept array form
+# under the "_values" key; 41 entries in canonical ADM1da order.
+#
+# Index reference (ADM1da, Schlattmann 2011):
+#   0-11  dissolved:        S_su, S_aa, S_fa, S_va, S_bu, S_pro, S_ac,
+#                           S_h2, S_ch4, S_co2 (S_IC), S_nh4 (S_IN), S_I
+#  12-21  particulate:      X_PS_ch/pr/li, X_PF_ch/pr/li,
+#                           X_S_ch/pr/li, X_I
+#  22-28  biomass:          X_su, X_aa, X_fa, X_c4, X_pro, X_ac, X_h2
+#  29-36  charge balance:   S_cation, S_anion, S_va_ion, S_bu_ion,
+#                           S_pro_ion, S_ac_ion, S_hco3_ion, S_nh3
+#  37-40  gas phase:        p_gas_h2, p_gas_ch4, p_gas_co2, pTOTAL [bar]
+initial_state:
+  primary:
+    _values:
+      # ---- dissolved (0-11) ----
+      - 0.012      #  0  S_su       [kg COD/m³]
+      - 0.0053     #  1  S_aa
+      - 0.0099     #  2  S_fa
+      - 0.0020     #  3  S_va
+      - 0.0023     #  4  S_bu
+      - 0.0027     #  5  S_pro
+      - 0.10       #  6  S_ac
+      - 2.4e-8     #  7  S_h2
+      - 0.055      #  8  S_ch4
+      - 0.095      #  9  S_co2  (S_IC)  [kmol C/m³]
+      - 0.0944     # 10  S_nh4  (S_IN)  [kmol N/m³]
+      - 0.130      # 11  S_I
+      # ---- particulate sub-fractions (12-21) ----
+      - 19.16      # 12  X_PS_ch  slow-disint. carbs
+      - 4.20       # 13  X_PS_pr  slow-disint. proteins
+      - 1.05       # 14  X_PS_li  slow-disint. lipids
+      - 2.28       # 15  X_PF_ch  fast-disint. carbs
+      - 0.55       # 16  X_PF_pr  fast-disint. proteins
+      - 0.20       # 17  X_PF_li  fast-disint. lipids
+      - 0.85       # 18  X_S_ch   hydrolysable carbs
+      - 0.18       # 19  X_S_pr   hydrolysable proteins
+      - 0.05       # 20  X_S_li   hydrolysable lipids
+      - 25.60      # 21  X_I
+      # ---- biomass (22-28) ----
+      - 0.50       # 22  X_su
+      - 0.42       # 23  X_aa
+      - 0.24       # 24  X_fa
+      - 0.43       # 25  X_c4
+      - 0.14       # 26  X_pro
+      - 1.20       # 27  X_ac
+      - 0.30       # 28  X_h2
+      # ---- charge balance (29-36) ----
+      - 0.040      # 29  S_cation       [kmol/m³]
+      - 0.020      # 30  S_anion        [kmol/m³]
+      - 0.0019     # 31  S_va_ion
+      - 0.0022     # 32  S_bu_ion
+      - 0.0026     # 33  S_pro_ion
+      - 0.098      # 34  S_ac_ion
+      - 0.094      # 35  S_hco3_ion     [kmol C/m³]
+      - 0.0044     # 36  S_nh3          [kmol N/m³]
+      # ---- gas phase (37-40) ----
+      - 1.65e-5    # 37  p_gas_h2       [bar]
+      - 0.60       # 38  p_gas_ch4      [bar]
+      - 0.35       # 39  p_gas_co2      [bar]
+      - 1.013      # 40  pTOTAL         [bar]
+
+# Per-channel fit quality from the calibration run. Informational only.
+residuals:
+  Q_gas:
+    rmse: 145.0
+    units: m3/d
+  Q_gas_consumed:
+    rmse: 78.0
+    units: m3/d
+  P_el:
+    rmse: 4.8
+    units: kW
