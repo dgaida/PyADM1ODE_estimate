@@ -15,9 +15,9 @@ Tage und ein Forschungs-Verfahren vielleicht ein einziges Mal pro Jahr.
 Ein Zustand $x_i$ ist aus einer Messung $y = h(x)$ überhaupt nur dann
 beobachtbar, wenn entweder
 
-1. **direkt** $x_i$ explizit in $h(x)$ auftritt (Ableitung ungleich Null im
-   Messmodell), oder
-2. **indirekt** $x_i$ in der rechten Seite $\dot x_j = f_j(x)$ eines
+1. **direkt** $x_i$ explizit in $h(x)$ auftritt (Ableitung ungleich Null im  
+   Messmodell), oder  
+2. **indirekt** $x_i$ in der rechten Seite $\dot x_j = f_j(x)$ eines  
    direkt beobachtbaren $x_j$ auftritt, dann liefert $\dot y$ Information
    über $x_i$. Dieser Mechanismus wird iteriert: nach $k$ Schritten taucht
    $x_i$ in $y^{(k)}$ auf, falls eine Kette der Länge $k$ durch die
@@ -25,14 +25,14 @@ beobachtbar, wenn entweder
 
 Praktisch heißt das:
 
-* **D = direkt** — sofortige Beobachtbarkeit in einem einzigen
-  Update-Schritt.
-* **I₁ = 1-Schritt-indirekt** — Beobachtbarkeit nach mindestens einem
-  Zeitschritt mit Dynamik dazwischen.
-* **I₂+ = k-Schritt-indirekt** — nur über sehr genaue Modelldynamik und
+* **D = direkt** — sofortige Beobachtbarkeit in einem einzigen  
+  Update-Schritt.  
+* **I₁ = 1-Schritt-indirekt** — Beobachtbarkeit nach mindestens einem  
+  Zeitschritt mit Dynamik dazwischen.  
+* **I₂+ = k-Schritt-indirekt** — nur über sehr genaue Modelldynamik und  
   lange Beobachtungsdauer rekonstruierbar. In der Praxis meist nicht
-  trennbar von Modellfehlern.
-* **C = korrelativ** — kein direkter Modellausdruck, aber empirisch
+  trennbar von Modellfehlern.  
+* **C = korrelativ** — kein direkter Modellausdruck, aber empirisch  
   gekoppelt (z.B. Leitfähigkeit ↔ ionische Stärke).
 
 Die folgenden Tabellen zitieren explizit die Code-Stellen in
@@ -466,50 +466,50 @@ mehrere Schritte · **C** korrelativ · **Σ** nur als Summe trennbar ·
 
 ### Praktische Faustregeln
 
-1. **Nur Standard-SCADA (Q_gas, BHKW, T, Hopper, Pre-Pit)**
-   * direkt schätzbar: pTOTAL, $Q_{solid}, Q_{liquid}$ (augmentiert)
-   * 1-Schritt: $S_{h2/ch4/co2}, S_{hco3}, p_{gas,*}$
-   * 2-Schritt: $X_{ac}, X_{h2}, S_{ac}$
-   * Effektiv 6-8 trennbare Dimensionen, $X_{ac}$/$X_{h2}$ teilweise entartet.
+1. **Nur Standard-SCADA (Q_gas, BHKW, T, Hopper, Pre-Pit)**  
+   * direkt schätzbar: pTOTAL, $Q_{solid}, Q_{liquid}$ (augmentiert)  
+   * 1-Schritt: $S_{h2/ch4/co2}, S_{hco3}, p_{gas,*}$  
+   * 2-Schritt: $X_{ac}, X_{h2}, S_{ac}$  
+   * Effektiv 6-8 trennbare Dimensionen, $X_{ac}$/$X_{h2}$ teilweise entartet.  
 
-2. **+ NDIR-Gasanalytik (CH₄/CO₂-Anteil online)**
-   * $X_{ac}$ vs $X_{h2}$ trennbar (durch CH₄/CO₂-Ratio).
-   * $S_{co2}$ vs $S_{hco3}$ sauberer trennbar.
-   * H₂-Sensor optional: macht $p_{gas,h2}$ direkt observable.
+2. **+ NDIR-Gasanalytik (CH₄/CO₂-Anteil online)**  
+   * $X_{ac}$ vs $X_{h2}$ trennbar (durch CH₄/CO₂-Ratio).  
+   * $S_{co2}$ vs $S_{hco3}$ sauberer trennbar.  
+   * H₂-Sensor optional: macht $p_{gas,h2}$ direkt observable.  
 
-3. **+ pH-Sonde**
-   * 9 Ladungsbilanz-Zustände direkt observable.
-   * Newton-Iteration im Update entfällt, algebraisch sauber.
+3. **+ pH-Sonde**  
+   * 9 Ladungsbilanz-Zustände direkt observable.  
+   * Newton-Iteration im Update entfällt, algebraisch sauber.  
 
-4. **+ FOS/TAC Routine-Lab (täglich/wöchentlich)**
-   * VFA-Summe + Alkalitäts-Summe direkt.
-   * Acetat-Methanogen-Kette robust observable.
-   * Frühwarn-Indikatoren quantitativ.
+4. **+ FOS/TAC Routine-Lab (täglich/wöchentlich)**  
+   * VFA-Summe + Alkalitäts-Summe direkt.  
+   * Acetat-Methanogen-Kette robust observable.  
+   * Frühwarn-Indikatoren quantitativ.  
 
-5. **+ Einzel-VFA (HPLC, monatlich)**
-   * $S_{ac}, S_{pro}, S_{bu}, S_{va}$ einzeln statt nur Summe.
-   * Trennt acetoclasten- vs propionat-getriebene Inhibitionen.
+5. **+ Einzel-VFA (HPLC, monatlich)**  
+   * $S_{ac}, S_{pro}, S_{bu}, S_{va}$ einzeln statt nur Summe.  
+   * Trennt acetoclasten- vs propionat-getriebene Inhibitionen.  
 
-6. **+ NH4-N + TKN**
-   * $S_{nh4}$ direkt, NH3-Inhibition $I_{nh3}$ quantifizierbar.
-   * Bei Stickstoff-reichen Substraten (Hühnermist, Schlachtabfälle)
+6. **+ NH4-N + TKN**  
+   * $S_{nh4}$ direkt, NH3-Inhibition $I_{nh3}$ quantifizierbar.  
+   * Bei Stickstoff-reichen Substraten (Hühnermist, Schlachtabfälle)  
      entscheidend.
 
-7. **+ Kationen-/Anionen-Inventur (monatlich)**
-   * $S_{cation}, S_{anion}$ direkt — sonst sehr schwer observable.
+7. **+ Kationen-/Anionen-Inventur (monatlich)**  
+   * $S_{cation}, S_{anion}$ direkt — sonst sehr schwer observable.  
 
 ### Was der UKF nicht kann, egal mit welcher Sensorik
 
-* **Einzelne ch/pr/li-Fraktionen trennen.** Disintegrations- und
+* **Einzelne ch/pr/li-Fraktionen trennen.** Disintegrations- und  
   Hydrolyseraten wirken auf Summen, die Aufteilung bleibt durch den
-  Prior bestimmt. Lösung nur über qPCR oder Substrat-Profile.
-* **$X_I$/$S_I$-Akkumulation in Stunden.** Inert-Pools haben
-  Zeitkonstanten von Wochen bis Monaten.
-* **Substrat-spezifische Disintegration online.** Selbst mit Lab-VFA
+  Prior bestimmt. Lösung nur über qPCR oder Substrat-Profile.  
+* **$X_I$/$S_I$-Akkumulation in Stunden.** Inert-Pools haben  
+  Zeitkonstanten von Wochen bis Monaten.  
+* **Substrat-spezifische Disintegration online.** Selbst mit Lab-VFA  
   und pH bleibt die Aufteilung zwischen X_PS und X_PF (slow/fast)
   schwach observable. Lösung: Calibration-Artefakt setzt diese
-  Parameter, Filter schätzt sie nicht mit.
-* **Einzelne Biomasse-Populationen** ohne qPCR, gemessen werden nur
+  Parameter, Filter schätzt sie nicht mit.  
+* **Einzelne Biomasse-Populationen** ohne qPCR, gemessen werden nur  
   Summen-Effekte über die Gasstrom-Antwort.
 
 ### Latenz-Bewertung
@@ -572,7 +572,7 @@ Total: ≈ 80 min Rechenzeit, alle Runs im 1-Stunden-Budget pro Subsystem.
 
 **Kernaussagen:**
 
-* **A+D fusioniert** ist der stärkste Composite-Beweis: 18 von 41
+* **A+D fusioniert** ist der stärkste Composite-Beweis: 18 von 41  
   Zuständen, inkl. der vollen pH-Algebra mit $S_H = (-fixed +
   \sqrt{fixed^2 + 4 K_w})/2$ und der Inhibitionsfaktoren
   $I_{ac}, I_{h2}, I_{HAc}, I_{nh3}$ sind ohne irgendwelche
@@ -580,7 +580,7 @@ Total: ≈ 80 min Rechenzeit, alle Runs im 1-Stunden-Budget pro Subsystem.
   Gas-Phase, die Methanogenese und die komplette Säure-Base-Chemie
   bewiesenermaßen schätzbar.
 
-* **C zeigt das echte strukturelle Defizit**: TS und VS allein können
+* **C zeigt das echte strukturelle Defizit**: TS und VS allein können  
   Kohlenhydrate, Proteine und Lipide nicht trennen (Rang 4/10). Mit
   COD-gewichteter Messung (1.03 / 1.5 / 2.9 gCOD/gVS für ch/pr/li)
   steigt der Rang auf 7/10, die verbleibenden drei Defekte sind die
@@ -588,7 +588,7 @@ Total: ≈ 80 min Rechenzeit, alle Runs im 1-Stunden-Budget pro Subsystem.
   Prozessmessungen prinzipiell nicht auflösbar sind und durch
   Substrat-Charakterisierung im Labor festgelegt werden müssen.
 
-* **B ist toolchain-limitiert, nicht physikalisch limitiert**:
+* **B ist toolchain-limitiert, nicht physikalisch limitiert**:  
   $S_{fa}, X_{fa}$ wurden als analytisch entkoppelt entfernt (sie
   fließen via $\rho_{fa}$ nur in $S_{ac}, S_{h2}$ und damit nach A,
   nicht in die VFA-Summe der FOS-Messung). Die Rang-Steigerung
@@ -597,7 +597,7 @@ Total: ≈ 80 min Rechenzeit, alle Runs im 1-Stunden-Budget pro Subsystem.
   (`bytesobject.c:3219`). Das Muster legt strukturell Rang 9 nahe,
   aber beweisbar ist im aktuellen Toolchain nur Rang 6.
 
-* **E** (S_nh4, S_I) ist *open-loop observable*: jedes RHS-Element
+* **E** (S_nh4, S_I) ist *open-loop observable*: jedes RHS-Element  
   steht über A+B+C+D zur Verfügung, der Ausgangs-Jacobian erreicht
   Rang 2 ohne Lie-Iteration. Aber ohne NH4-N-Messung kein
   Innovations-Kanal, Drift im UKF muss über OU-Prior gefangen werden.
@@ -623,9 +623,9 @@ Vollständige Details und Reproduktionsanleitung:
 
 ### Konsequenz für die UKF-Auslegung
 
-* **Direkter Innovationskanal** für 30 Zustände: 18 A+D + 5
-  Acidogenese-Substrate + 7 Hydrolyse-Modi.
-* **Open-Loop-Propagation** für 11 Zustände: 4 Acidogenese-Biomassen
+* **Direkter Innovationskanal** für 30 Zustände: 18 A+D + 5  
+  Acidogenese-Substrate + 7 Hydrolyse-Modi.  
+* **Open-Loop-Propagation** für 11 Zustände: 4 Acidogenese-Biomassen  
   (X_su, X_aa, X_c4, X_pro), 3 PS/PF-Splits in C, 2
   Stickstoff-Zustände in E, 2 FA-Zustände (S_fa, X_fa über A
   langsam observabel). Modellieren als OU-Drift-Kanäle in
@@ -633,15 +633,15 @@ Vollständige Details und Reproduktionsanleitung:
 
 ## Quellen
 
-* `pyadm1/core/adm1.py` (v0.3.4) — alle Zeilen-Zitate beziehen sich hierauf.
-* `pyadm1/components/biological/digester.py` — VFA-/TAC-Berechnung.
-* Hellmann, S. et al. (2023). *Observability and Identifiability
+* `pyadm1/core/adm1.py` (v0.3.4) — alle Zeilen-Zitate beziehen sich hierauf.  
+* `pyadm1/components/biological/digester.py` — VFA-/TAC-Berechnung.  
+* Hellmann, S. et al. (2023). *Observability and Identifiability  
   Analyses of Process Models for Agricultural Anaerobic Digestion
-  Plants.* arXiv:2301.05068v3.
-* Haugen, F. et al. (2014). *State Estimation and Model-Based Control of
-  a Pilot Anaerobic Digestion Reactor.* J. Control Sci. Eng., 572621.
-* Villaverde, A. F. (2022). *STRIKE_GOLDD 4.0.* arXiv:2207.07346.
-* Wolf, C., Gaida, D., Bongards, M. (2014). *Online-measurement systems
+  Plants.* arXiv:2301.05068v3.  
+* Haugen, F. et al. (2014). *State Estimation and Model-Based Control of  
+  a Pilot Anaerobic Digestion Reactor.* J. Control Sci. Eng., 572621.  
+* Villaverde, A. F. (2022). *STRIKE_GOLDD 4.0.* arXiv:2207.07346.  
+* Wolf, C., Gaida, D., Bongards, M. (2014). *Online-measurement systems  
   for agricultural and industrial AD plants — a review and practice
-  test.* Kompendium :metabolon.
-* [Observability-Literatur-Überblick](literature_review.md)
+  test.* Kompendium :metabolon.  
+* [Observability-Literatur-Überblick](literature_review.md)  

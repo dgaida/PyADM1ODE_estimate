@@ -74,45 +74,45 @@ CLI parameters:
 
 ## What happens inside
 
-1. **Build truth plant** (`build_multi_stage_plant`) and warm up for
+1. **Build truth plant** (`build_multi_stage_plant`) and warm up for  
    30 days (`plant.simulate()`). The ODE reaches a quasi-stationary
-   operating point.
-2. **Deepcopy** the warmed plant for the filter — guarantees a
-   bit-identical model between truth and filter at `t=0`.
-3. **Propagate truth** (`_propagate_truth_with_substrate_noise`) with
+   operating point.  
+2. **Deepcopy** the warmed plant for the filter — guarantees a  
+   bit-identical model between truth and filter at `t=0`.  
+3. **Propagate truth** (`_propagate_truth_with_substrate_noise`) with  
    per-step noise on the substrate inputs (operator delivery is never
-   exact).
-4. **Truth sensors** (`build_truth_sensors`) generate the noisy
+   exact).  
+4. **Truth sensors** (`build_truth_sensors`) generate the noisy  
    measurement signal using PyADM1ODE's `PhysicalSensor` classes for
    realistic drift, response lag and sampling (see
-   `pyadm1ode_estimation.estimation.sensors`).
-5. **UKF** initialised with `ukf.reset(x_truth0 + perturbation, P0)`.
-6. **Filter loop** over all measurement timestamps.
-7. **Write plots** to `output/twin_experiment/`.
+   `pyadm1ode_estimation.estimation.sensors`).  
+5. **UKF** initialised with `ukf.reset(x_truth0 + perturbation, P0)`.  
+6. **Filter loop** over all measurement timestamps.  
+7. **Write plots** to `output/twin_experiment/`.  
 
 ## Generated plots
 
 Each run produces 6 plots in `output/twin_experiment/`:
 
-* **`trajectories_strong.png`** — 6 strong-observable states
+* **`trajectories_strong.png`** — 6 strong-observable states  
   (S_ac, S_ch4, X_ac, S_hco3, p_gas_ch4, pTOTAL) with truth, `x̂`
-  and the ±2σ band.
-* **`trajectories_weak.png`** — 6 weak / open-loop states + 1
-  substrate input.
-* **`observations.png`** — all 6 measurement channels with clean
-  truth, noisy measurement and filter prediction ŷ.
-* **`production_estimate.png`** — the production-facing plot:
-  * Truth Q_gas / Q_ch4 (black)
-  * Raw sensor (red ×) — what the measurement points deliver
-  * Sensor-smoothed (red, solid) — rolling mean
-  * h(x̂) (green) — deterministic model re-evaluation at the
+  and the ±2σ band.  
+* **`trajectories_weak.png`** — 6 weak / open-loop states + 1  
+  substrate input.  
+* **`observations.png`** — all 6 measurement channels with clean  
+  truth, noisy measurement and filter prediction ŷ.  
+* **`production_estimate.png`** — the production-facing plot:  
+  * Truth Q_gas / Q_ch4 (black)  
+  * Raw sensor (red ×) — what the measurement points deliver  
+  * Sensor-smoothed (red, solid) — rolling mean  
+  * h(x̂) (green) — deterministic model re-evaluation at the  
     filter posterior (Jensen-bias-free, a single plant-step
-    evaluation rather than 89 sigma points)
-  * `±1σ` band from the UKF-internal `y_std`
-  * Cumulative production with end-error annotated
-* **`nis.png`** — NIS time series on log scale with the expected
-  value as reference line.
-* **`coverage_summary.png`** — per-quality-block 2σ coverage as bar
+    evaluation rather than 89 sigma points)  
+  * `±1σ` band from the UKF-internal `y_std`  
+  * Cumulative production with end-error annotated  
+* **`nis.png`** — NIS time series on log scale with the expected  
+  value as reference line.  
+* **`coverage_summary.png`** — per-quality-block 2σ coverage as bar  
   chart with the target lines (80 % / 40 % / 20 %).
 
 ## What the results mean
@@ -170,18 +170,18 @@ actual value.
 
 Rule-of-thumb thresholds for a production UKF:
 
-* **Strong-observable blocks** (methanogenesis, charge_balance,
-  acidogenesis_substrates): 2σ coverage ≥ 80 %
-* **Weak / OU blocks**: 2σ coverage ≥ 40 %
-* **Open-loop**: 2σ coverage ≥ 20 %
-* **Mean NIS** over multiple days in `[0.5·n, 2.0·n]`
+* **Strong-observable blocks** (methanogenesis, charge_balance,  
+  acidogenesis_substrates): 2σ coverage ≥ 80 %  
+* **Weak / OU blocks**: 2σ coverage ≥ 40 %  
+* **Open-loop**: 2σ coverage ≥ 20 %  
+* **Mean NIS** over multiple days in `[0.5·n, 2.0·n]`  
 
 For an acceptance run all of them should hold. If e.g. the mean NIS
 falls outside the band, check:
 
-* Are the `noise_std` values realistic for the actual sensors?
-* Is the warm-up long enough for the plant to reach a quasi-steady
-  state?
-* Is the initial perturbation `--initial-perturbation-relative`
-  realistic relative to the initial covariance `P0`?
-* Is `dt_hours` small enough for ADM1's nonlinearity?
+* Are the `noise_std` values realistic for the actual sensors?  
+* Is the warm-up long enough for the plant to reach a quasi-steady  
+  state?  
+* Is the initial perturbation `--initial-perturbation-relative`  
+  realistic relative to the initial covariance `P0`?  
+* Is `dt_hours` small enough for ADM1's nonlinearity?  

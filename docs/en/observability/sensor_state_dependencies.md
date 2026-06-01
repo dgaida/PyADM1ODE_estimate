@@ -19,9 +19,9 @@ methods maybe once per year.
 
 A state $x_i$ is observable from a measurement $y = h(x)$ only if either
 
-1. **directly** $x_i$ appears explicitly in $h(x)$ (nonzero derivative in
-   the measurement model), or
-2. **indirectly** $x_i$ appears in the right-hand side $\dot x_j = f_j(x)$
+1. **directly** $x_i$ appears explicitly in $h(x)$ (nonzero derivative in  
+   the measurement model), or  
+2. **indirectly** $x_i$ appears in the right-hand side $\dot x_j = f_j(x)$  
    of some directly observed $x_j$ — then $\dot y$ carries information
    about $x_i$. The mechanism iterates: after $k$ steps, $x_i$ appears in
    $y^{(k)}$ if a chain of length $k$ exists through the Jacobian
@@ -29,13 +29,13 @@ A state $x_i$ is observable from a measurement $y = h(x)$ only if either
 
 In practice:
 
-* **D = direct** — immediate observability in a single update step.
-* **I₁ = 1-step indirect** — observability after at least one time step
-  with dynamics in between.
-* **I₂+ = k-step indirect** — reconstructible only with very accurate
+* **D = direct** — immediate observability in a single update step.  
+* **I₁ = 1-step indirect** — observability after at least one time step  
+  with dynamics in between.  
+* **I₂+ = k-step indirect** — reconstructible only with very accurate  
   model dynamics and a long observation window; in practice often
-  inseparable from model errors.
-* **C = correlative** — no direct model expression, but empirically
+  inseparable from model errors.  
+* **C = correlative** — no direct model expression, but empirically  
   coupled (e.g. conductivity ↔ ionic strength).
 
 The tables below cite code locations in `pyadm1/core/adm1.py` (line
@@ -468,51 +468,51 @@ realistic path.
 
 ### Rules of thumb
 
-1. **Only standard SCADA (Q_gas, CHP, T, hopper, pre-pit)**
-    * directly estimable: pTOTAL, $Q_{solid}, Q_{liquid}$ (augmented)
-    * 1-step: $S_{h2/ch4/co2}, S_{hco3}, p_{gas,*}$
-    * 2-step: $X_{ac}, X_{h2}, S_{ac}$
-    * Effectively 6-8 separable dimensions, $X_{ac}$/$X_{h2}$ partially
+1. **Only standard SCADA (Q_gas, CHP, T, hopper, pre-pit)**  
+    * directly estimable: pTOTAL, $Q_{solid}, Q_{liquid}$ (augmented)  
+    * 1-step: $S_{h2/ch4/co2}, S_{hco3}, p_{gas,*}$  
+    * 2-step: $X_{ac}, X_{h2}, S_{ac}$  
+    * Effectively 6-8 separable dimensions, $X_{ac}$/$X_{h2}$ partially  
       degenerate.
 
-2. **+ NDIR gas analytics (CH₄/CO₂ fraction online)**
-    * $X_{ac}$ vs $X_{h2}$ separable (via CH₄/CO₂ ratio).
-    * $S_{co2}$ vs $S_{hco3}$ cleaner separation.
-    * Optional H₂ sensor: makes $p_{gas,h2}$ directly observable.
+2. **+ NDIR gas analytics (CH₄/CO₂ fraction online)**  
+    * $X_{ac}$ vs $X_{h2}$ separable (via CH₄/CO₂ ratio).  
+    * $S_{co2}$ vs $S_{hco3}$ cleaner separation.  
+    * Optional H₂ sensor: makes $p_{gas,h2}$ directly observable.  
 
-3. **+ pH probe**
-    * 9 charge-balance states directly observable.
-    * Newton iteration in the update disappears — algebraically clean.
+3. **+ pH probe**  
+    * 9 charge-balance states directly observable.  
+    * Newton iteration in the update disappears — algebraically clean.  
 
-4. **+ FOS/TAC routine lab (daily/weekly)**
-    * VFA sum + alkalinity sum directly.
-    * Acetate-methanogen chain robustly observable.
-    * Early-warning indicators quantitatively available.
+4. **+ FOS/TAC routine lab (daily/weekly)**  
+    * VFA sum + alkalinity sum directly.  
+    * Acetate-methanogen chain robustly observable.  
+    * Early-warning indicators quantitatively available.  
 
-5. **+ Individual VFA (HPLC, monthly)**
-    * $S_{ac}, S_{pro}, S_{bu}, S_{va}$ individually rather than as sum.
-    * Separates acetoclast vs propionate-driven inhibitions.
+5. **+ Individual VFA (HPLC, monthly)**  
+    * $S_{ac}, S_{pro}, S_{bu}, S_{va}$ individually rather than as sum.  
+    * Separates acetoclast vs propionate-driven inhibitions.  
 
-6. **+ NH4-N + TKN**
-    * $S_{nh4}$ directly, NH3 inhibition $I_{nh3}$ quantifiable.
-    * Decisive for nitrogen-rich substrates (poultry manure, abattoir
+6. **+ NH4-N + TKN**  
+    * $S_{nh4}$ directly, NH3 inhibition $I_{nh3}$ quantifiable.  
+    * Decisive for nitrogen-rich substrates (poultry manure, abattoir  
       waste).
 
-7. **+ Cation/anion inventory (monthly)**
-    * $S_{cation}, S_{anion}$ directly — otherwise very hard to observe.
+7. **+ Cation/anion inventory (monthly)**  
+    * $S_{cation}, S_{anion}$ directly — otherwise very hard to observe.  
 
 ### What the UKF cannot do, regardless of instrumentation
 
-* **Separate individual ch/pr/li fractions.** Disintegration and
+* **Separate individual ch/pr/li fractions.** Disintegration and  
   hydrolysis rates act on sums; the split remains prior-determined —
-  solution only via qPCR or substrate profiles.
-* **$X_I$/$S_I$ accumulation in hours.** Inert pools have time constants
-  of weeks to months — no innovation, no update.
-* **Substrate-specific disintegration online.** Even with lab VFA and
+  solution only via qPCR or substrate profiles.  
+* **$X_I$/$S_I$ accumulation in hours.** Inert pools have time constants  
+  of weeks to months — no innovation, no update.  
+* **Substrate-specific disintegration online.** Even with lab VFA and  
   pH, the split between X_PS and X_PF (slow/fast) remains weakly
   observable. Solution: the calibration artifact sets these parameters,
-  the filter does not co-estimate them.
-* **Individual biomass populations** without qPCR — only summary
+  the filter does not co-estimate them.  
+* **Individual biomass populations** without qPCR — only summary  
   effects through the gas-flow response are measured.
 
 ### Latency assessment
@@ -575,7 +575,7 @@ Total: ≈ 80 min compute, all runs inside the 1-hour-per-subsystem budget.
 
 **Key findings:**
 
-* **A+D fused** is the strongest composite proof: 18 of 41 states,
+* **A+D fused** is the strongest composite proof: 18 of 41 states,  
   including the full pH algebra
   $S_H = (-fixed + \sqrt{fixed^2 + 4 K_w})/2$ and the inhibition
   factors $I_{ac}, I_{h2}, I_{HAc}, I_{nh3}$, are structurally
@@ -583,7 +583,7 @@ Total: ≈ 80 min compute, all runs inside the 1-hour-per-subsystem budget.
   methanogenesis, and the complete acid-base chemistry are provably
   estimatable.
 
-* **C exposes the real structural deficit**: TS and VS alone cannot
+* **C exposes the real structural deficit**: TS and VS alone cannot  
   separate carbohydrates, proteins and lipids (rank 4/10). With
   COD-weighted measurement (1.03 / 1.5 / 2.9 gCOD/gVS for ch/pr/li)
   the rank rises to 7/10; the remaining three deficits are the PS/PF
@@ -591,7 +591,7 @@ Total: ≈ 80 min compute, all runs inside the 1-hour-per-subsystem budget.
   resolvable from process measurements and must be fixed by
   substrate characterization in the lab.
 
-* **B is toolchain-limited, not physically limited**: $S_{fa}, X_{fa}$
+* **B is toolchain-limited, not physically limited**: $S_{fa}, X_{fa}$  
   were removed as analytically decoupled (they flow via $\rho_{fa}$
   into $S_{ac}, S_{h2}$ and thus into A, not into the VFA sum that
   FOS measures). The rank growth $1 \to 2 \to 3 \to 4 \to 5 \to 6$
@@ -600,7 +600,7 @@ Total: ≈ 80 min compute, all runs inside the 1-hour-per-subsystem budget.
   the structural rank is 9, but only rank 6 is provable inside the
   current toolchain.
 
-* **E** (S_nh4, S_I) is *open-loop observable*: every RHS element is
+* **E** (S_nh4, S_I) is *open-loop observable*: every RHS element is  
   available via A+B+C+D, so the output Jacobian already reaches rank
   2 without Lie iteration. But without an NH4-N measurement there is
   no innovation channel; drift in the UKF must be caught by an
@@ -626,24 +626,24 @@ Full details and reproduction instructions:
 
 ### Consequence for UKF design
 
-* **Direct innovation channel** for 30 states: 18 A+D + 5
-  acidogenesis substrates + 7 hydrolysis modes.
-* **Open-loop propagation** for 11 states: 4 acidogenesis biomasses
+* **Direct innovation channel** for 30 states: 18 A+D + 5  
+  acidogenesis substrates + 7 hydrolysis modes.  
+* **Open-loop propagation** for 11 states: 4 acidogenesis biomasses  
   (X_su, X_aa, X_c4, X_pro), 3 PS/PF splits in C, 2 nitrogen states
   in E, 2 FA states (S_fa, X_fa observed slowly via A). Model them
   as OU-drift channels in `StateVectorSpec`.
 
 ## Sources
 
-* `pyadm1/core/adm1.py` (v0.3.4) — all line citations refer to this.
-* `pyadm1/components/biological/digester.py` — VFA/TAC computation.
-* Hellmann, S. et al. (2023). *Observability and Identifiability
+* `pyadm1/core/adm1.py` (v0.3.4) — all line citations refer to this.  
+* `pyadm1/components/biological/digester.py` — VFA/TAC computation.  
+* Hellmann, S. et al. (2023). *Observability and Identifiability  
   Analyses of Process Models for Agricultural Anaerobic Digestion
-  Plants.* arXiv:2301.05068v3.
-* Haugen, F. et al. (2014). *State Estimation and Model-Based Control of
-  a Pilot Anaerobic Digestion Reactor.* J. Control Sci. Eng., 572621.
-* Villaverde, A. F. (2022). *STRIKE_GOLDD 4.0.* arXiv:2207.07346.
-* Wolf, C., Gaida, D., Bongards, M. (2014). *Online-measurement systems
+  Plants.* arXiv:2301.05068v3.  
+* Haugen, F. et al. (2014). *State Estimation and Model-Based Control of  
+  a Pilot Anaerobic Digestion Reactor.* J. Control Sci. Eng., 572621.  
+* Villaverde, A. F. (2022). *STRIKE_GOLDD 4.0.* arXiv:2207.07346.  
+* Wolf, C., Gaida, D., Bongards, M. (2014). *Online-measurement systems  
   for agricultural and industrial AD plants — a review and practice
-  test.* Compendium :metabolon.
-* [Step 1: Observability literature review](literature_review.md)
+  test.* Compendium :metabolon.  
+* [Step 1: Observability literature review](literature_review.md)  

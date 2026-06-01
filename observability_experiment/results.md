@@ -71,9 +71,9 @@ degradable) particulates within each category share identical
 dynamics modulo the disintegration constant K_DIS. Without a
 direct measurement of either pool the splits remain unresolved:
 
-  * X_PS_ch ↔ X_PF_ch (chain ch)
-  * X_PS_pr ↔ X_PF_pr (chain pr)
-  * X_PS_li ↔ X_PF_li (chain li)
+  * X_PS_ch ↔ X_PF_ch (chain ch)  
+  * X_PS_pr ↔ X_PF_pr (chain pr)  
+  * X_PS_li ↔ X_PF_li (chain li)  
 
 **Implication:** influent characterization (substrate-specific
 PS/PF fractions from lab analysis) is mandatory. The UKF
@@ -119,20 +119,20 @@ FOS/TAC):
 
 The remaining 5-9 states split into:
 
-* **3 PS/PF splits in C** (truly non-separable from process
-  data, needs influent characterization).
-* **2 nitrogen-domain (E)** (open-loop only, needs NH4-N lab
-  for correctability).
-* **0-4 in B** that may or may not be reachable past the sympy
+* **3 PS/PF splits in C** (truly non-separable from process  
+  data, needs influent characterization).  
+* **2 nitrogen-domain (E)** (open-loop only, needs NH4-N lab  
+  for correctability).  
+* **0-4 in B** that may or may not be reachable past the sympy  
   iter-6 crash. Conservatively count them as "weakly observable
   via correlation". UKF should treat as OU-drift channels.
 
 ## What the Phase-1 UKF can do
 
-* **Direct innovation** on: 18 A+D states + 5 acidogenesis
+* **Direct innovation** on: 18 A+D states + 5 acidogenesis  
   substrates (S_su, S_aa, S_va, S_bu, S_pro) + 7 hydrolysis
-  modes → **30 states with reliable correction**.
-* **Open-loop propagation** for the remaining 11: 4 acidogenesis
+  modes → **30 states with reliable correction**.  
+* **Open-loop propagation** for the remaining 11: 4 acidogenesis  
   biomass (X_su, X_aa, X_c4, X_pro) + 3 PS/PF disintegration
   splits + 2 nitrogen + 2 decoupled FA (S_fa, X_fa, observable
   via A's gas-side dynamics but at slow time constants). Use
@@ -157,19 +157,19 @@ Environment: Python 3.14, sympy 1.14.0, numpy ≥ 1.26, psutil
 
 ## Honest caveats
 
-* Sedoglavic's test is *almost-sure* in the sample point but not
+* Sedoglavic's test is *almost-sure* in the sample point but not  
   *guaranteed*. False-positive rank (saying observable when it
   isn't) is measure-zero with random rationals over the
   algebraic numbers; false-negative (missing a real-rank gain
-  that vanishes at our specific sample) is similarly negligible.
-* B's rank 6 is a *lower bound*. The +1-per-iter rank pattern
+  that vanishes at our specific sample) is similarly negligible.  
+* B's rank 6 is a *lower bound*. The +1-per-iter rank pattern  
   strongly suggests true rank = 9 (= n_states), but proving it
   needs JAX-based autodiff to bypass the sympy expression-tree
-  crash. Treat 6 as conservative.
-* Parameter numerics used are from Schlattmann (2011) plus
+  crash. Treat 6 as conservative.  
+* Parameter numerics used are from Schlattmann (2011) plus  
   typical ADM1 values. Structural observability is by definition
-  parameter-independent for almost all parameter vectors.
-* The verdict is *structural*, it says nothing about practical
+  parameter-independent for almost all parameter vectors.  
+* The verdict is *structural*, it says nothing about practical  
   numerical conditioning of the UKF observability gramian. That
   requires the actual filter run on data and is the next
   experiment.

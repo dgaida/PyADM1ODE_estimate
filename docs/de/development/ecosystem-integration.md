@@ -196,13 +196,13 @@ gleichzeitig in allen drei Repos setzen, dann werden alle drei Docs auf
 
 Wenn ein viertes Repo dazu kommt (z.B. `PyADM1ODE_control`):
 
-- [ ] `mkdocs.yml` mit obiger Theme-Palette
-- [ ] i18n-Plugin (`docs/de/` + `docs/en/`)
-- [ ] `mike`-Plugin mit `provider: mike`
-- [ ] `objects.inv`-Imports der anderen drei Repos im mkdocstrings-Handler
-- [ ] Ecosystem-Top-Level-Eintrag in `nav`
-- [ ] `docs/{lang}/ecosystem.md`-Seite (Vorlage: dieses Repo)
-- [ ] Footer-Copyright mit „part of the PyADM1ODE ecosystem"
-- [ ] `.github/workflows/docs.yml` analog dem hier verwendeten
-- [ ] In den anderen drei Repos: das neue Repo zu den `objects.inv`-Imports
+- [ ] `mkdocs.yml` mit obiger Theme-Palette  
+- [ ] i18n-Plugin (`docs/de/` + `docs/en/`)  
+- [ ] `mike`-Plugin mit `provider: mike`  
+- [ ] `objects.inv`-Imports der anderen drei Repos im mkdocstrings-Handler  
+- [ ] Ecosystem-Top-Level-Eintrag in `nav`  
+- [ ] `docs/{lang}/ecosystem.md`-Seite (Vorlage: dieses Repo)  
+- [ ] Footer-Copyright mit „part of the PyADM1ODE ecosystem"  
+- [ ] `.github/workflows/docs.yml` analog dem hier verwendeten  
+- [ ] In den anderen drei Repos: das neue Repo zu den `objects.inv`-Imports  
   und zur Ecosystem-Nav hinzufügen

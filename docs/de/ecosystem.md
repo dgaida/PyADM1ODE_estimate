@@ -10,11 +10,11 @@ Das mechanistische Prozessmodell. Implementiert **ADM1da** (Schlattmann 2011),
 ein 41-State-ODE-System für die anaerobe Vergärung in landwirtschaftlichen
 Biogasanlagen. Enthält:
 
-* `pyadm1.core` — ODE und Parameter
-* `pyadm1.components` — modulare Anlagenbausteine (Fermenter, BHKW, Heizung, …)
-* `pyadm1.configurator` — Plant-Builder-API
-* `pyadm1.substrates` — Substrat-Bibliothek
-* `pyadm1.simulation` — Simulator und Parallel-Simulator
+* `pyadm1.core` — ODE und Parameter  
+* `pyadm1.components` — modulare Anlagenbausteine (Fermenter, BHKW, Heizung, …)  
+* `pyadm1.configurator` — Plant-Builder-API  
+* `pyadm1.substrates` — Substrat-Bibliothek  
+* `pyadm1.simulation` — Simulator und Parallel-Simulator  
 
 → [Dokumentation](https://dgaida.github.io/PyADM1ODE/latest/)
 → [GitHub](https://github.com/dgaida/PyADM1ODE)
@@ -23,11 +23,11 @@ Biogasanlagen. Enthält:
 
 Anpassung der ADM1-Parameter an historische Anlagendaten. Enthält:
 
-* IO-Pipeline für SCADA-Exporte (CSV)
-* Lokale + globale Optimierer
-* Sensitivitäts- und Identifizierbarkeitsanalyse
-* SQLAlchemy-Persistenz für Calibration-Runs
-* Plant-Builder für reale Anlagen
+* IO-Pipeline für SCADA-Exporte (CSV)  
+* Lokale + globale Optimierer  
+* Sensitivitäts- und Identifizierbarkeitsanalyse  
+* SQLAlchemy-Persistenz für Calibration-Runs  
+* Plant-Builder für reale Anlagen  
 
 → [Dokumentation](https://dgaida.github.io/PyADM1ODE_calibration/latest/)
 → [GitHub](https://github.com/dgaida/PyADM1ODE_calibration)

@@ -5,10 +5,10 @@ the `build_ukf()` function.
 
 ## Prerequisites
 
-* Python ≥ 3.10
-* [`PyADM1ODE`](https://github.com/dgaida/PyADM1ODE) — base package
-  with the ADM1da model
-* Optional: [`PyADM1ODE_calibration`](https://github.com/dgaida/PyADM1ODE_calibration)
+* Python ≥ 3.10  
+* [`PyADM1ODE`](https://github.com/dgaida/PyADM1ODE) — base package  
+  with the ADM1da model  
+* Optional: [`PyADM1ODE_calibration`](https://github.com/dgaida/PyADM1ODE_calibration)  
   for calibrated models from historical plant data
 
 ## Installation
@@ -68,8 +68,8 @@ substrate inputs** from the declared sensors.
 `measurement_stream` is an iterable that yields one
 `(t, measurements)` tuple per time step:
 
-* `t` — time in days (`float`),
-* `measurements` — a `dict` `{sensor: value}`. Channels are matched **by
+* `t` — time in days (`float`),  
+* `measurements` — a `dict` `{sensor: value}`. Channels are matched **by  
   name, not by position**, and matching is forgiving: case and separators
   (`_`, `-`, spaces) are ignored and the `Q_` prefix is optional. So
   `"Q_gas"`, `"q_gas"` and `"gas"` all hit the same channel, and
@@ -147,10 +147,10 @@ ukf = build_ukf(
 Important: `substrates=[...]` and the `"substrate_dose"` sensor are **two
 different things**:
 
-* `substrates=[InputSpec(...)]` **declares** the substrate feeds as extra
+* `substrates=[InputSpec(...)]` **declares** the substrate feeds as extra  
   states in the state vector. The filter therefore estimates the
-  *actually delivered* volumetric flow.
-* `"substrate_dose"` adds **sensors** that *measure* those very states:
+  *actually delivered* volumetric flow.  
+* `"substrate_dose"` adds **sensors** that *measure* those very states:  
   one channel per declared substrate. The single string `"substrate_dose"`
   thus expands into several channels — here `Q_maize_silage`,
   `Q_solid_manure`, `Q_chicken_litter`, `Q_slurry`, `Q_cereal_grain`.
@@ -225,10 +225,10 @@ channels). More on this:
 
 ## Where to go next
 
-* [Usage → UKF in practice](usage/ukf.md) — detailed walkthrough of
+* [Usage → UKF in practice](usage/ukf.md) — detailed walkthrough of  
   the individual building blocks + `MeasurementCalendar` for sporadic
-  lab measurements.
-* [Usage → twin experiments](usage/twin_experiments.md) — end-to-end
-  validation against a known truth.
-* [Observability → sensor-state dependencies](observability/sensor_state_dependencies.md) —
+  lab measurements.  
+* [Usage → twin experiments](usage/twin_experiments.md) — end-to-end  
+  validation against a known truth.  
+* [Observability → sensor-state dependencies](observability/sensor_state_dependencies.md) —  
   which states are at all estimable with which sensors?

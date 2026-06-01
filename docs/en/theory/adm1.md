@@ -77,13 +77,13 @@ Indices as in `pyadm1/core/adm1.py`:
 
 ## Main extensions over standard ADM1
 
-1. **Two-pool disintegration** — X_xc is replaced by X_PS (slow, k=0.04 d⁻¹)
-   and X_PF (fast, k=0.4 d⁻¹), each split into ch/pr/li.
-2. **Explicit hydrolysable pools** X_S_ch/pr/li (indices 18–20).
-3. **Temperature-corrected kinetics** via Arrhenius-θ per organism group.
-4. **Modified inhibition** — quadratic/cubic pH inhibition, free-acid
-   inhibition (KIHPRO, KIHAC), acetate competition.
-5. **Doubled decay rate** k_dec_ac = 0.04 d⁻¹ (classic: 0.02).
+1. **Two-pool disintegration** — X_xc is replaced by X_PS (slow, k=0.04 d⁻¹)  
+   and X_PF (fast, k=0.4 d⁻¹), each split into ch/pr/li.  
+2. **Explicit hydrolysable pools** X_S_ch/pr/li (indices 18–20).  
+3. **Temperature-corrected kinetics** via Arrhenius-θ per organism group.  
+4. **Modified inhibition** — quadratic/cubic pH inhibition, free-acid  
+   inhibition (KIHPRO, KIHAC), acetate competition.  
+5. **Doubled decay rate** k_dec_ac = 0.04 d⁻¹ (classic: 0.02).  
 
 ## Built-in derived observables
 
@@ -100,8 +100,8 @@ plugged in as extractors in the `ObservationModel`:
 
 ## Sources
 
-* Schlattmann, M. (2011). Agricultural extension of ADM1.
-* Batstone, D. J. et al. (2002). *The IWA Anaerobic Digestion Model No 1.*
-  Water Science and Technology 45(10):65–73.
-* Weinrich, S. & Nelles, M. (2021). *Systematic simplification of the ADM1.*
+* Schlattmann, M. (2011). Agricultural extension of ADM1.  
+* Batstone, D. J. et al. (2002). *The IWA Anaerobic Digestion Model No 1.*  
+  Water Science and Technology 45(10):65–73.  
+* Weinrich, S. & Nelles, M. (2021). *Systematic simplification of the ADM1.*  
   Bioresource Technology 333:125124.

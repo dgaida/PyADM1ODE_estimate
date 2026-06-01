@@ -74,46 +74,46 @@ CLI-Parameter:
 
 ## Was passiert intern
 
-1. **Truth-Plant bauen** (`build_multi_stage_plant`) und für 30 Tage
+1. **Truth-Plant bauen** (`build_multi_stage_plant`) und für 30 Tage  
    warmlaufen lassen (`plant.simulate()`). Dadurch erreicht die ODE
-   einen quasi-stationären Operating Point.
-2. **Deepcopy** der gewärmten Plant für den Filter. Garantiert
-   bit-identisches Modell zwischen Truth und Filter zu `t=0`.
-3. **Truth-Trajektorie** propagieren (`_propagate_truth_with_substrate_noise`)
+   einen quasi-stationären Operating Point.  
+2. **Deepcopy** der gewärmten Plant für den Filter. Garantiert  
+   bit-identisches Modell zwischen Truth und Filter zu `t=0`.  
+3. **Truth-Trajektorie** propagieren (`_propagate_truth_with_substrate_noise`)  
    mit Per-Schritt-Rauschen auf den Substrat-Inputs (Operator-Lieferung
-   ist nie exakt).
-4. **Truth-Sensoren** (`build_truth_sensors`) erzeugen das verrauschte
+   ist nie exakt).  
+4. **Truth-Sensoren** (`build_truth_sensors`) erzeugen das verrauschte  
    Mess-Signal. Diese benutzen die `PhysicalSensor`-Klassen aus
    PyADM1ODE für realistische Drift, Response-Lag und Sampling
-   (siehe `pyadm1ode_estimation.estimation.sensors`).
-5. **UKF** mit `ukf.reset(x_truth0 + perturbation, P0)` initialisieren.
-6. **Filter-Loop** über alle Mess-Zeitstempel.
-7. **Plots schreiben** in `output/twin_experiment/`.
+   (siehe `pyadm1ode_estimation.estimation.sensors`).  
+5. **UKF** mit `ukf.reset(x_truth0 + perturbation, P0)` initialisieren.  
+6. **Filter-Loop** über alle Mess-Zeitstempel.  
+7. **Plots schreiben** in `output/twin_experiment/`.  
 
 ## Erzeugte Plots
 
 Pro Run werden 6 Plots in `output/twin_experiment/` abgelegt:
 
-* **`trajectories_strong.png`** — 6 strong-observable States
+* **`trajectories_strong.png`** — 6 strong-observable States  
   (S_ac, S_ch4, X_ac, S_hco3, p_gas_ch4, pTOTAL) mit truth, `x̂`
-  und ±2σ-Band.
-* **`trajectories_weak.png`** — 6 weak / open-loop States + 1
-  Substrat-Input.
-* **`observations.png`** — alle 6 Mess-Channels mit clean truth,
-  noisy measurement und Filter-Vorhersage ŷ.
-* **`production_estimate.png`** — der eigentliche
-  Production-Plot:
-    * Truth Q_gas / Q_ch4 (schwarz)
-    * Raw sensor (rote X) — was die Messpunkte liefern
-    * Sensor-smoothed (rot, durchgezogen) — gleitender Mittelwert
-    * h(x̂) (grün) — deterministische Modell-Re-evaluation am
+  und ±2σ-Band.  
+* **`trajectories_weak.png`** — 6 weak / open-loop States + 1  
+  Substrat-Input.  
+* **`observations.png`** — alle 6 Mess-Channels mit clean truth,  
+  noisy measurement und Filter-Vorhersage ŷ.  
+* **`production_estimate.png`** — der eigentliche  
+  Production-Plot:  
+    * Truth Q_gas / Q_ch4 (schwarz)  
+    * Raw sensor (rote X) — was die Messpunkte liefern  
+    * Sensor-smoothed (rot, durchgezogen) — gleitender Mittelwert  
+    * h(x̂) (grün) — deterministische Modell-Re-evaluation am  
       Filter-Posterior (Jensen-bias-frei, eine einzige Plant-Step-
-      Auswertung statt 89 Sigma-Punkte)
-    * `±1σ`-Band aus der UKF-internen `y_std`
-    * Kumulative Produktion mit End-Error annotiert
-* **`nis.png`** — NIS-Zeitreihe in log-Skala mit Erwartungswert
-  als Referenz-Linie.
-* **`coverage_summary.png`** — Per-Quality-Block 2σ-Coverage als
+      Auswertung statt 89 Sigma-Punkte)  
+    * `±1σ`-Band aus der UKF-internen `y_std`  
+    * Kumulative Produktion mit End-Error annotiert  
+* **`nis.png`** — NIS-Zeitreihe in log-Skala mit Erwartungswert  
+  als Referenz-Linie.  
+* **`coverage_summary.png`** — Per-Quality-Block 2σ-Coverage als  
   Bar-Chart mit Sollwerten (80 % / 40 % / 20 %).
 
 ## Was die Resultate bedeuten
@@ -171,17 +171,17 @@ eigentliche Nutzen.
 
 Für einen produktiven UKF gelten als Faustregel:
 
-* **Strong-observable Blöcke** (methanogenesis, charge_balance,
-  acidogenesis_substrates): 2σ-Coverage ≥ 80 %
-* **Weak / OU-Blöcke**: 2σ-Coverage ≥ 40 %
-* **Open-Loop**: 2σ-Coverage ≥ 20 %
-* **NIS-Mean** über mehrere Tage in `[0.5·n, 2.0·n]`
+* **Strong-observable Blöcke** (methanogenesis, charge_balance,  
+  acidogenesis_substrates): 2σ-Coverage ≥ 80 %  
+* **Weak / OU-Blöcke**: 2σ-Coverage ≥ 40 %  
+* **Open-Loop**: 2σ-Coverage ≥ 20 %  
+* **NIS-Mean** über mehrere Tage in `[0.5·n, 2.0·n]`  
 
 Bei einem Acceptance-Test sollten alle erfüllt sein. Wenn z.B. der
 NIS-Mean außerhalb des Bereichs liegt, prüfe:
 
-* Sind die `noise_std`-Werte realistisch zu den Sensoren?
-* Reicht der Warm-up, damit die Plant im Quasi-Steady-State ist?
-* Ist die Initial-Perturbation `--initial-perturbation-relative`
-  realistisch zur Initial-Kovarianz `P0`?
-* Ist `dt_hours` klein genug für die ADM1-Nichtlinearität?
+* Sind die `noise_std`-Werte realistisch zu den Sensoren?  
+* Reicht der Warm-up, damit die Plant im Quasi-Steady-State ist?  
+* Ist die Initial-Perturbation `--initial-perturbation-relative`  
+  realistisch zur Initial-Kovarianz `P0`?  
+* Ist `dt_hours` klein genug für die ADM1-Nichtlinearität?  

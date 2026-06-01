@@ -27,21 +27,21 @@ sudo apt install mono-complete
 
 Der Filter unterschätzt die Unsicherheit. Mögliche Ursachen:
 
-* `process_noise_std` zu klein in einzelnen `StateChannel`s.
-* `noise_std` der `ObservationChannel`s zu klein (Sensor-Rauschen unterschätzt).
-* Modellfehler — z.B. ein nicht modellierter Inhibitor wirkt in der Realität.
+* `process_noise_std` zu klein in einzelnen `StateChannel`s.  
+* `noise_std` der `ObservationChannel`s zu klein (Sensor-Rauschen unterschätzt).  
+* Modellfehler — z.B. ein nicht modellierter Inhibitor wirkt in der Realität.  
 
 Erste Maßnahme: `process_noise_std` jedes biologischen Channels um Faktor 2–3
 erhöhen.
 
 ### Filter konvergiert nicht zu sinnvollen Werten
 
-* **Initial-State prüfen**: bei großem initialen Fehler dauert die Konvergenz
-  typischerweise 10–15 Tage (siehe Haugen et al. 2014).
-* **Observability prüfen**: ist der jeweilige Zustand mit der vorhandenen
+* **Initial-State prüfen**: bei großem initialen Fehler dauert die Konvergenz  
+  typischerweise 10–15 Tage (siehe Haugen et al. 2014).  
+* **Observability prüfen**: ist der jeweilige Zustand mit der vorhandenen  
   Sensorik überhaupt schätzbar? Siehe
-  [Observability-Literaturüberblick](observability/literature_review.md).
-* **Bounds prüfen**: zu enge `lower`/`upper`-Bounds clippen aggressiv und
+  [Observability-Literaturüberblick](observability/literature_review.md).  
+* **Bounds prüfen**: zu enge `lower`/`upper`-Bounds clippen aggressiv und  
   unterdrücken Information.
 
 ### `LinAlgError` aus `_cholupdate`-Downdate
@@ -53,11 +53,11 @@ $S'S'^\top = SS^\top - vv^\top$ gemacht. Wenn dieses Downdate fehlschlägt
 Information abzuziehen, als die Prior-Kovarianz bereitstellt. Mögliche
 Ursachen:
 
-* `Q` (Process Noise) ist deutlich kleiner gesetzt als die tatsächliche
-  Modellunsicherheit → Filter wird zu sicher, Updates kollidieren
-* Sensor-Rauschen `R` zu klein angegeben → Filter „glaubt" der Messung
-  zu sehr
-* Bug im Messmodell (z.B. ein Extractor liefert systematisch falsche
+* `Q` (Process Noise) ist deutlich kleiner gesetzt als die tatsächliche  
+  Modellunsicherheit → Filter wird zu sicher, Updates kollidieren  
+* Sensor-Rauschen `R` zu klein angegeben → Filter „glaubt" der Messung  
+  zu sehr  
+* Bug im Messmodell (z.B. ein Extractor liefert systematisch falsche  
   Werte und die Innovation passt nicht zur Cov-Struktur)
 
 Anders als beim klassischen UKF ist dieser Fehler *informativ*: er sagt

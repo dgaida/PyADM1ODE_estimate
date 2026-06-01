@@ -11,11 +11,11 @@ The mechanistic process model. Implements **ADM1da** (Schlattmann 2011), a
 41-state ODE system for anaerobic digestion in agricultural biogas plants.
 Contains:
 
-* `pyadm1.core` — ODE and parameters
-* `pyadm1.components` — modular plant building blocks (digester, CHP, heating, …)
-* `pyadm1.configurator` — plant builder API
-* `pyadm1.substrates` — substrate library
-* `pyadm1.simulation` — simulator and parallel simulator
+* `pyadm1.core` — ODE and parameters  
+* `pyadm1.components` — modular plant building blocks (digester, CHP, heating, …)  
+* `pyadm1.configurator` — plant builder API  
+* `pyadm1.substrates` — substrate library  
+* `pyadm1.simulation` — simulator and parallel simulator  
 
 → [Documentation](https://dgaida.github.io/PyADM1ODE/latest/)
 → [GitHub](https://github.com/dgaida/PyADM1ODE)
@@ -24,11 +24,11 @@ Contains:
 
 Fits ADM1 parameters to historical plant data. Contains:
 
-* IO pipeline for SCADA exports (CSV)
-* Local + global optimizers
-* Sensitivity and identifiability analysis
-* SQLAlchemy persistence for calibration runs
-* Plant builders for real plants
+* IO pipeline for SCADA exports (CSV)  
+* Local + global optimizers  
+* Sensitivity and identifiability analysis  
+* SQLAlchemy persistence for calibration runs  
+* Plant builders for real plants  
 
 → [Documentation](https://dgaida.github.io/PyADM1ODE_calibration/latest/)
 → [GitHub](https://github.com/dgaida/PyADM1ODE_calibration)

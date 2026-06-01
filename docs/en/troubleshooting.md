@@ -27,22 +27,22 @@ sudo apt install mono-complete
 
 The filter is underestimating uncertainty. Possible causes:
 
-* `process_noise_std` too small in individual `StateChannel`s.
-* `noise_std` of the `ObservationChannel`s too small (sensor noise
-  underestimated).
-* Model mismatch — e.g. an unmodelled inhibitor is active in reality.
+* `process_noise_std` too small in individual `StateChannel`s.  
+* `noise_std` of the `ObservationChannel`s too small (sensor noise  
+  underestimated).  
+* Model mismatch — e.g. an unmodelled inhibitor is active in reality.  
 
 First step: increase `process_noise_std` of each biological channel by a
 factor of 2–3.
 
 ### Filter does not converge to sensible values
 
-* **Check the initial state**: with a large initial error, convergence
-  typically takes 10–15 days (see Haugen et al. 2014).
-* **Check observability**: is the state in question estimable at all with
+* **Check the initial state**: with a large initial error, convergence  
+  typically takes 10–15 days (see Haugen et al. 2014).  
+* **Check observability**: is the state in question estimable at all with  
   the available sensors? See
-  [Observability literature review](observability/literature_review.md).
-* **Check bounds**: overly tight `lower`/`upper` bounds clip aggressively
+  [Observability literature review](observability/literature_review.md).  
+* **Check bounds**: overly tight `lower`/`upper` bounds clip aggressively  
   and suppress information.
 
 ### `LinAlgError` from `_cholupdate` downdate
@@ -54,11 +54,11 @@ $S'S'^\top = SS^\top - vv^\top$ is applied. When this downdate fails
 subtract *more* information than the prior covariance contains. Likely
 causes:
 
-* `Q` (process noise) is set noticeably smaller than the actual model
-  uncertainty → filter becomes overconfident, updates conflict
-* Sensor noise `R` declared too small → filter "trusts" the measurement
-  too much
-* Bug in the measurement model (e.g. an extractor systematically
+* `Q` (process noise) is set noticeably smaller than the actual model  
+  uncertainty → filter becomes overconfident, updates conflict  
+* Sensor noise `R` declared too small → filter "trusts" the measurement  
+  too much  
+* Bug in the measurement model (e.g. an extractor systematically  
   produces wrong values and the innovation pattern is inconsistent with
   the covariance structure)
 
