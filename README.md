@@ -2,7 +2,7 @@
 
 State estimation framework for PyADM1ODE biogas plant models.
 
-![Version](https://img.shields.io/badge/version-0.1.2-blue)
+[![Version](https://img.shields.io/github/v/tag/dgaida/PyADM1ODE_estimate?label=version)](https://github.com/dgaida/PyADM1ODE_estimate/tags)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Code Quality](https://github.com/dgaida/PyADM1ODE_estimate/actions/workflows/lint.yml/badge.svg)](https://github.com/dgaida/PyADM1ODE_estimate/actions/workflows/lint.yml)
 [![Tests](https://github.com/dgaida/PyADM1ODE_estimate/actions/workflows/tests.yml/badge.svg)](https://github.com/dgaida/PyADM1ODE_estimate/actions/workflows/tests.yml)
@@ -121,12 +121,12 @@ mkdocs serve
 
 Key pages:
 
-* [Home (DE)](docs/de/index.md) · [Home (EN)](docs/en/index.md)
-* [Getting started (DE)](docs/de/getting-started.md) · [Getting started (EN)](docs/en/getting-started.md)
-* [UKF in practice](docs/de/usage/ukf.md) · [Calibration artifact](docs/de/usage/calibration_artifact.md)
-* [Observability — Literature review (DE)](docs/de/observability/literature_review.md) · [(EN)](docs/en/observability/literature_review.md)
-* [Examples — methodology](docs/de/examples/index.md)
-* [ADM1da model overview](docs/de/theory/adm1.md)
+* [Home (DE)](docs/de/index.md) · [Home (EN)](docs/en/index.md)  
+* [Getting started (DE)](docs/de/getting-started.md) · [Getting started (EN)](docs/en/getting-started.md)  
+* [UKF in practice](docs/de/usage/ukf.md) · [Calibration artifact](docs/de/usage/calibration_artifact.md)  
+* [Observability — Literature review (DE)](docs/de/observability/literature_review.md) · [(EN)](docs/en/observability/literature_review.md)  
+* [Examples — methodology](docs/de/examples/index.md)  
+* [ADM1da model overview](docs/de/theory/adm1.md)  
 
 ## License
 

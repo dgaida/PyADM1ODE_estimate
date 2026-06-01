@@ -4,10 +4,10 @@ Praktisches Setup für den Square-Root-UKF auf einer Biogasanlage. Diese
 Seite zeigt das **aktuelle** API (ab Refactor 2026). Die einzelnen
 Bausteine sind:
 
-* :func:`adm1da_full_spec` — Factory für den vollen 41-State ADM1da-Vektor
-* :class:`UnscentedKalmanFilter` — Square-Root-UKF (Wan & Van der Merwe 2001)
-* :class:`MeasurementCalendar` — Sample-Rate-Verwaltung pro Sensor
-* :class:`SensorAdapter` — Anschluss an die PyADM1ODE-Sensor-Klassen
+* :func:`adm1da_full_spec` — Factory für den vollen 41-State ADM1da-Vektor  
+* :class:`UnscentedKalmanFilter` — Square-Root-UKF (Wan & Van der Merwe 2001)  
+* :class:`MeasurementCalendar` — Sample-Rate-Verwaltung pro Sensor  
+* :class:`SensorAdapter` — Anschluss an die PyADM1ODE-Sensor-Klassen  
 
 ## State-Vektor deklarieren
 
@@ -181,11 +181,11 @@ Der `UnscentedKalmanFilter` propagiert den Cholesky-Faktor `S` (mit
 
 Effekte:
 
-* `κ(S) = √κ(P)` → halbierte Konditionszahl → bei n=44 strukturell
-  robuster als der frühere Cholesky-UKF.
-* **Positiv-Definitheit per Konstruktion**: `P = SSᵀ` kann nie indefinit
-  werden.
-* Bei `_cholupdate`-Downdate-Fehler weißt du strukturell, dass dein
+* `κ(S) = √κ(P)` → halbierte Konditionszahl → bei n=44 strukturell  
+  robuster als der frühere Cholesky-UKF.  
+* **Positiv-Definitheit per Konstruktion**: `P = SSᵀ` kann nie indefinit  
+  werden.  
+* Bei `_cholupdate`-Downdate-Fehler weißt du strukturell, dass dein  
   `Q`/`R`-Tuning oder dein Mess-Modell ein echtes Problem hat, kein
   numerischer Glitch (siehe [Troubleshooting](../troubleshooting.md)).
 
@@ -240,9 +240,9 @@ Faustregel für gut-kalibrierten Filter: `NIS ∈ [0.5·n, 2.0·n]`.
 Bei 6 Mess-Channels heißt das `NIS ∈ [3, 12]`. Wenn der **mittlere NIS
 über mehrere Tage** außerhalb dieses Fensters liegt:
 
-* `NIS > 3·n` über Stunden → Filter divergiert wahrscheinlich (z.B.
-  nicht modellierter Inhibitor, ungedoste Substrat-Schwankung).
-* `NIS < 0.3·n` → Sensoren-`R` ist deutlich zu groß angegeben oder das
+* `NIS > 3·n` über Stunden → Filter divergiert wahrscheinlich (z.B.  
+  nicht modellierter Inhibitor, ungedoste Substrat-Schwankung).  
+* `NIS < 0.3·n` → Sensoren-`R` ist deutlich zu groß angegeben oder das  
   Process-Noise `Q` ist überdimensioniert.
 
 Siehe auch [Twin-Experimente](twin_experiments.md) für ein End-to-End Beispiel mit Plot-Diagnose.

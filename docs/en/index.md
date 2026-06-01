@@ -30,11 +30,11 @@ Live sensors ──────────────────────�
 
 ## Key features
 
-* 🎯 **Mechanistic and data-driven** — UKF on the full 41-state ADM1da plus
-  planned deep-learning and fusion layers.
-* 🔌 **Sensor-tolerant** — channel gating for sparse lab measurements,
-  OU drift for augmented input estimation.
-* 📊 **Diagnostic** — per-step NIS monitoring, per-channel innovation,
+* 🎯 **Mechanistic and data-driven** — UKF on the full 41-state ADM1da plus  
+  planned deep-learning and fusion layers.  
+* 🔌 **Sensor-tolerant** — channel gating for sparse lab measurements,  
+  OU drift for augmented input estimation.  
+* 📊 **Diagnostic** — per-step NIS monitoring, per-channel innovation,  
   Joseph-form covariance update for long runs.
 
 ## Three estimation approaches
@@ -47,13 +47,13 @@ Live sensors ──────────────────────�
 
 ## Table of contents
 
-* [Getting started](getting-started.md) — quick onboarding.
-* [Installation](installation.md) — setup for different environments.
-* [Usage](usage/index.md) — configure the UKF, load the calibration artifact.
-* [Observability](observability/index.md) — which states can be estimated from which sensors?
-* [Theory](theory/index.md) — ADM1da model, PINN concept.
-* [Examples](examples/index.md) — end-to-end examples (twin, real plant).
-* [API reference](api/index.md) — auto-generated via mkdocstrings.
+* [Getting started](getting-started.md) — quick onboarding.  
+* [Installation](installation.md) — setup for different environments.  
+* [Usage](usage/index.md) — configure the UKF, load the calibration artifact.  
+* [Observability](observability/index.md) — which states can be estimated from which sensors?  
+* [Theory](theory/index.md) — ADM1da model, PINN concept.  
+* [Examples](examples/index.md) — end-to-end examples (twin, real plant).  
+* [API reference](api/index.md) — auto-generated via mkdocstrings.  
 
 ## Quickstart
 
@@ -105,6 +105,6 @@ More details: [UKF in practice](usage/ukf.md) and
 
 ## Related projects
 
-* [PyADM1ODE](https://github.com/dgaida/PyADM1ODE) — base package with the ADM1da model.
-* [PyADM1ODE_calibration](https://github.com/dgaida/PyADM1ODE_calibration) —
+* [PyADM1ODE](https://github.com/dgaida/PyADM1ODE) — base package with the ADM1da model.  
+* [PyADM1ODE_calibration](https://github.com/dgaida/PyADM1ODE_calibration) —  
   parameter calibration against historical data, writes the calibration artifact.

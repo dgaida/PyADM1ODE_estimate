@@ -3,10 +3,10 @@
 Hands-on setup for the Square-Root UKF on a biogas plant. This page
 covers the **current** API (refactor 2026); the building blocks are:
 
-* :func:`adm1da_full_spec` — factory for the full 41-state ADM1da vector
-* :class:`UnscentedKalmanFilter` — Square-Root UKF (Wan & Van der Merwe 2001)
-* :class:`MeasurementCalendar` — per-sensor sample-rate management
-* :class:`SensorAdapter` — bridge to the PyADM1ODE sensor classes
+* :func:`adm1da_full_spec` — factory for the full 41-state ADM1da vector  
+* :class:`UnscentedKalmanFilter` — Square-Root UKF (Wan & Van der Merwe 2001)  
+* :class:`MeasurementCalendar` — per-sensor sample-rate management  
+* :class:`SensorAdapter` — bridge to the PyADM1ODE sensor classes  
 
 ## Declaring the state vector
 
@@ -179,11 +179,11 @@ The `UnscentedKalmanFilter` propagates the Cholesky factor `S` (with
 
 Effects:
 
-* `κ(S) = √κ(P)` → half the condition number → at n=44 structurally
-  more robust than the earlier Cholesky-UKF.
-* **Positive-definiteness by construction**: `P = SSᵀ` can never go
-  indefinite.
-* On a `_cholupdate` downdate failure, you know structurally that your
+* `κ(S) = √κ(P)` → half the condition number → at n=44 structurally  
+  more robust than the earlier Cholesky-UKF.  
+* **Positive-definiteness by construction**: `P = SSᵀ` can never go  
+  indefinite.  
+* On a `_cholupdate` downdate failure, you know structurally that your  
   `Q`/`R` tuning or your measurement model has a real problem — not
   a numerical glitch (see [troubleshooting](../troubleshooting.md)).
 
@@ -238,9 +238,9 @@ Rule of thumb for a well-tuned filter: `NIS ∈ [0.5·n, 2.0·n]`.
 At 6 measurement channels that means `NIS ∈ [3, 12]`. If the **mean
 NIS over multiple days** falls outside this window:
 
-* `NIS > 3·n` for hours → filter is likely diverging (e.g. unmodelled
-  inhibitor, undosed substrate spike).
-* `NIS < 0.3·n` → sensor `R` is set noticeably too large or the
+* `NIS > 3·n` for hours → filter is likely diverging (e.g. unmodelled  
+  inhibitor, undosed substrate spike).  
+* `NIS < 0.3·n` → sensor `R` is set noticeably too large or the  
   process noise `Q` is over-dimensioned.
 
 See also [twin experiments](twin_experiments.md) for an end-to-end

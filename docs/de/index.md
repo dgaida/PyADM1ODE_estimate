@@ -31,11 +31,11 @@ Live-Sensoren ──────────────────────
 
 ## Hauptmerkmale
 
-* 🎯 **Mechanistisch und datengetrieben** — UKF auf dem vollen 41-State ADM1da
-  plus geplante Deep-Learning- und Fusion-Schichten.
-* 🔌 **Sensor-tolerant** — Channel-Gating für sparsame Lab-Messungen,
-  OU-Drift für augmentierte Eingangsschätzung.
-* 📊 **Diagnostisch** — NIS-Monitoring je Schritt, Innovation pro Channel,
+* 🎯 **Mechanistisch und datengetrieben** — UKF auf dem vollen 41-State ADM1da  
+  plus geplante Deep-Learning- und Fusion-Schichten.  
+* 🔌 **Sensor-tolerant** — Channel-Gating für sparsame Lab-Messungen,  
+  OU-Drift für augmentierte Eingangsschätzung.  
+* 📊 **Diagnostisch** — NIS-Monitoring je Schritt, Innovation pro Channel,  
   Joseph-Form Kovarianz-Update für lange Läufe.
 
 ## Drei Schätzansätze
@@ -48,13 +48,13 @@ Live-Sensoren ──────────────────────
 
 ## Inhaltsverzeichnis
 
-* [Erste Schritte](getting-started.md) — Schneller Einstieg.
-* [Installation](installation.md) — Setup für verschiedene Umgebungen.
-* [Nutzung](usage/index.md) — UKF konfigurieren, Kalibrierungs-Artefakt einlesen.
-* [Observability](observability/index.md) — Welche Zustände sind aus welchen Sensoren schätzbar?
-* [Theorie](theory/index.md) — ADM1da-Modell, PINN-Konzept.
-* [Beispiele](examples/index.md) — End-to-End-Beispiele (Twin, echte Anlage).
-* [API-Referenz](api/index.md) — Auto-generiert via mkdocstrings.
+* [Erste Schritte](getting-started.md) — Schneller Einstieg.  
+* [Installation](installation.md) — Setup für verschiedene Umgebungen.  
+* [Nutzung](usage/index.md) — UKF konfigurieren, Kalibrierungs-Artefakt einlesen.  
+* [Observability](observability/index.md) — Welche Zustände sind aus welchen Sensoren schätzbar?  
+* [Theorie](theory/index.md) — ADM1da-Modell, PINN-Konzept.  
+* [Beispiele](examples/index.md) — End-to-End-Beispiele (Twin, echte Anlage).  
+* [API-Referenz](api/index.md) — Auto-generiert via mkdocstrings.  
 
 ## Quickstart
 
@@ -106,6 +106,6 @@ Mehr Details: [UKF im Einsatz](usage/ukf.md) und
 
 ## Verwandte Projekte
 
-* [PyADM1ODE](https://github.com/dgaida/PyADM1ODE) — Basis-Paket mit ADM1da-Modell.
-* [PyADM1ODE_calibration](https://github.com/dgaida/PyADM1ODE_calibration) —
+* [PyADM1ODE](https://github.com/dgaida/PyADM1ODE) — Basis-Paket mit ADM1da-Modell.  
+* [PyADM1ODE_calibration](https://github.com/dgaida/PyADM1ODE_calibration) —  
   Parameter-Kalibrierung gegen historische Daten, schreibt das Calibration-Artefakt.

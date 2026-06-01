@@ -2,15 +2,15 @@
 
 ## Voraussetzungen
 
-* **Python** ≥ 3.10
-* **PyADM1ODE** (Basis-Paket) — wird transitiv installiert. Wenn nicht
+* **Python** ≥ 3.10  
+* **PyADM1ODE** (Basis-Paket) — wird transitiv installiert. Wenn nicht  
   automatisch verfügbar, manuell:
 
   ```bash
   pip install git+https://github.com/dgaida/PyADM1ODE.git
   ```
 
-* **Optional**: PyADM1ODE_calibration für Plant-Builder und historische
+* **Optional**: PyADM1ODE_calibration für Plant-Builder und historische  
   Datenanbindung.
 
 ## Standard-Installation

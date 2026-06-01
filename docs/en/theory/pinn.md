@@ -38,8 +38,8 @@ $$
 
 ## Inputs and outputs
 
-* **Inputs**: Time $t$ and time-dependent substrate feed $u(t)$.
-* **Outputs**: Estimated ADM1 state vector $\hat{x}(t)$ (41 components).
+* **Inputs**: Time $t$ and time-dependent substrate feed $u(t)$.  
+* **Outputs**: Estimated ADM1 state vector $\hat{x}(t)$ (41 components).  
 
 ## Integration in PyADM1ODE_estimation
 

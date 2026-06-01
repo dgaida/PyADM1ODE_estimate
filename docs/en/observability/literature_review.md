@@ -64,12 +64,12 @@ sample-and-hold.
 
 Two independent approaches, both symbolic:
 
-1. **Algebraic approach** (Mathematica): build Lie derivatives
+1. **Algebraic approach** (Mathematica): build Lie derivatives  
    $y, \dot y, \ddot y, \dots$ of the outputs, assemble an equation system
    and solve symbolically for the states. Unique solution → globally
    observable; multiple solutions → locally observable.
 
-2. **Geometric approach** (STRIKE_GOLDD toolbox in Matlab, algorithms
+2. **Geometric approach** (STRIKE_GOLDD toolbox in Matlab, algorithms  
    FISPO and ORC-DF): check rank of an observability matrix $\mathcal{O}(x)$
    built from Lie derivatives. Rank $n$ → locally observable.
 
@@ -92,11 +92,11 @@ measurement. No clever time-derivative manipulation helps.
 
 #### ADM1-R3 (17 states): locally observable with CH₄, CO₂, pH, TS, VS, IN (+ Sac)
 
-* The algebraic approach fails for the full ADM1-R3 because the equation
-  system becomes too complex (Mathematica kernel dies).
-* The geometric approach (STRIKE_GOLDD) successfully shows all 17 states
-  locally observable.
-* For algebraic resolution of **submodels**, an online Sac (acetate)
+* The algebraic approach fails for the full ADM1-R3 because the equation  
+  system becomes too complex (Mathematica kernel dies).  
+* The geometric approach (STRIKE_GOLDD) successfully shows all 17 states  
+  locally observable.  
+* For algebraic resolution of **submodels**, an online Sac (acetate)  
   measurement is required — not realistic in the field. The geometric
   approach shows the full ADM1-R3 observable even without Sac.
 
@@ -124,11 +124,11 @@ parameters online — given the same measurement set.
 
 ### Structural takeaways for filter design
 
-1. **Some measurements are mandatory, not "nice to have"**: every state
+1. **Some measurements are mandatory, not "nice to have"**: every state  
    that appears only in a single DE and nowhere else *must* be measured.
    In ADM1-R4 these are exactly IN, TS, VS.
 
-2. **pH measurement is a structural lever**: pH measurement allows direct
+2. **pH measurement is a structural lever**: pH measurement allows direct  
    computation of $S_{H^+}$ (via $\mathrm{pH} = -\log_{10} S_{H^+}$). This
    makes the three ion states $S_{ion}$, $S_{ac^-}$, $S_{hco3^-}$
    **redundant** and removable from the state vector:
@@ -143,7 +143,7 @@ parameters online — given the same measurement set.
    A single pH probe effectively reduces the state dimension by 3 and
    eliminates an algebraically non-trivial subsystem (the charge balance $\Phi$).
 
-3. **Complexity scales poorly**: geometric analysis time for ADM1-R3 (17
+3. **Complexity scales poorly**: geometric analysis time for ADM1-R3 (17  
    states, FISPO): ~12,000 s; after removing individual model parts,
    BMR3+ABC (13 states): ~12 s. Factor 1000. For ADM1-R2 and higher,
    neither method works any more.
@@ -158,12 +158,12 @@ problem.
 
 ### Setup
 
-* **Model:** full ADM1 (Batstone et al. 2002), 37 states
-* **Plant:** full-scale agricultural plant (simulation study)
-* **Measurements:** biogas flow, CH₄ and CO₂ concentrations in the biogas,
+* **Model:** full ADM1 (Batstone et al. 2002), 37 states  
+* **Plant:** full-scale agricultural plant (simulation study)  
+* **Measurements:** biogas flow, CH₄ and CO₂ concentrations in the biogas,  
   pH value, substrate quantity per substrate type (maize, grass, manure,
-  manure solids)
-* **Method:** discriminant analysis / machine learning — static mapping
+  manure solids)  
+* **Method:** discriminant analysis / machine learning — static mapping  
   function measurement → operating state
 
 ### Main statement (from the abstract)
@@ -183,14 +183,14 @@ though it is not formally reconstructible from the measurements."*
 
 Three implications:
 
-1. **Practical observability ≠ structural observability**: a system can be
+1. **Practical observability ≠ structural observability**: a system can be  
    formally unobservable while still operating in a regime where statistical
    methods suffice.
 
-2. **Learning methods need training data** with reliable "ground-truth"
+2. **Learning methods need training data** with reliable "ground-truth"  
    states. That is the scarcest commodity in the field.
 
-3. **Template for hybrid approaches**: classical observer (UKF) for the
+3. **Template for hybrid approaches**: classical observer (UKF) for the  
    structurally observable states + statistical model for the rest — exactly
    the idea of AP 4.4 (fusion) in this repository.
 
@@ -207,7 +207,7 @@ mechanistic model, and only a single online measurement. It still works.
 
 ### Setup
 
-* **Model:** Modified Hill Model — 4 states plus one augmented quantity:
+* **Model:** Modified Hill Model — 4 states plus one augmented quantity:  
 
   | State | Meaning |
   |---|---|
@@ -217,9 +217,9 @@ mechanistic model, and only a single online measurement. It still works.
   | $X_{meth}$ | Methanogenic biomass |
   | $S_{vs_{in}}$ | (augmented) Volatile Solids in feed — modelled as random walk |
 
-* **Measurement:** exactly one online quantity — $F_{meth}$ (methane flow).
+* **Measurement:** exactly one online quantity — $F_{meth}$ (methane flow).  
 
-* **Reactor:** UASB pilot reactor (250 L), substrate cattle manure.
+* **Reactor:** UASB pilot reactor (250 L), substrate cattle manure.  
 
 ### Methodology
 
@@ -242,12 +242,12 @@ operating points.
 
 ### Lessons
 
-* With drastic model reduction (5 vs 17 vs 37 states) few measurements
+* With drastic model reduction (5 vs 17 vs 37 states) few measurements  
   suffice. The price: the model misses many biological mechanisms, and model
   errors show up as drift in the estimates (Haugen observes this in the plot
   for $S_{vfa}$, Fig. 4 — *„from $t=150\,d$, there is a noticeable difference
-  between the estimate and the laboratory analysis of $S_{vfa}$"*, p. 7f).
-* Augmented states like an unknown influent $S_{vs_{in}}$ can be
+  between the estimate and the laboratory analysis of $S_{vfa}$"*, p. 7f).  
+* Augmented states like an unknown influent $S_{vs_{in}}$ can be  
   co-estimated from a single indirect measurement, as long as the system is
   observable in the linearized sense.
 
@@ -296,11 +296,11 @@ practically tenable — matches the Hellmann table.
 The three sources together yield a consistent picture of why so many states
 remain unobservable in practice:
 
-1. **Single-channel states without a measurement are formally unobservable.**
+1. **Single-channel states without a measurement are formally unobservable.**  
    Hellmann proves this exactly for TS, VS, IN: no clever filter can
    estimate them if they are not measured directly.
 
-2. **Many states with similar effect on few measurements — the filter
+2. **Many states with similar effect on few measurements — the filter  
    distributes the innovation signal across the prior**, not across true
    information. In the Hill model the biological pools collapse to 2–3
    separable dimensions; in ADM1 the count is similar under standard
@@ -308,7 +308,7 @@ remain unobservable in practice:
    Gaida's empirics reflect: 90 % accuracy across *all* states implies the
    effective manifold is low-dimensional.
 
-3. **Complexity bound of the analysis**: even where structural observability
+3. **Complexity bound of the analysis**: even where structural observability  
    theoretically exists (e.g. ADM1-R2), the symbolic tools fail before
    filter implementation. Hellmann explicitly states that "advanced methods"
    not available in standard toolboxes would be required for full ADM1.
@@ -332,17 +332,17 @@ improve observability:
 
 From the perspective of the UKF implemented here (ADM1da, 41 states):
 
-* **ADM1da is closer to ADM1-R3 than to ADM1-R4** in complexity (sub-fraction
+* **ADM1da is closer to ADM1-R3 than to ADM1-R4** in complexity (sub-fraction  
   disintegration, inhibitions, charge balance), but with substantially more
   states than ADM1-R3 (41 vs 17). Hellmann's ADM1-R2 result is the warning
   sign: beyond ~17 states without an online VFA sensor, the situation is
-  precarious.
-* **Real agricultural plants often have even fewer sensors than Hellmann's scenario**
+  precarious.  
+* **Real agricultural plants often have even fewer sensors than Hellmann's scenario**  
   (no pH, no FOS/TAC, no NH₄-N). The literature rule of thumb is clear:
   from ADM1da we can realistically estimate only a **subset** of the states —
   probably a similar order of magnitude as Haugen's Hill model (4–6
-  effectively separable dimensions plus augmented inputs).
-* **Future levers**, in order of value:
+  effectively separable dimensions plus augmented inputs).  
+* **Future levers**, in order of value:  
   pH probe > CH₄/CO₂ split sensor > daily FOS/TAC lab values.
   Each one is marked in the literature as a structural jump, not a gradual
   improvement.
@@ -355,25 +355,25 @@ wishful thinking.
 
 ## References
 
-1. Hellmann, S., Hempel, A.-J., Streif, S., Weinrich, S.
+1. Hellmann, S., Hempel, A.-J., Streif, S., Weinrich, S.  
    *Observability and Identifiability Analyses of Process Models for
    Agricultural Anaerobic Digestion Plants.* 24th Intl. Conference on
-   Process Control, 2023. arXiv:2301.05068v3.
-2. Gaida, D., Wolf, C., Meyer, C., et al.
+   Process Control, 2023. arXiv:2301.05068v3.  
+2. Gaida, D., Wolf, C., Meyer, C., et al.  
    *State estimation for anaerobic digesters using the ADM1.*
    Water Science and Technology, 66(5):1088–1095, 2012.
-   [PMID: 22797239](https://pubmed.ncbi.nlm.nih.gov/22797239/).
-3. Haugen, F., Bakke, R., Lie, B.
+   [PMID: 22797239](https://pubmed.ncbi.nlm.nih.gov/22797239/).  
+3. Haugen, F., Bakke, R., Lie, B.  
    *State Estimation and Model-Based Control of a Pilot Anaerobic
    Digestion Reactor.* Journal of Control Science and Engineering, 2014,
    Article ID 572621. [DOI: 10.1155/2014/572621](https://doi.org/10.1155/2014/572621).
 
 Cited as background:
 
-* Weinrich, S., Nelles, M. *Systematic simplification of the anaerobic
+* Weinrich, S., Nelles, M. *Systematic simplification of the anaerobic  
   digestion model no. 1 (ADM1) — model development and stoichiometric
-  analysis.* Bioresource Technology, 333:125124, 2021.
-* Villaverde, A. F., Barreiro, A., Papachristodoulou, A.
+  analysis.* Bioresource Technology, 333:125124, 2021.  
+* Villaverde, A. F., Barreiro, A., Papachristodoulou, A.  
   *Structural identifiability of dynamic systems biology models.*
   PLoS Computational Biology, 12(10):e1005153, 2016.
   (Background on the STRIKE_GOLDD toolbox.)

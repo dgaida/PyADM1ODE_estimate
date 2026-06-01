@@ -4,10 +4,10 @@ Diese Anleitung bringt einen lokalen UKF auf die Beine. Der UKF wird mit der Fun
 
 ## Voraussetzungen
 
-* Python ≥ 3.10
-* [`PyADM1ODE`](https://github.com/dgaida/PyADM1ODE) — Basis-Paket mit
-  dem ADM1da-Modell
-* Optional: [`PyADM1ODE_calibration`](https://github.com/dgaida/PyADM1ODE_calibration)
+* Python ≥ 3.10  
+* [`PyADM1ODE`](https://github.com/dgaida/PyADM1ODE) — Basis-Paket mit  
+  dem ADM1da-Modell  
+* Optional: [`PyADM1ODE_calibration`](https://github.com/dgaida/PyADM1ODE_calibration)  
   für kalibrierte Modelle aus historischen Anlagendaten
 
 ## Installation
@@ -67,8 +67,8 @@ Substrat-Inputs** aus den deklarierten Sensoren.
 `measurement_stream` ist ein Iterable, das pro
 Zeitschritt ein Tupel `(t, measurements)` liefert:
 
-* `t` — Zeit in Tagen (`float`),
-* `measurements` — ein `dict` `{sensor: wert}`. Die Zuordnung erfolgt
+* `t` — Zeit in Tagen (`float`),  
+* `measurements` — ein `dict` `{sensor: wert}`. Die Zuordnung erfolgt  
   **über den Namen, nicht über die Reihenfolge**, und ist tolerant:
   Groß-/Kleinschreibung sowie Trenner (`_`, `-`, Leerzeichen) spielen
   keine Rolle und das `Q_`-Präfix ist optional. `"Q_gas"`, `"q_gas"` und
@@ -148,10 +148,10 @@ ukf = build_ukf(
 Wichtig: `substrates=[...]` und der Sensor `"substrate_dose"` sind **zwei
 verschiedene Dinge**:
 
-* `substrates=[InputSpec(...)]` **deklariert** die Substrat-Zuflüsse als
+* `substrates=[InputSpec(...)]` **deklariert** die Substrat-Zuflüsse als  
   zusätzliche Zustände im State-Vektor. Der Filter schätzt also den
-  *tatsächlich gefütterten* Volumenstrom.
-* `"substrate_dose"` fügt **Sensoren** hinzu, die genau diese Zustände
+  *tatsächlich gefütterten* Volumenstrom.  
+* `"substrate_dose"` fügt **Sensoren** hinzu, die genau diese Zustände  
   *messen*: pro deklariertem Substrat einen Kanal. Aus dem einen String
   `"substrate_dose"` werden also mehrere Kanäle, hier `Q_maize_silage`,
   `Q_solid_manure`, `Q_chicken_litter`, `Q_slurry`, `Q_cereal_grain`.
@@ -227,10 +227,10 @@ Mehr dazu:
 
 ## Wo geht's weiter
 
-* [Nutzung → UKF im Einsatz](usage/ukf.md) — Detaillierte Erklärung
+* [Nutzung → UKF im Einsatz](usage/ukf.md) — Detaillierte Erklärung  
   der einzelnen Bausteine + `MeasurementCalendar` für sporadische
-  Lab-Messungen.
-* [Nutzung → Twin-Experimente](usage/twin_experiments.md) —
-  End-to-End-Validierung gegen eine bekannte Wahrheit.
-* [Observability → Sensor-Zustand-Abhängigkeiten](observability/sensor_state_dependencies.md) —
+  Lab-Messungen.  
+* [Nutzung → Twin-Experimente](usage/twin_experiments.md) —  
+  End-to-End-Validierung gegen eine bekannte Wahrheit.  
+* [Observability → Sensor-Zustand-Abhängigkeiten](observability/sensor_state_dependencies.md) —  
   Welche Zustände sind mit welchen Sensoren prinzipiell schätzbar?

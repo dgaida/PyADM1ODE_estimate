@@ -4,7 +4,7 @@ Hinweise für Entwickler:innen, die am Repo selbst oder am Ökosystem arbeiten.
 
 ## Inhalt
 
-* [Ecosystem-Integration](ecosystem-integration.md) — Checkliste, wie eine
+* [Ecosystem-Integration](ecosystem-integration.md) — Checkliste, wie eine  
   neue Erweiterung im PyADM1ODE-Ökosystem dokumentiert und mit den anderen
   Repos verlinkt wird. Auch nützlich, wenn die zwei bestehenden Repos
   (`PyADM1ODE`, `PyADM1ODE_calibration`) auf den gleichen Stand wie
@@ -29,9 +29,9 @@ black pyadm1ode_estimation/
 
 ## CI/CD
 
-* `.github/workflows/tests.yml` — pytest auf Push und PR.
-* `.github/workflows/lint.yml` — ruff + black.
-* `.github/workflows/docs.yml` — MkDocs Build und Deploy via `mike` zu
-  `gh-pages` bei Push auf `main` oder Tag `v*`.
-* `.github/workflows/auto-version-badges.yml` — Versions-Badges automatisch
+* `.github/workflows/tests.yml` — pytest auf Push und PR.  
+* `.github/workflows/lint.yml` — ruff + black.  
+* `.github/workflows/docs.yml` — MkDocs Build und Deploy via `mike` zu  
+  `gh-pages` bei Push auf `main` oder Tag `v*`.  
+* `.github/workflows/auto-version-badges.yml` — Versions-Badges automatisch  
   pflegen.

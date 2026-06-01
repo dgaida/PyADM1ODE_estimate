@@ -38,8 +38,8 @@ $$
 
 ## Ein- und Ausgänge
 
-* **Eingänge**: Zeit $t$ und zeitabhängige Substratzufuhr $u(t)$.
-* **Ausgänge**: Geschätzter ADM1-Zustandsvektor $\hat{x}(t)$ (41 Komponenten).
+* **Eingänge**: Zeit $t$ und zeitabhängige Substratzufuhr $u(t)$.  
+* **Ausgänge**: Geschätzter ADM1-Zustandsvektor $\hat{x}(t)$ (41 Komponenten).  
 
 ## Integration in PyADM1ODE_estimation
 

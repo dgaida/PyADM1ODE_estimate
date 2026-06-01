@@ -195,13 +195,13 @@ and become reachable in parallel via the version selector.
 
 If a fourth repo joins (e.g. `PyADM1ODE_control`):
 
-- [ ] `mkdocs.yml` with the theme palette above
-- [ ] i18n plugin (`docs/de/` + `docs/en/`)
-- [ ] `mike` plugin with `provider: mike`
-- [ ] `objects.inv` imports of the other three repos in the mkdocstrings handler
-- [ ] Ecosystem top-level entry in `nav`
-- [ ] `docs/{lang}/ecosystem.md` page (template: this repo)
-- [ ] Footer copyright with "part of the PyADM1ODE ecosystem"
-- [ ] `.github/workflows/docs.yml` analogous to the one used here
-- [ ] In the other three repos: add the new repo to the `objects.inv` imports
+- [ ] `mkdocs.yml` with the theme palette above  
+- [ ] i18n plugin (`docs/de/` + `docs/en/`)  
+- [ ] `mike` plugin with `provider: mike`  
+- [ ] `objects.inv` imports of the other three repos in the mkdocstrings handler  
+- [ ] Ecosystem top-level entry in `nav`  
+- [ ] `docs/{lang}/ecosystem.md` page (template: this repo)  
+- [ ] Footer copyright with "part of the PyADM1ODE ecosystem"  
+- [ ] `.github/workflows/docs.yml` analogous to the one used here  
+- [ ] In the other three repos: add the new repo to the `objects.inv` imports  
   and to the ecosystem nav

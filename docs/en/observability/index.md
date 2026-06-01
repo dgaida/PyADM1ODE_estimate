@@ -18,11 +18,11 @@ is large. Before any filter setup, it must be clear which subset of the
 
 ## What is documented here
 
-* **Step 1 — [Literature review](literature_review.md)** — what do
+* **Step 1 — [Literature review](literature_review.md)** — what do  
   Hellmann et al. 2023, Gaida et al. 2012 and Haugen et al. 2014 say?
   Which measurement sets unlock which model classes? Where are the
-  structural levers (pH, CH₄/CO₂ separation, lab values)?
-* **Step 2 — [Sensor–state dependencies](sensor_state_dependencies.md)**
+  structural levers (pH, CH₄/CO₂ separation, lab values)?  
+* **Step 2 — [Sensor–state dependencies](sensor_state_dependencies.md)**  
   — concrete reconciliation of the literature findings with our ADM1da
   implementation. Per measurement channel, with code citations from
   `pyadm1/core/adm1.py`: which states appear directly in the measurement
@@ -31,5 +31,5 @@ is large. Before any filter setup, it must be clear which subset of the
 
 ## Planned extensions
 
-* **Sensitivity analysis** — numerical check which channels are actually
+* **Sensitivity analysis** — numerical check which channels are actually  
   separated by the filter under what `Q`/`R` tuning.

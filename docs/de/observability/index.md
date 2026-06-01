@@ -18,11 +18,11 @@ Untermenge der 41 Zustände aus der konkreten Sensorik wirklich schätzbar ist.
 
 ## Was hier dokumentiert ist
 
-* **Schritt 1 — [Literaturüberblick](literature_review.md)** — Was sagen
+* **Schritt 1 — [Literaturüberblick](literature_review.md)** — Was sagen  
   Hellmann et al. 2023, Gaida et al. 2012 und Haugen et al. 2014 dazu?
   Welche Mess-Sets erschließen welche Modellklassen? Wo sind die
-  strukturellen Hebel (pH, CH₄/CO₂-Trennung, Lab-Werte)?
-* **Schritt 2 — [Sensor-Zustand-Abhängigkeiten](sensor_state_dependencies.md)**
+  strukturellen Hebel (pH, CH₄/CO₂-Trennung, Lab-Werte)?  
+* **Schritt 2 — [Sensor-Zustand-Abhängigkeiten](sensor_state_dependencies.md)**  
   — Konkreter Abgleich der Literatur-Erkenntnisse mit unserer ADM1da-
   Implementierung. Pro Mess-Kanal mit Code-Zitat aus
   `pyadm1/core/adm1.py`: welche Zustände sind direkt im Messmodell,
@@ -31,5 +31,5 @@ Untermenge der 41 Zustände aus der konkreten Sensorik wirklich schätzbar ist.
 
 ## Geplante Erweiterungen
 
-* **Sensitivitätsanalyse**: numerischer Test, welche Channels bei welchem
+* **Sensitivitätsanalyse**: numerischer Test, welche Channels bei welchem  
   `Q`/`R`-Tuning tatsächlich vom Filter getrennt werden.
