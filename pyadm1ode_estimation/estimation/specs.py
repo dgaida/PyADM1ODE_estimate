@@ -44,7 +44,6 @@ from typing import Dict, List, Optional, Sequence
 
 from .state_vector import StateChannel, StateVectorSpec
 
-
 # ---------------------------------------------------------------------------
 # Observability quality classes
 # ---------------------------------------------------------------------------
@@ -68,23 +67,23 @@ class Quality(str, Enum):
     with FOS/TAC. Posterior σ ≈ 30 % of typical magnitude."""
 
     WEAK = "weak"
-    """Observable only via deeper model coupling; biomass states in B,
+    """Observable only via deeper model coupling. Biomass states in B,
     hydrolysis sums in C. Posterior σ wide, but bounded by mass balance."""
 
     PSPF = "pspf"
-    """Slow/fast disintegration split — structurally non-separable from
+    """Slow/fast disintegration split - structurally non-separable from
     aggregated lab measurements. Needs substrate characterization
-    prior; OU drift to the literature mean acts as that prior."""
+    prior. OU drift to the literature mean acts as that prior."""
 
     OPEN_LOOP = "open_loop"
-    """No direct innovation channel under the Phase-1 sensor set;
-    purely model-driven, OU-anchored to literature mean. Posterior σ
+    """No direct innovation channel under the Phase-1 sensor set.
+    Purely model-driven, OU-anchored to literature mean. Posterior σ
     grows along OU stationary distribution."""
 
 
 # Per-quality scaling factors. The first column scales the process
-# noise σ_w per √dt; the second scales the initial std; the third
-# selects the drift model; the fourth gives an OU reversion rate
+# noise σ_w per √dt. The second scales the initial std. The third
+# selects the drift model. The fourth gives an OU reversion rate
 # (in 1/d) when drift is "ou".
 _QUALITY_NOISE_FACTOR: Dict[Quality, float] = {
     Quality.STRONG: 0.05,
@@ -117,7 +116,7 @@ _QUALITY_OU_THETA: Dict[Quality, float] = {
 
 
 # ---------------------------------------------------------------------------
-# ADM1da defaults — order matches the 41-state index layout in
+# ADM1da defaults - order matches the 41-state index layout in
 # pyadm1/core/adm1.py.
 # ---------------------------------------------------------------------------
 
@@ -178,7 +177,7 @@ assert len(_ADM1DA_DEFAULTS) == 41, "ADM1da has exactly 41 states."
 
 
 # ---------------------------------------------------------------------------
-# Block assignment per state index — from the subsystem analysis.
+# Block assignment per state index - from the subsystem analysis.
 # ---------------------------------------------------------------------------
 
 _STATE_BLOCKS: Dict[int, str] = {
@@ -254,7 +253,7 @@ class SensorQualityProfile:
     with stronger or weaker sensors.
 
     Example: a plant with online GC-FID for individual VFAs (which
-    closes subsystem B fully — see ``results.md``) lifts
+    closes subsystem B fully - see ``results.md``) lifts
     ``acidogenesis_biomass`` from ``WEAK`` to ``MEDIUM``.
     """
 
@@ -326,7 +325,7 @@ class KineticSpec:
         name: Kinetic parameter name (must match ``_kinetic`` key).
         initial: Initial estimate.
         initial_std: Prior std.
-        process_noise_std: Per-day noise std (small — kinetic params
+        process_noise_std: Per-day noise std (small - kinetic params
             change slowly).
         lower, upper: Hard bounds.
         drift_model: Default ``"ou"`` because kinetic parameters

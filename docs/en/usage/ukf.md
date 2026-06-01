@@ -22,9 +22,11 @@ from pyadm1ode_estimation.estimation import (
 spec = adm1da_full_spec(
     digester_id="primary",
     substrate_inputs=[
-        InputSpec("maize_silage",   substrate_index=0, initial_flow=26.8),
-        InputSpec("slurry",         substrate_index=1, initial_flow=12.8),
-        InputSpec("cereal_silage",  substrate_index=2, initial_flow=0.4),
+        InputSpec("maize_silage",   substrate_index=0, initial_flow=4.74),
+        InputSpec("solid_manure",   substrate_index=1, initial_flow=13.70),
+        InputSpec("chicken_litter", substrate_index=2, initial_flow=1.09),
+        InputSpec("slurry",         substrate_index=3, initial_flow=3.68),
+        InputSpec("cereal_grain",   substrate_index=4, initial_flow=0.20),
     ],
 )
 # spec has 44 channels: 41 ADM1 slots + 3 substrate inputs.
@@ -118,12 +120,14 @@ def _idx(name):
     return next(i for i, c in enumerate(spec.channels) if c.name == name)
 
 obs = ObservationModel(channels=[
-    ObservationChannel("Q_gas",           extract_q_gas_total,        noise_std=10.0),
-    ObservationChannel("Q_ch4",           extract_q_ch4_total,        noise_std=5.0),
-    ObservationChannel("pH",              make_ph_extractor("primary"), noise_std=0.05),
-    ObservationChannel("Q_maize_silage",  make_state_extractor(_idx("maize_silage")),  noise_std=1.4),
-    ObservationChannel("Q_slurry",        make_state_extractor(_idx("slurry")),        noise_std=0.7),
-    ObservationChannel("Q_cereal_silage", make_state_extractor(_idx("cereal_silage")), noise_std=0.07),
+    ObservationChannel("Q_gas",            extract_q_gas_total,          noise_std=10.0),
+    ObservationChannel("Q_ch4",            extract_q_ch4_total,          noise_std=5.0),
+    ObservationChannel("pH",               make_ph_extractor("primary"), noise_std=0.05),
+    ObservationChannel("Q_maize_silage",   make_state_extractor(_idx("maize_silage")),   noise_std=0.24),
+    ObservationChannel("Q_solid_manure",   make_state_extractor(_idx("solid_manure")),   noise_std=0.69),
+    ObservationChannel("Q_chicken_litter", make_state_extractor(_idx("chicken_litter")), noise_std=0.06),
+    ObservationChannel("Q_slurry",         make_state_extractor(_idx("slurry")),         noise_std=0.18),
+    ObservationChannel("Q_cereal_grain",   make_state_extractor(_idx("cereal_grain")),   noise_std=0.01),
 ])
 ```
 

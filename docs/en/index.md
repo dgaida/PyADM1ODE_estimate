@@ -78,9 +78,11 @@ plant = build_multi_stage_plant()
 spec = adm1da_full_spec(
     digester_id="primary",
     substrate_inputs=[
-        InputSpec("maize_silage",  substrate_index=0, initial_flow=26.8),
-        InputSpec("slurry",        substrate_index=1, initial_flow=12.8),
-        InputSpec("cereal_silage", substrate_index=2, initial_flow=0.4),
+        InputSpec("maize_silage",   substrate_index=0, initial_flow=4.74),
+        InputSpec("solid_manure",   substrate_index=1, initial_flow=13.70),
+        InputSpec("chicken_litter", substrate_index=2, initial_flow=1.09),
+        InputSpec("slurry",         substrate_index=3, initial_flow=3.68),
+        InputSpec("cereal_grain",   substrate_index=4, initial_flow=0.20),
     ],
 )
 

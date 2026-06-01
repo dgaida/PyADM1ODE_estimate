@@ -1,11 +1,11 @@
-"""Observation model — extracts predicted measurements from the plant.
+"""Observation model - extracts predicted measurements from the plant.
 
 A channel is a triple
 
-  - ``extractor`` — pure function ``h_i(plant, x)`` returning the
-    prediction for one measurement;
-  - ``noise_std`` — measurement standard deviation;
-  - ``gate`` — optional time-varying flag deciding whether the
+  - ``extractor`` - pure function ``h_i(plant, x)`` returning the
+    prediction for one measurement.
+  - ``noise_std`` - measurement standard deviation.
+  - ``gate`` - optional time-varying flag deciding whether the
     channel is observable at the current step.
 
 Built-in extractors cover the common SCADA signals of an agricultural
@@ -63,7 +63,7 @@ class ObservationChannel:
             When set, the channel is only used at steps where
             ``gate_predicate(value)`` is true.
         gate_predicate: How to interpret the gate column.
-            ``"truthy"`` accepts non-zero / non-NaN; ``"finite"``
+            ``"truthy"`` accepts non-zero / non-NaN, ``"finite"``
             accepts non-NaN values only.
     """
 
@@ -94,7 +94,7 @@ class ObservationModel:
     """A bag of :class:`ObservationChannel` instances.
 
     The filter calls :meth:`predict_active` with the current plant
-    and gate values; the method returns the channel names plus the
+    and gate values. The method returns the channel names plus the
     predicted vector + measurement-noise diagonal in matching order.
     """
 
@@ -111,10 +111,10 @@ class ObservationModel:
         """Resolve a user measurement dict onto canonical channel names.
 
         Matching is forgiving: case- and separator-insensitive, and the
-        ``Q_`` flow prefix is optional — so ``"q_gas"``, ``"Q_gas"`` and
+        ``Q_`` flow prefix is optional. So ``"q_gas"``, ``"Q_gas"`` and
         ``"gas"`` all map to channel ``"Q_gas"``, and ``"maize_silage"``
         maps to ``"Q_maize_silage"``. A key is only assigned when the
-        match is *unambiguous*; ambiguous keys (e.g. one value that could
+        match is *unambiguous*, ambiguous keys (e.g. one value that could
         belong to two channels) and keys matching no channel are ignored,
         as are non-finite values.
 
@@ -220,7 +220,7 @@ def extract_p_th_used_total(plant: "BiogasPlant", x: np.ndarray) -> float:
 
 
 def make_state_extractor(channel_index: int) -> Extractor:
-    """Identity extractor — returns ``x[channel_index]``.
+    """Identity extractor - returns ``x[channel_index]``.
 
     Used for direct observations of augmented input states (e.g.
     ``hopper_dose`` when the load-cell sees a negative ΔW).

@@ -14,7 +14,6 @@ from pyadm1ode_estimation.io import (
     lookup_conversion,
 )
 
-
 # ---------------------------------------------------------------------------
 # Unit-conversion table
 # ---------------------------------------------------------------------------
@@ -94,16 +93,18 @@ class TestSensorChannelDefTransform:
 
     def test_out_of_range_returns_none(self):
         d = SensorChannelDef(
-            db_column="ph", ukf_channel="pH",
+            db_column="ph",
+            ukf_channel="pH",
             valid_range=(3.0, 11.0),
         )
-        assert d.transform(2.5) is None     # below lower
-        assert d.transform(13.0) is None    # above upper
-        assert d.transform(7.0) == 7.0      # in range
+        assert d.transform(2.5) is None  # below lower
+        assert d.transform(13.0) is None  # above upper
+        assert d.transform(7.0) == 7.0  # in range
 
     def test_range_boundaries_inclusive(self):
         d = SensorChannelDef(
-            db_column="x", ukf_channel="X",
+            db_column="x",
+            ukf_channel="X",
             valid_range=(0.0, 10.0),
         )
         assert d.transform(0.0) == 0.0
@@ -111,7 +112,8 @@ class TestSensorChannelDefTransform:
 
     def test_calibration_scale_and_offset(self):
         d = SensorChannelDef(
-            db_column="x", ukf_channel="X",
+            db_column="x",
+            ukf_channel="X",
             scale=2.0,
             offset=5.0,
         )
@@ -121,7 +123,8 @@ class TestSensorChannelDefTransform:
     def test_custom_converter_takes_precedence(self):
         # If a converter is set, unit table is NOT consulted.
         d = SensorChannelDef(
-            db_column="x", ukf_channel="X",
+            db_column="x",
+            ukf_channel="X",
             unit_in="kg/h",
             unit_out="m3/d",
             # Maize-silage density 700 kg/m³.
@@ -132,7 +135,8 @@ class TestSensorChannelDefTransform:
 
     def test_unknown_unit_raises(self):
         d = SensorChannelDef(
-            db_column="x", ukf_channel="X",
+            db_column="x",
+            ukf_channel="X",
             unit_in="kg/h",
             unit_out="m3/d",
             # NO converter → must rely on table → no entry for kg/h to m3/d.
@@ -142,7 +146,8 @@ class TestSensorChannelDefTransform:
 
     def test_quality_column_drops_bad_rows(self):
         d = SensorChannelDef(
-            db_column="x", ukf_channel="X",
+            db_column="x",
+            ukf_channel="X",
             quality_column="x_quality",
             bad_status_values=(False, 0, None, "BAD"),
         )
@@ -154,8 +159,10 @@ class TestSensorChannelDefTransform:
 
     def test_celsius_to_kelvin_offset(self):
         d = SensorChannelDef(
-            db_column="t", ukf_channel="T",
-            unit_in="°C", unit_out="K",
+            db_column="t",
+            ukf_channel="T",
+            unit_in="°C",
+            unit_out="K",
         )
         assert d.transform(25.0) == pytest.approx(298.15)
 
@@ -170,10 +177,10 @@ class TestDataFrameSensorSource:
         return pd.DataFrame(
             {
                 "fic101_q_gas_nm3h": [250.0, 252.0, np.nan, 248.0],
-                "ait201_ph": [7.4, 7.3, 7.5, 14.5],   # last one out of range
+                "ait201_ph": [7.4, 7.3, 7.5, 14.5],  # last one out of range
                 "fic101_quality": [True, True, True, True],
             },
-            index=[0.0, 0.0417, 0.0833, 0.125],   # 1 h, 2 h, 3 h in days
+            index=[0.0, 0.0417, 0.0833, 0.125],  # 1 h, 2 h, 3 h in days
         )
 
     def _sample_defs(self):

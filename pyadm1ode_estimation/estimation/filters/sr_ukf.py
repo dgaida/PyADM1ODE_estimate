@@ -19,11 +19,6 @@ Internal state:
     self._S    : posterior Cholesky factor, lower triangular (n, n)
     self.P     : exposed as a @property computing S @ S.T on demand
                  (so callers and EstimationStep diagnostics keep working).
-
-The constructor signature and the predict/update method signatures are
-identical to the previous standard UKF — this file is a drop-in
-replacement (re-exported as ``UnscentedKalmanFilter`` from
-``filters/__init__.py``).
 """
 
 from __future__ import annotations
@@ -38,7 +33,6 @@ from ..observation_model import ObservationModel
 from ..process_model import ADM1ProcessModel
 from ..state_vector import StateVectorSpec
 
-
 # ---------------------------------------------------------------------------
 # Cholesky rank-1 update / downdate (LINPACK chud/chdd algorithm)
 # ---------------------------------------------------------------------------
@@ -51,13 +45,13 @@ def _cholupdate(S: np.ndarray, v: np.ndarray, sign: int) -> np.ndarray:
     triangular ``S'`` such that ``S' @ S'.T = P + sign * v v^T``.
 
     ``sign`` must be ``+1`` (update) or ``-1`` (downdate). For a downdate
-    the result exists only if ``P - vv^T`` is still positive definite —
-    if not, a ``LinAlgError`` is raised, which is the *correct* failure
+    the result exists only if ``P - vv^T`` is still positive definite.
+    If not, a ``LinAlgError`` is raised, which is the *correct* failure
     mode: it tells the caller that "we're trying to subtract more
     information than the prior contains" (model error or bug, not a
     numerical glitch).
 
-    Complexity ``O(n^2)``; works in-place on a private copy.
+    Complexity ``O(n^2)``
     """
     if sign not in (+1, -1):
         raise ValueError(f"sign must be +1 or -1, got {sign}")
@@ -205,7 +199,7 @@ class UnscentedKalmanFilter:
     def reset(self, x0: np.ndarray, P0: np.ndarray) -> None:
         self.x_hat = np.asarray(x0, dtype=float).copy()
         P0_arr = np.asarray(P0, dtype=float)
-        # Symmetrise defensively — callers sometimes pass an unsymmetric
+        # Symmetrise defensively - callers sometimes pass an unsymmetric
         # outer-product like ``v @ v.T + epsilon*I`` that's floating-point
         # near-symmetric but not bit-equal.
         P0_arr = 0.5 * (P0_arr + P0_arr.T)
@@ -248,7 +242,7 @@ class UnscentedKalmanFilter:
         S_pred = R.T  # lower triangular
 
         # Now fold in the centre point. w_c[0] can be > 0 (our defaults)
-        # or < 0 (some parameterisations) — handle both via cholupdate.
+        # or < 0 (some parameterisations) - handle both via cholupdate.
         if self._w_c[0] != 0.0:
             u = np.sqrt(abs(self._w_c[0])) * diff[0]
             sign = +1 if self._w_c[0] > 0 else -1
@@ -257,8 +251,7 @@ class UnscentedKalmanFilter:
         self.x_hat = self.spec.clip(x_pred)
         self._S = S_pred
 
-        # Restore baseline, propagate mean once more, snapshot — this
-        # is what update() will use as its sigma-point baseline.
+        # Restore baseline, propagate mean once more, snapshot.
         self.process.restore()
         self.process.step(self.x_hat, dt)
         self.process.snapshot()
@@ -271,7 +264,7 @@ class UnscentedKalmanFilter:
         y: Dict[str, float],
         t: float,
         gate_values: Optional[Dict[str, float]] = None,
-        dt_stub: float = 1e-5,
+        equilibration_dt: float = 1.0 / 24.0,
     ) -> EstimationStep:
         gate_values = gate_values or {}
         # Forgiving key matching (case/separator-insensitive, optional Q_
@@ -300,14 +293,14 @@ class UnscentedKalmanFilter:
         m = len(active)
         y_sigma = np.zeros((len(sigma), m))
         for i, s in enumerate(sigma):
-            self.process.refresh_outputs(s, dt_stub=dt_stub)
+            self.process.refresh_outputs(s, equilibration_dt=equilibration_dt)
             y_sigma[i] = self.obs.predict(self.process.plant, s, active=active)
 
         # Drop channels whose model prediction is non-finite at any sigma
         # point: the model cannot reliably predict them this step, so they
         # must not correct the state (same outcome as a missing measurement).
         # A single bad sigma-point evaluation would otherwise poison the
-        # whole unscented transform — and individual sigma points cannot be
+        # whole unscented transform and individual sigma points cannot be
         # skipped (the UT needs all 2n+1 to reconstruct mean + covariance).
         finite_cols = np.isfinite(y_sigma).all(axis=0)
         if not finite_cols.all():
@@ -379,10 +372,13 @@ class UnscentedKalmanFilter:
         self.x_hat = self.spec.clip(x_new)
         self._S = S_new
 
-        # Leave the plant at the posterior mean so external observers
-        # see a consistent state and the next predict() snapshot starts
-        # from the right baseline.
-        self.process.refresh_outputs(self.x_hat, dt_stub=dt_stub)
+        # Leave the plant at the posterior mean so the next predict()
+        # snapshot starts from the right baseline. Use a vanishingly small
+        # step here (NOT the gas-equilibration dt): this call only sets the
+        # plant ADM1 state to x_hat. Advancing the clock by a full
+        # equilibration step would desync the background digesters and the
+        # feeding schedule (the plant would run two dt per filter step).
+        self.process.refresh_outputs(self.x_hat, equilibration_dt=1e-5)
         self.process.snapshot()
 
         # Per-channel innovation std: sqrt(diag(S)) with S = S_y · S_y^T.

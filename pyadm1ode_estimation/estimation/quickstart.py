@@ -5,10 +5,10 @@ The :func:`build_ukf` factory bundles the typical 6-step setup
 ``UnscentedKalmanFilter`` → snapshot → reset) into a single call.
 Sensors are picked from a small built-in catalog by name:
 
-* ``"q_gas"``  — total biogas volumetric flow rate
-* ``"q_ch4"``  — total methane volumetric flow rate
-* ``"ph"``     — pH of the named digester (NaN-safe)
-* ``"substrate_dose"`` — direct observation of every augmented
+* ``"q_gas"``  - total biogas volumetric flow rate
+* ``"q_ch4"``  - total methane volumetric flow rate
+* ``"ph"``     - pH of the named digester
+* ``"substrate_dose"`` - direct observation of every augmented
   substrate-input channel in the spec
 
 A typical setup is then::
@@ -22,9 +22,11 @@ A typical setup is then::
         plant,
         digester_id="primary",
         substrates=[
-            InputSpec("maize_silage",  substrate_index=0, initial_flow=26.8),
-            InputSpec("slurry",        substrate_index=1, initial_flow=12.8),
-            InputSpec("cereal_silage", substrate_index=2, initial_flow=0.4),
+            InputSpec("maize_silage",   substrate_index=0, initial_flow=4.74),
+            InputSpec("solid_manure",   substrate_index=1, initial_flow=13.70),
+            InputSpec("chicken_litter", substrate_index=2, initial_flow=1.09),
+            InputSpec("slurry",         substrate_index=3, initial_flow=3.68),
+            InputSpec("cereal_grain",   substrate_index=4, initial_flow=0.20),
         ],
         sensors=["q_gas", "q_ch4", "ph", "substrate_dose"],
     )
@@ -68,9 +70,9 @@ if TYPE_CHECKING:
 # Default per-sensor noise std. Calibrated for a typical agricultural-AD
 # plant with online NDIR + pH probe + dosing scale.
 _DEFAULT_NOISE_STD = {
-    "q_gas": 10.0,           # m³/d biogas
-    "q_ch4": 5.0,            # m³/d methane
-    "ph": 0.05,              # pH units
+    "q_gas": 10.0,  # m³/d biogas
+    "q_ch4": 5.0,  # m³/d methane
+    "ph": 0.05,  # pH units
     "substrate_dose": 0.05,  # 5 % relative on the augmented channel
 }
 
@@ -78,12 +80,12 @@ _DEFAULT_NOISE_STD = {
 def _make_ph_extractor(digester_id: str):
     """pH extractor for the named digester.
 
-    Returns the raw pH; a non-finite value propagates so the filter drops
+    Returns the raw pH. A non-finite value propagates so the filter drops
     the channel for that step instead of correcting with a fudged number
     (see :meth:`UnscentedKalmanFilter.update`).
     """
 
-    def extractor(plant, x):  # noqa: ARG001
+    def extractor(plant, x):
         return float(plant.components[digester_id].outputs_data.get("pH", float("nan")))
 
     return extractor
@@ -96,8 +98,7 @@ def _build_substrate_channels(
 
     Each channel observes the augmented channel directly (``x[idx]``)
     and uses ``substrate_dose_noise_relative * initial_flow`` as the
-    measurement std. This matches a typical dosing scale or pump-flow
-    meter installed on each substrate line.
+    measurement std.
     """
     channels: List[ObservationChannel] = []
     for i, ch in enumerate(spec.channels):
@@ -141,23 +142,29 @@ def _resolve_sensors(
         key = item.lower()
         noise = overrides.get(key, _DEFAULT_NOISE_STD.get(key))
         if key == "q_gas":
-            out.append(ObservationChannel(
-                name="Q_gas",
-                extractor=extract_q_gas_total,
-                noise_std=float(noise),
-            ))
+            out.append(
+                ObservationChannel(
+                    name="Q_gas",
+                    extractor=extract_q_gas_total,
+                    noise_std=float(noise),
+                )
+            )
         elif key == "q_ch4":
-            out.append(ObservationChannel(
-                name="Q_ch4",
-                extractor=extract_q_ch4_total,
-                noise_std=float(noise),
-            ))
+            out.append(
+                ObservationChannel(
+                    name="Q_ch4",
+                    extractor=extract_q_ch4_total,
+                    noise_std=float(noise),
+                )
+            )
         elif key == "ph":
-            out.append(ObservationChannel(
-                name="pH",
-                extractor=_make_ph_extractor(digester_id),
-                noise_std=float(noise),
-            ))
+            out.append(
+                ObservationChannel(
+                    name="pH",
+                    extractor=_make_ph_extractor(digester_id),
+                    noise_std=float(noise),
+                )
+            )
         elif key == "substrate_dose":
             out.extend(_build_substrate_channels(spec, float(noise)))
         else:
@@ -174,7 +181,10 @@ def build_ukf(
     digester_id: str,
     substrates: Sequence[InputSpec] = (),
     sensors: Sequence[Union[str, ObservationChannel]] = (
-        "q_gas", "q_ch4", "ph", "substrate_dose",
+        "q_gas",
+        "q_ch4",
+        "ph",
+        "substrate_dose",
     ),
     *,
     kinetic_overrides: Sequence[KineticSpec] = (),
@@ -196,9 +206,9 @@ def build_ukf(
        directly).
     3. Wrap the plant in an ``ADM1ProcessModel`` and snapshot it at the
        current state.
-    4. Construct an ``UnscentedKalmanFilter`` (the Square-Root variant).
+    4. Construct an ``UnscentedKalmanFilter``.
     5. Read the plant's current ADM1 state and the spec's input
-       initials as ``x0``; build a tight diagonal ``P0`` matching
+       initials as ``x0``. Build a tight diagonal ``P0`` matching
        ``initial_uncertainty_relative``.
     6. ``ukf.reset(x0, P0)`` to set up the prior.
 
@@ -206,7 +216,7 @@ def build_ukf(
     ``update()`` loop.
 
     Args:
-        plant: A built (and ideally warmed-up) :class:`pyadm1.BiogasPlant`.
+        plant: A built :class:`pyadm1.BiogasPlant`.
         digester_id: Identifier of the main digester to estimate.
         substrates: List of :class:`InputSpec` declaring each substrate
             channel and its nominal flow.
@@ -257,7 +267,7 @@ def build_ukf(
     )
     if not obs_channels:
         raise ValueError(
-            "No observation channels constructed — pass at least one sensor."
+            "No observation channels constructed - pass at least one sensor."
         )
     obs = ObservationModel(channels=obs_channels)
 
@@ -267,8 +277,12 @@ def build_ukf(
 
     # ---- 4. UKF ---------------------------------------------------------
     ukf = UnscentedKalmanFilter(
-        process, obs, spec,
-        alpha=alpha, beta=beta, kappa=kappa,
+        process,
+        obs,
+        spec,
+        alpha=alpha,
+        beta=beta,
+        kappa=kappa,
     )
 
     # ---- 5. Initial state + covariance ----------------------------------

@@ -37,9 +37,11 @@ ukf = build_ukf(
     plant,
     digester_id="primary",
     substrates=[
-        InputSpec("maize_silage",  substrate_index=0, initial_flow=26.8),
-        InputSpec("slurry",        substrate_index=1, initial_flow=12.8),
-        InputSpec("cereal_silage", substrate_index=2, initial_flow=0.4),
+        InputSpec("maize_silage",   substrate_index=0, initial_flow=4.74),
+        InputSpec("solid_manure",   substrate_index=1, initial_flow=13.70),
+        InputSpec("chicken_litter", substrate_index=2, initial_flow=1.09),
+        InputSpec("slurry",         substrate_index=3, initial_flow=3.68),
+        InputSpec("cereal_grain",   substrate_index=4, initial_flow=0.20),
     ],
     sensors=["q_gas", "q_ch4", "ph", "substrate_dose"],
 )
@@ -57,8 +59,8 @@ for t, measurements in measurement_stream:
     print(f"t={t:.2f}d  S_ac={step.x_hat[6]:.3f}  NIS={step.nis:.2f}")
 ```
 
-Das war's. Der Filter schätzt jetzt alle **41 ADM1-States + 3
-Substrat-Inputs** aus den vier deklarierten Sensoren.
+Das war's. Der Filter schätzt jetzt alle **41 ADM1-States + 5
+Substrat-Inputs** aus den deklarierten Sensoren.
 
 ### Woher kommt `measurement_stream`?
 
@@ -152,7 +154,7 @@ verschiedene Dinge**:
 * `"substrate_dose"` fügt **Sensoren** hinzu, die genau diese Zustände
   *messen*: pro deklariertem Substrat einen Kanal. Aus dem einen String
   `"substrate_dose"` werden also mehrere Kanäle, hier `Q_maize_silage`,
-  `Q_slurry`, `Q_cereal_silage`.
+  `Q_solid_manure`, `Q_chicken_litter`, `Q_slurry`, `Q_cereal_grain`.
 
 `"substrate_dose"` ist somit kein einzelner Kanal, sondern eine Abkürzung
 für „je ein Dosier-Sensor pro Substrat". Im Messdaten-`dict` gibst du
@@ -164,9 +166,11 @@ measurements = {
     "q_gas": 410.0,
     "q_ch4": 228.0,
     "ph": 7.42,
-    "maize_silage": 26.8,   # = Kanal Q_maize_silage
-    "slurry": 12.8,
-    "cereal_silage": 0.4,
+    "maize_silage": 4.74,   # = Kanal Q_maize_silage
+    "solid_manure": 13.70,
+    "chicken_litter": 1.09,
+    "slurry": 3.68,
+    "cereal_grain": 0.20,
 }
 ```
 

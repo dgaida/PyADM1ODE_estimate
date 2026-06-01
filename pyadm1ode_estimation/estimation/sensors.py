@@ -3,32 +3,20 @@
 PyADM1ODE provides ``PhysicalSensor``, ``ChemicalSensor`` and
 ``GasSensor`` classes that model realistic instrumentation (drift,
 response lag, sampling intervals, calibration offset, detection limits,
-cross-sensitivity). These are *stateful* — each ``sensor.step(t, dt,
+cross-sensitivity). These are *stateful* - each ``sensor.step(t, dt,
 inputs)`` advances the drift accumulator, samples the queue, and
 applies the lag filter.
 
-**Why they can't be used directly inside the UKF observation model:**
-the UKF's update step calls ``extractor(plant, x)`` once per sigma
-point (2n+1 = 89 times for a 44-state filter). If the extractor were
-to call ``sensor.step()``, the sensor's drift / sampling clock would
-advance 89 times per filter step — completely corrupting the
-instrumentation state.
-
-**Where they CAN be used:** on the *truth side* of a twin experiment.
-Each sensor is stepped exactly once per simulated measurement, fed
-the clean truth value, and produces a noisy measurement that
-replaces the simple ``add_measurement_noise`` Gaussian model.
-
 This module provides:
 
-* :class:`SensorAdapter` — wraps one PyADM1ODE sensor with a
+* :class:`SensorAdapter` - wraps one PyADM1ODE sensor with a
   ``read(t, true_value) -> float`` API and tracks ``dt`` internally.
-* :func:`measure_truth_with_sensors` — DataFrame-level helper that
+* :func:`measure_truth_with_sensors` - DataFrame-level helper that
   runs the sensors against a clean truth trajectory and returns
   the noisy measurement frame.
 
 The filter-side ``ObservationChannel.extractor`` remains a clean
-deterministic function — the filter never touches the sensors. The
+deterministic function - the filter never touches the sensors. The
 ``ObservationChannel.noise_std`` should match the sensor's
 ``measurement_noise`` so the UKF's ``R`` matrix is consistent with
 the actual sensor noise.
@@ -82,7 +70,7 @@ class SensorAdapter:
         self._t_last = float(t0)
 
     def read(self, t: float, true_value: float) -> float:
-        """Step the sensor by ``dt = t − t_last`` against ``true_value``.
+        """Step the sensor by ``dt = t - t_last`` against ``true_value``.
 
         Returns the measured value (post drift + lag + sampling + noise +
         range clipping). NaN-safe: if the sensor returns a non-finite
@@ -105,7 +93,7 @@ class SensorAdapter:
 
         # The measured value lives under the sensor's configured
         # output_key. Different sensor types might also surface it
-        # under "measurement"; we try both for robustness.
+        # under "measurement", we try both for robustness.
         for key in (self._sensor.output_key, "measurement"):
             if key in out:
                 val = out[key]
@@ -134,7 +122,7 @@ def measure_truth_with_sensors(
 
     Returns:
         A DataFrame with the same shape / index as ``obs_clean`` but
-        with each ``sensors[name]``-mapped column replaced by the
+        with each ``sensors[name]``- mapped column replaced by the
         sensor-modulated measurements.
     """
     out = obs_clean.copy()

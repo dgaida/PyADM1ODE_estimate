@@ -2,20 +2,16 @@
 
 Three kinds of channels are supported:
 
-* ``"adm1"`` — a slot of the 41-element ADM1da state vector (see
+* ``"adm1"`` - a slot of the 41-element ADM1da state vector (see
   ``pyadm1.core.adm1`` module-level docstring for the index map).
   Pushed into ``digester.adm1_state`` before each simulation step,
   read back afterwards.
-* ``"input_flow"`` — an augmented substrate-input rate in m³/d FM.
-  Propagated by a random-walk (or OU) drift inside the filter; no
+* ``"input_flow"`` - an augmented substrate-input rate in m³/d FM.
+  Propagated by a random-walk (or OU) drift inside the filter. No
   direct interaction with the ADM1 state. Read by the process
   model to set ``digester.Q_substrates``.
-* ``"kinetic_param"`` — an augmented kinetic-rate override (Phase 3).
+* ``"kinetic_param"`` - an augmented kinetic-rate override (Phase 3).
   Written into ``adm1._kinetic`` before each step.
-
-A typical Phase-1 spec for an agricultural plant is six ADM1 channels
-(X_PS_ch, X_PF_ch, S_ac, X_su, X_ac, X_h2) plus two input flows
-(Q_solid, Q_liquid).
 """
 
 from __future__ import annotations
@@ -47,7 +43,7 @@ class StateChannel:
             required when ``kind="adm1"``.
         input_substrate_index: Position in the plant's
             ``Q_substrates`` vector for ``kind="input_flow"``. The
-            10-slot vector is laid out as
+            n-slot vector is laid out as
             ``[Q_total_substrate_1, …, Q_total_substrate_n]``, where
             ``n`` matches the schema substrate count.
         initial: Initial state estimate.
@@ -57,7 +53,7 @@ class StateChannel:
             noise. The filter scales this by ``sqrt(dt)`` for the
             ``random_walk`` drift model.
         drift_model: Augmented dynamics. ``"random_walk"`` is the
-            default; ``"ou"`` is an Ornstein–Uhlenbeck pull-back to
+            default; ``"ou"`` is an Ornstein-Uhlenbeck pull-back to
             ``ou_mean`` with rate ``ou_theta`` and is recommended for
             input flows that should not drift unbounded during long
             sensor-blind intervals; ``"constant"`` adds zero noise
@@ -137,11 +133,11 @@ class StateVectorSpec:
         return np.diag(stds**2)
 
     def process_noise_cov(self, dt: float) -> np.ndarray:
-        """Discrete process-noise covariance for one ``dt``-step.
+        """Discrete process-noise covariance for one ``dt``- step.
 
         Random-walk / constant channels contribute ``(σ_w · sqrt(dt))^2``.
         OU channels contribute the discrete equivalent
-        ``σ²(1 − e^{−2θ·dt}) / (2θ)`` (Doob–Itō). The mean-reversion
+        ``σ²(1 - e^{-2θ·dt}) / (2θ)`` (Doob-Itō). The mean-reversion
         term itself is applied inside the process model, not here.
         """
         q_diag = np.zeros(len(self.channels))
@@ -183,8 +179,7 @@ class StateVectorSpec:
         """Read the ``"adm1"`` channels back from the digester state."""
         digester = plant.components[self.digester_id]
         out = np.zeros(len(self.channels))
-        # Preserve non-ADM1 channel values from the input (we don't
-        # touch input_flow / kinetic_param here).
+        # Preserve non-ADM1 channel values from the input.
         state = digester.adm1_state
         for i, ch in enumerate(self.channels):
             if ch.kind == "adm1":

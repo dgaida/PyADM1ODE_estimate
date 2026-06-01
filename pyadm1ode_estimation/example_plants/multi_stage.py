@@ -1,31 +1,31 @@
 """Multi-stage cascade example plant.
 
 A realistic agricultural anaerobic-digestion topology: three liquid
-stages in cascade, two parallel CHP units, and one heating circuit
-per stage. The biogas from the primary fermenter feeds both CHPs.
-CHP waste heat is distributed across all three heating circuits.
+stages in cascade, two parallel CHP units and one heating circuit
+per stage. The three gas headspaces share a valve-regulated gas line
+(fermenter → post-fermenter → storage) and all feed both CHPs. CHP
+waste heat is distributed across all three heating circuits.
 
 Topology::
 
     [Primary Fermenter 1200 m³ liquid, 216 m³ gas, 42 °C]
-            │
-            │   liquid cascade
-            ▼
+            │ liquid cascade            │ gas line
+            ▼                           ▼
     [Secondary Fermenter 1200 m³ liquid, 216 m³ gas, 42 °C]
-            │
-            │   liquid cascade
-            ▼
+            │ liquid cascade            │ gas line
+            ▼                           ▼
     [Digestate Storage 3500 m³ liquid, 476 m³ gas, 35 °C]
 
-    [Primary biogas] ───► [CHP 1 (250 kW)] ──┐
-                     ───► [CHP 2 (250 kW)] ──┤
-                                             │
-                             waste heat ─────┴───► [Heating ×3]
+    All three gas headspaces ──► [CHP 1 (250 kW)] ──┐
+                             ──► [CHP 2 (250 kW)] ──┤
+                                                    │
+                                    waste heat ─────┴──► [Heating ×3]
 
-The substrate mix is a four-component co-digestion typical for
-mid-sized agricultural plants. Energy-crop silage, two manure
-streams (solid + liquid), and cereal whole-plant silage. Nominal
-total dosing rate 40 m³/d.
+The substrate mix is a manure-based co-digestion of a mid-sized
+agricultural plant: farmyard manure (Rinderfestmist), maize silage,
+liquid slurry, chicken litter (HTK) and a little crushed cereal grain,
+with per-substrate methane yields following the BiomasseV standard.
+Nominal total dosing rate ~23.4 m³/d.
 
 This builder is intended as a realistic but generic example.
 """
@@ -50,7 +50,7 @@ _STAGES: List[Tuple[str, str, float, float, float]] = [
     ("storage", "Digestate Storage", 3500.0, 476.0, 308.15),  # 35 °C
 ]
 
-#: Two identical CHP units, both fed from the primary's biogas.
+#: Two identical CHP units, both fed from all three gas headspaces.
 #: (chp_id, name)
 _CHPS: List[Tuple[str, str]] = [
     ("chp1", "CHP 1 (250 kW)"),
@@ -60,17 +60,19 @@ _CHP_P_EL_NOM = 250.0  # kW
 _CHP_ETA_EL = 0.40
 _CHP_ETA_TH = 0.45
 
-#: Substrate mix [fraction] — four-component co-digestion. Names must
-#: resolve against the PyADM1ODE substrate library. Fractions sum
-#: to 1.0; the absolute feed rate is set by _NOMINAL_DAILY_DOSING_M3.
+#: Substrate mix [volume fraction] - manure-based co-digestion of a
+#: mid-sized agricultural plant. Fractions are by volume (mass / density)
+#: and sum to 1.0. The absolute feed rate is set by _NOMINAL_DAILY_DOSING_M3.
 _SUBSTRATE_MIX = {
-    "maize_silage_milk_ripeness": 0.67,  # energy-crop silage
-    "cattle_manure": 0.32,  # liquid slurry
-    "cereal_gps_silage": 0.01,  # cereal whole-plant silage
+    "maize_silage_milk_ripeness": 0.2025,
+    "cattle_manure_solid": 0.5852,
+    "chicken_manure_dry": 0.0465,
+    "cattle_manure": 0.1573,
+    "cereal_gps_silage": 0.0086,
 }
 
-#: Operator-typical nominal daily total dosing [m³/d].
-_NOMINAL_DAILY_DOSING_M3 = 40.0
+#: Nominal daily total dosing [m³/d]
+_NOMINAL_DAILY_DOSING_M3 = 23.4
 
 #: Feedstock substrate slots. Unused slots are zero.
 _MAX_SUBSTRATE_SLOTS = 10
@@ -86,7 +88,7 @@ def build_multi_stage_plant(
     """Construct the three-stage cascade example plant.
 
     Each fermenter is seeded with a pre-inoculated ADM1 state computed
-    from the nominal substrate feed — this avoids the washout-prone
+    from the nominal substrate feed, this avoids the washout-prone
     default ``[0.01] * 41`` initial state and lets the plant start
     from a healthy operating point.
 
@@ -126,8 +128,7 @@ def build_multi_stage_plant(
     q_primary = q_primary + [0.0] * (_MAX_SUBSTRATE_SLOTS - len(q_primary))
     q_passthrough = [0.0] * _MAX_SUBSTRATE_SLOTS
 
-    # Build a shared inoculum state from a throwaway primary-sized
-    # digester — same pattern as PyADM1ODE's realistic-plant example.
+    # Build a shared inoculum state from a throwaway primary-sized digester.
     _, _, vl_primary, vg_primary, t_primary = _STAGES[0]
     _inoc = Digester(
         component_id="_inoc",
@@ -141,7 +142,7 @@ def build_multi_stage_plant(
     plant = BiogasPlant(plant_name)
     cfg = PlantConfigurator(plant, feedstock)
 
-    # Stages — primary gets the actual feed,
+    # Stages - primary gets the actual feed,
     # secondary + storage are passthrough.
     for stage_id, name, v_liq, v_gas, t_ad in _STAGES:
         cfg.add_digester(
@@ -154,7 +155,7 @@ def build_multi_stage_plant(
             adm1_state=list(inoculum_state),
         )
 
-    # CHPs — both 250 kW, identical.
+    # CHPs - both 250 kW, identical.
     for chp_id, name in _CHPS:
         cfg.add_chp(
             chp_id,
@@ -177,12 +178,14 @@ def build_multi_stage_plant(
     cfg.connect("primary", "secondary", "liquid")
     cfg.connect("secondary", "storage", "liquid")
 
-    # Gas routing: both CHPs draw from the primary's biogas
-    # only (post-fermenter and storage gas headspaces are not piped
-    # to the engines in this topology). CHP waste heat is
-    # distributed to every heating circuit.
+    # Gas routing: the three gas headspaces share a common gas line -
+    # fermenter (primary) → post-fermenter (secondary) → storage.
+    # CHP waste heat is distributed to every heating circuit.
+    cfg.connect("primary_storage", "secondary_storage", "gas")
+    cfg.connect("secondary_storage", "storage_storage", "gas")
     for chp_id, _ in _CHPS:
-        cfg.auto_connect_digester_to_chp("primary", chp_id)
+        for stage_id, *_rest in _STAGES:
+            cfg.auto_connect_digester_to_chp(stage_id, chp_id)
         for stage_id, *_rest in _STAGES:
             cfg.auto_connect_chp_to_heating(chp_id, f"heating_{stage_id}")
 

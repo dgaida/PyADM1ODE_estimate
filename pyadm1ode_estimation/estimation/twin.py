@@ -59,7 +59,7 @@ def propagate_truth(
     x0: np.ndarray,
     dt_hours: float,
     n_steps: int,
-    dt_stub: float = 1e-5,
+    equilibration_dt: float = 1.0 / 24.0,
 ) -> tuple[np.ndarray, np.ndarray, pd.DataFrame]:
     """Run the noise-free reference trajectory.
 
@@ -76,14 +76,14 @@ def propagate_truth(
     states[0] = x0
     obs_rows: List[List[float]] = []
 
-    process.refresh_outputs(x0, dt_stub=dt_stub)
+    process.refresh_outputs(x0, equilibration_dt=equilibration_dt)
     obs_rows.append([float(c.extractor(process.plant, x0)) for c in obs.channels])
 
     x = x0.copy()
     for k in range(n_steps):
         x = process.step(x, dt)
         states[k + 1] = x
-        process.refresh_outputs(x, dt_stub=dt_stub)
+        process.refresh_outputs(x, equilibration_dt=equilibration_dt)
         obs_rows.append([float(c.extractor(process.plant, x)) for c in obs.channels])
 
     time = np.arange(n_steps + 1, dtype=float) * dt

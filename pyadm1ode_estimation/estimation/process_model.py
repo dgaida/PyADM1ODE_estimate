@@ -1,4 +1,4 @@
-"""ADM1 process model — propagates one state vector through one step.
+"""ADM1 process model - propagates one state vector through one step.
 
 Wraps a :class:`pyadm1.BiogasPlant` so the filter can treat
 state propagation as a deterministic function ``x' = f(x, dt)``.
@@ -13,7 +13,7 @@ Responsibilities
 * Push the ``"kinetic_param"`` channels into ``adm1._kinetic`` (the
   same channel pyadm1 actually reads at every ODE step).
 * Run ``plant.step(dt)``.
-* Read the ``"adm1"`` channels back from the digester; pass the
+* Read the ``"adm1"`` channels back from the digester, pass the
   augmented channels through unchanged so the filter's random-walk
   noise term handles their drift.
 """
@@ -30,6 +30,10 @@ if TYPE_CHECKING:
     from pyadm1 import BiogasPlant
 
 
+#: Default gas-phase equilibration time [days] for :meth:`refresh_outputs`.
+_GAS_EQUILIBRATION_DT = 1.0 / 24.0  # 1 h
+
+
 class ADM1ProcessModel:
     """Deterministic propagator ``x(t+dt) = f(x(t), dt)``.
 
@@ -37,7 +41,7 @@ class ADM1ProcessModel:
         plant: A built :class:`pyadm1.BiogasPlant` instance. The
             estimator owns the simulation state of this plant: the
             process model writes the state in, steps it, reads the
-            state out, and never restores. If you want twin-style
+            state out and never restores. If you want twin-style
             sweeps with shared initial conditions, use deepcopied
             plants.
         spec: Declares which slots of the state vector map to ADM1
@@ -64,10 +68,11 @@ class ADM1ProcessModel:
     # factor, etc.), and the sample covariance becomes nonsense.
     #
     # ``snapshot`` records every mutable bit of plant state that
-    # ``step`` touches; ``restore`` writes it back. Both calls take
-    # microseconds — much cheaper than ``copy.deepcopy(plant)``, which
+    # ``step`` touches, ``restore`` writes it back. Both calls take
+    # microseconds, much cheaper than ``copy.deepcopy(plant)``, which
     # walks every numpy buffer in pyadm1.
     def snapshot(self) -> None:
+        """Record the current plant state for later restoration."""
         digester = self.plant.components[self.spec.digester_id]
         snap: Dict[str, Any] = {
             "adm1_state": list(digester.adm1_state),
@@ -88,6 +93,7 @@ class ADM1ProcessModel:
         self._baseline = snap
 
     def restore(self) -> None:
+        """Restore the plant state recorded by the last :meth:`snapshot`."""
         if not self._baseline:
             return
         digester = self.plant.components[self.spec.digester_id]
@@ -125,6 +131,7 @@ class ADM1ProcessModel:
         self._apply_kinetic_params(x)
 
     def _apply_input_flows(self, x: np.ndarray) -> None:
+        """Push the ``"input_flow"`` channels into the digester's ``Q_substrates``."""
         digester = self.plant.components[self.spec.digester_id]
         q_vec = list(getattr(digester, "Q_substrates", []) or [])
         for i in self.spec.kind_indices("input_flow"):
@@ -136,7 +143,7 @@ class ADM1ProcessModel:
         if q_vec:
             digester.Q_substrates = q_vec
             # pyadm1 also caches the influent state derived from
-            # Q_substrates — refresh it so the next step uses the
+            # Q_substrates, refresh it so the next step uses the
             # current per-step flows.
             try:
                 digester.adm1.create_influent(q_vec, 0)
@@ -144,6 +151,7 @@ class ADM1ProcessModel:
                 pass
 
     def _apply_kinetic_params(self, x: np.ndarray) -> None:
+        """Push the ``"kinetic_param"`` channels into ``adm1._kinetic``."""
         digester = self.plant.components[self.spec.digester_id]
         kinetic = getattr(digester.adm1, "_kinetic", None)
         if kinetic is None:
@@ -160,7 +168,7 @@ class ADM1ProcessModel:
         """Apply ``x``, simulate ``dt`` days, return the new state.
 
         The state vector is clipped to the configured channel bounds
-        *before* being pushed to the plant — ADM1 fails to integrate
+        *before* being pushed to the plant. ADM1 fails to integrate
         for negative concentrations, which the unclipped sigma points
         of the UKF easily produce when the prior is wide.
 
@@ -176,8 +184,8 @@ class ADM1ProcessModel:
         adm1_part = self.spec.read_adm1_state(self.plant)
         for i in self.spec.kind_indices("adm1"):
             x_new[i] = adm1_part[i]
-        # Apply OU mean-reversion to input/kinetic augmented channels;
-        # filter noise covariance handles the diffusive term.
+        # Apply OU mean-reversion to input/kinetic augmented channels.
+        # Filter noise covariance handles the diffusive term.
         for i, ch in enumerate(self.spec.channels):
             if ch.kind == "adm1" or ch.drift_model != "ou":
                 continue
@@ -187,17 +195,16 @@ class ADM1ProcessModel:
             x_new[i] = mean + (x_new[i] - mean) * decay
         return self.spec.clip(x_new)
 
-    def refresh_outputs(self, x: np.ndarray, dt_stub: float = 1e-5) -> None:
-        """Apply ``x`` and run a vanishingly small step.
+    def refresh_outputs(
+        self, x: np.ndarray, equilibration_dt: float = _GAS_EQUILIBRATION_DT
+    ) -> None:
+        """Apply ``x`` and read the side outputs after the gas phase settles.
 
-        Used by filters that need to evaluate ``h(x)`` for additional
-        sigma points without advancing the dynamics. The dt is small
-        enough that the ADM1 right-hand side leaves the state
-        essentially unchanged, but the side outputs (``Q_gas``,
-        ``Q_ch4``, CHP draw, etc.) get refreshed. The plant is
-        restored to the latest snapshot first so the side outputs are
-        consistent with the calling filter's baseline.
+        Used by filters to evaluate ``h(x)`` (``Q_gas``, ``Q_ch4``, pH,
+        CHP draw, …) at a state ``x``. The plant is restored to the latest
+        snapshot, ``x`` is applied, then the plant is stepped for
+        ``equilibration_dt`` before the outputs are read.
         """
         self.restore()
         self._apply_state(self.spec.clip(x))
-        self.plant.step(dt_stub)
+        self.plant.step(equilibration_dt)

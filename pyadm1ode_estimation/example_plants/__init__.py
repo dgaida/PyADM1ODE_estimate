@@ -6,19 +6,17 @@ estimator can run against. Two builders are provided, in increasing
 complexity:
 
 * :func:`build_simple_plant` — single fermenter + digestate storage +
-  one CHP. The smallest mass-balance-closed plant; recommended as an
-  entry point.
+  one CHP.
 * :func:`build_multi_stage_plant` — three-stage cascade
   (primary → secondary → storage) with two CHPs and per-stage
-  heating circuits. A realistic agricultural-AD topology used for
-  end-to-end estimator validation.
+  heating circuits.
 
 In addition, :func:`build_example_sensor_defs` provides a realistic
 SCADA-tag → UKF-channel mapping for the multi-stage plant. It is the
 reference for writing custom :class:`SensorChannelDef` lists against
 the :mod:`pyadm1ode_estimation.io` data pipeline.
 
-The plant builders return ready-to-simulate plant instances; estimator
+The plant builders return ready-to-simulate plant instances. The estimator
 setup (StateVectorSpec, ObservationModel, MeasurementCalendar) is
 constructed separately by the caller using
 :func:`pyadm1ode_estimation.estimation.adm1da_full_spec`.

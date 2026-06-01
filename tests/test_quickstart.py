@@ -18,7 +18,6 @@ from pyadm1ode_estimation.estimation import (
     build_ukf,
 )
 
-
 # ---------------------------------------------------------------------------
 # Stub plant for construction-only tests
 # ---------------------------------------------------------------------------
@@ -67,7 +66,7 @@ class TestBuildUKFConstruction:
             plant,
             digester_id="primary",
             substrates=[
-                InputSpec("maize_silage",  substrate_index=0, initial_flow=10.0),
+                InputSpec("maize_silage", substrate_index=0, initial_flow=10.0),
                 InputSpec("cattle_slurry", substrate_index=1, initial_flow=5.0),
             ],
         )
@@ -142,7 +141,9 @@ class TestBuildUKFConstruction:
             return 42.0
 
         custom = ObservationChannel(
-            name="custom_signal", extractor=extractor, noise_std=1.0,
+            name="custom_signal",
+            extractor=extractor,
+            noise_std=1.0,
         )
         ukf = build_ukf(
             plant,
@@ -170,7 +171,7 @@ class TestBuildUKFConstruction:
             plant,
             digester_id="primary",
             substrates=[
-                InputSpec("big_substrate",   0, 20.0),
+                InputSpec("big_substrate", 0, 20.0),
                 InputSpec("small_substrate", 1, 1.0),
             ],
             sensors=["substrate_dose"],
@@ -178,5 +179,5 @@ class TestBuildUKFConstruction:
         )
         big = next(c for c in ukf.obs.channels if c.name == "Q_big_substrate")
         small = next(c for c in ukf.obs.channels if c.name == "Q_small_substrate")
-        assert big.noise_std == pytest.approx(1.0)    # 5 % of 20
+        assert big.noise_std == pytest.approx(1.0)  # 5 % of 20
         assert small.noise_std == pytest.approx(0.05)  # 5 % of 1

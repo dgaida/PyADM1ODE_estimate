@@ -1,39 +1,40 @@
-"""Example SCADA sensor definitions for the multi-stage plant.
+"""Example sensor definitions for the multi-stage plant.
 
-Demonstrates how to write a realistic :class:`SensorChannelDef` list for
-the kind of tag set that a real agricultural-AD SCADA exposes. The
-names follow the loose ISA-5.1 convention used in many plants:
+Demonstrates how to write a realistic :class:`SensorChannelDef`.
+The names follow the loose ISA-5.1 convention used in many plants:
 
-* ``FIC`` / ``FIT`` — flow indicator (controller / transmitter)
-* ``AIT``           — analytical indicator transmitter (pH, CH₄ %)
-* ``WIT``           — weighing indicator transmitter (dosing scale)
-* ``TIT``           — temperature indicator transmitter
-* ``101`` / ``201`` — loop number (1xx = gas line, 2xx = liquid
+* ``FIC`` / ``FIT`` - flow indicator (controller / transmitter)
+* ``AIT``           - analytical indicator transmitter (pH, CH₄ %)
+* ``WIT``           - weighing indicator transmitter (dosing scale)
+* ``TIT``           - temperature indicator transmitter
+* ``101`` / ``201`` - loop number (1xx = gas line, 2xx = liquid
   analytical, 3xx / 4xx = substrate dosing)
 
 The mapping connects DB column names to the UKF channels produced by
-:func:`pyadm1ode_estimation.estimation.build_ukf` when called with the
-substrate-input list used in the getting-started example
-(``maize_silage`` / ``slurry`` / ``cereal_silage``).
+:func:`pyadm1ode_estimation.estimation.build_ukf`. It meters **every**
+substrate input of the example plant - the four solids over the
+weighing dosing belt, the slurry over a flow meter.
 
 SCADA layout this targets::
 
     [Primary Fermenter]
         ├─ Biogas line
-        │     ├─ FIC101 — total biogas flow [Nm³/h]
-        │     └─ AIT101 — CH₄ %                            (dropped here:
+        │     ├─ FIC101 - total biogas flow [Nm³/h]
+        │     └─ AIT101 - CH₄ %                            (dropped here:
         │                                                   Q_ch4 comes
         │                                                   from FIC102
         │                                                   in this
         │                                                   layout)
-        ├─ FIC102 — methane flow [Nm³/h] (derived in
+        ├─ FIC102 - methane flow [Nm³/h] (derived in
         │           a DB view from FIC101 × AIT101 / 100)
-        └─ AIT201 — pH                            [-]
+        └─ AIT201 - pH                            [-]
 
     [Substrate dosing]
-        ├─ WIT301 — maize-silage scale            [kg/h]
-        ├─ FIC401 — cattle-slurry flow            [m³/h]
-        └─ WIT302 — cereal-silage scale           [kg/h]
+        ├─ WIT301 - maize-silage scale            [kg/h]
+        ├─ WIT303 - farmyard-manure scale         [kg/h]
+        ├─ WIT304 - chicken-litter (HTK) scale    [kg/h]
+        ├─ WIT302 - cereal-grain scale            [kg/h]
+        └─ FIC401 - cattle-slurry flow            [m³/h]
 
 The example also shows the four data-side concerns a real adapter has
 to handle, one per channel kind:
@@ -63,9 +64,11 @@ Typical usage::
         plant,
         digester_id="primary",
         substrates=[
-            InputSpec("maize_silage",  substrate_index=0, initial_flow=26.8),
-            InputSpec("slurry",        substrate_index=1, initial_flow=12.8),
-            InputSpec("cereal_silage", substrate_index=2, initial_flow=0.4),
+            InputSpec("maize_silage",   substrate_index=0, initial_flow=4.74),
+            InputSpec("solid_manure",   substrate_index=1, initial_flow=13.70),
+            InputSpec("chicken_litter", substrate_index=2, initial_flow=1.09),
+            InputSpec("slurry",         substrate_index=3, initial_flow=3.68),
+            InputSpec("cereal_grain",   substrate_index=4, initial_flow=0.20),
         ],
     )
 
@@ -86,46 +89,51 @@ from typing import Dict, List, Tuple
 
 from ..io import SensorChannelDef
 
-
 # ---------------------------------------------------------------------------
 # Plant-side physical constants
 # ---------------------------------------------------------------------------
 #
 # Substrate bulk densities, used by the kg/h → m³/d converters on the
 # solid-feed dosing scales. Typical values for chopped, pressed
-# agricultural silage; adjust to the lab analysis of the actual feed.
+# agricultural silage.
 
 #: Maize-silage bulk density [kg/m³].
 _RHO_MAIZE_KG_M3 = 700.0
 
-#: Cereal whole-plant silage bulk density [kg/m³].
+#: Crushed cereal-grain bulk density [kg/m³].
 _RHO_CEREAL_KG_M3 = 600.0
+
+#: Farmyard (solid) manure bulk density [kg/m³].
+_RHO_SOLID_MANURE_KG_M3 = 1000.0
+
+#: Dry chicken-litter (HTK) bulk density [kg/m³].
+_RHO_CHICKEN_LITTER_KG_M3 = 750.0
 
 
 # ---------------------------------------------------------------------------
 # Valid-range bounds (in model units, i.e. AFTER conversion)
 # ---------------------------------------------------------------------------
 #
-# Generous bounds that drop only impossible readings — sensor faults,
-# wraparounds, frozen outputs — without clipping legitimate operating
+# Generous bounds that drop only impossible readings. For example sensor faults,
+# wraparounds, frozen outputs, without clipping legitimate operating
 # excursions.
 
-#: pH [-] — below 3 or above 11 means probe failure / coating, not a
+#: pH [-] - below 3 or above 11 means probe failure / coating, not a
 #: real fermenter state. Tighten if you trust the probe more.
 _PH_RANGE: Tuple[float, float] = (3.0, 11.0)
 
 #: Total biogas flow [m³/d] at full multi-stage scale. Upper bound
-#: 50 000 covers a 1 MW-class plant; lower bound 0 catches negative
+#: 50 000 covers a 1 MW-class plant, lower bound 0 catches negative
 #: readings from a stalled meter.
 _Q_GAS_RANGE: Tuple[float, float] = (0.0, 50_000.0)
 
-#: Methane flow [m³/d] — bounded by Q_gas × 75 % (theoretical max
+#: Methane flow [m³/d] - bounded by Q_gas × 75 % (theoretical max
 #: CH₄ content). 30 000 is generous.
 _Q_CH4_RANGE: Tuple[float, float] = (0.0, 30_000.0)
 
 #: Substrate-dose volumetric flow [m³/d] at the primary stage.
-#: 200 covers transient pulse-feeding peaks well above the ~40 m³/d
-#: nominal of the multi-stage plant.
+#: 200 covers transient pulse-feeding peaks well above the ~23 m³/d
+#: nominal total dosing of the multi-stage plant.
 _Q_SUBSTRATE_RANGE: Tuple[float, float] = (0.0, 200.0)
 
 
@@ -140,11 +148,17 @@ _Q_SUBSTRATE_RANGE: Tuple[float, float] = (0.0, 200.0)
 
 _BAD_STATUS: Tuple = (
     # OPC-UA "Bad" / "Uncertain" enumeration strings
-    "Bad", "Uncertain", "BAD", "UNCERTAIN",
-    # Boolean diagnostic bits — False / 0 = sensor fault on most PLCs
-    False, 0,
+    "Bad",
+    "Uncertain",
+    "BAD",
+    "UNCERTAIN",
+    # Boolean diagnostic bits - False / 0 = sensor fault on most PLCs
+    False,
+    0,
     # Common integer status codes meaning "no signal" / "out of service"
-    -1, 999, 9999,
+    -1,
+    999,
+    9999,
     # NULL rows
     None,
 )
@@ -159,13 +173,17 @@ def build_example_sensor_defs(
     *,
     rho_maize_kg_m3: float = _RHO_MAIZE_KG_M3,
     rho_cereal_kg_m3: float = _RHO_CEREAL_KG_M3,
+    rho_solid_manure_kg_m3: float = _RHO_SOLID_MANURE_KG_M3,
+    rho_chicken_litter_kg_m3: float = _RHO_CHICKEN_LITTER_KG_M3,
 ) -> List[SensorChannelDef]:
     """Construct the example sensor-channel mapping.
 
-    The returned list mirrors a small but realistic SCADA tag set for
-    the multi-stage plant. Substrate UKF-channel names follow the
-    convention of :func:`pyadm1ode_estimation.estimation.build_ukf`,
-    which prefixes each ``InputSpec.name`` with ``"Q_"`` — so an
+    The returned list mirrors a realistic SCADA tag set for the
+    multi-stage plant and meters **every** substrate input: the four
+    solids run over the weighing dosing belt (``WIT3xx``) and the slurry
+    over a flow meter (``FIC401``). Substrate UKF-channel names follow
+    the convention of :func:`pyadm1ode_estimation.estimation.build_ukf`,
+    which prefixes each ``InputSpec.name`` with ``"Q_"`` - so an
     ``InputSpec("maize_silage", ...)`` is observed via the
     ``"Q_maize_silage"`` UKF channel.
 
@@ -173,12 +191,16 @@ def build_example_sensor_defs(
         rho_maize_kg_m3: Density of maize silage [kg/m³], used by the
             ``kg/h → m³/d`` converter on ``WIT301``. Defaults to
             700 kg/m³ (typical pressed silage).
-        rho_cereal_kg_m3: Density of cereal whole-plant silage [kg/m³],
-            used by ``WIT302``. Defaults to 600 kg/m³.
+        rho_cereal_kg_m3: Density of crushed cereal grain [kg/m³], used
+            by ``WIT302``. Defaults to 600 kg/m³.
+        rho_solid_manure_kg_m3: Density of farmyard manure [kg/m³], used
+            by ``WIT303``. Defaults to 1000 kg/m³.
+        rho_chicken_litter_kg_m3: Density of dry chicken litter [kg/m³],
+            used by ``WIT304``. Defaults to 750 kg/m³.
 
     Returns:
-        List of seven :class:`SensorChannelDef` covering gas, methane,
-        pH, and three substrate-dose channels. Use this list with
+        List of eight :class:`SensorChannelDef` covering gas, methane, pH
+        and all five substrate-dose channels. Use this list with
         :class:`pyadm1ode_estimation.io.DataFrameSensorSource` (or any
         other adapter) to feed ``ukf.update``.
     """
@@ -197,7 +219,7 @@ def build_example_sensor_defs(
         ),
         # FIC102: methane partial-flow channel, typically derived in a
         # DB view from FIC101 * AIT101/100 (NDIR CH4 sensor). Treated
-        # here as a first-class measured tag — the DB view is
+        # here as a first-class measured tag - the DB view is
         # responsible for the multiplication.
         SensorChannelDef(
             db_column="fic102_q_ch4_nm3h",
@@ -208,7 +230,6 @@ def build_example_sensor_defs(
             quality_column="fic102_quality",
             bad_status_values=_BAD_STATUS,
         ),
-
         # ---- Liquid analytical --------------------------------------
         # AIT201: pH probe in the primary fermenter. Dimensionless;
         # only range + quality matter.
@@ -219,7 +240,6 @@ def build_example_sensor_defs(
             quality_column="ait201_quality",
             bad_status_values=_BAD_STATUS,
         ),
-
         # ---- Substrate dosing ---------------------------------------
         # WIT301: weighing belt for maize silage [kg/h]. Mass-to-volume
         # needs density, which isn't in the built-in unit table -> the
@@ -245,16 +265,38 @@ def build_example_sensor_defs(
             quality_column="fic401_quality",
             bad_status_values=_BAD_STATUS,
         ),
-        # WIT302: weighing belt for cereal-GPS silage [kg/h]. Same
+        # WIT302: weighing belt for crushed cereal grain [kg/h]. Same
         # pattern as maize, different density.
         SensorChannelDef(
             db_column="wit302_cereal_kg_h",
-            ukf_channel="Q_cereal_silage",
+            ukf_channel="Q_cereal_grain",
             unit_in="kg/h",
             unit_out="m3/d",
             converter=lambda kg_h, rho=rho_cereal_kg_m3: kg_h * 24.0 / rho,
             valid_range=_Q_SUBSTRATE_RANGE,
             quality_column="wit302_quality",
+            bad_status_values=_BAD_STATUS,
+        ),
+        # WIT303: weighing belt for farmyard (solid) manure [kg/h].
+        SensorChannelDef(
+            db_column="wit303_manure_kg_h",
+            ukf_channel="Q_solid_manure",
+            unit_in="kg/h",
+            unit_out="m3/d",
+            converter=lambda kg_h, rho=rho_solid_manure_kg_m3: kg_h * 24.0 / rho,
+            valid_range=_Q_SUBSTRATE_RANGE,
+            quality_column="wit303_quality",
+            bad_status_values=_BAD_STATUS,
+        ),
+        # WIT304: weighing belt for dry chicken litter / HTK [kg/h].
+        SensorChannelDef(
+            db_column="wit304_htk_kg_h",
+            ukf_channel="Q_chicken_litter",
+            unit_in="kg/h",
+            unit_out="m3/d",
+            converter=lambda kg_h, rho=rho_chicken_litter_kg_m3: kg_h * 24.0 / rho,
+            valid_range=_Q_SUBSTRATE_RANGE,
+            quality_column="wit304_quality",
             bad_status_values=_BAD_STATUS,
         ),
     ]
@@ -263,23 +305,27 @@ def build_example_sensor_defs(
 def example_scada_columns() -> Dict[str, str]:
     """Return the expected DB-column → description mapping.
 
-    Useful when wiring the adapter to a live DB view — pass the dict
+    Useful when wiring the adapter to a live DB view - pass the dict
     keys as the ``SELECT`` list and use the values as a documentation
     crib sheet. The order matches :func:`build_example_sensor_defs`.
     """
     return {
         "fic101_q_gas_nm3h": "Total biogas flow on the gas header [Nm³/h]",
-        "fic101_quality":    "FIC101 OPC-UA quality flag",
+        "fic101_quality": "FIC101 OPC-UA quality flag",
         "fic102_q_ch4_nm3h": "Methane flow (DB-derived FIC101 * AIT101 / 100) [Nm³/h]",
-        "fic102_quality":    "FIC102 derived-channel quality flag",
-        "ait201_ph":         "pH of the primary fermenter [-]",
-        "ait201_quality":    "AIT201 OPC-UA quality flag",
+        "fic102_quality": "FIC102 derived-channel quality flag",
+        "ait201_ph": "pH of the primary fermenter [-]",
+        "ait201_quality": "AIT201 OPC-UA quality flag",
         "wit301_maize_kg_h": "Maize-silage dosing belt scale [kg/h]",
-        "wit301_quality":    "WIT301 PLC diagnostic bit",
+        "wit301_quality": "WIT301 PLC diagnostic bit",
         "fic401_slurry_m3h": "Cattle-slurry volumetric flow [m³/h]",
-        "fic401_quality":    "FIC401 PLC diagnostic bit",
-        "wit302_cereal_kg_h": "Cereal-GPS silage dosing belt scale [kg/h]",
-        "wit302_quality":    "WIT302 PLC diagnostic bit",
+        "fic401_quality": "FIC401 PLC diagnostic bit",
+        "wit302_cereal_kg_h": "Cereal-grain dosing belt scale [kg/h]",
+        "wit302_quality": "WIT302 PLC diagnostic bit",
+        "wit303_manure_kg_h": "Farmyard-manure dosing belt scale [kg/h]",
+        "wit303_quality": "WIT303 PLC diagnostic bit",
+        "wit304_htk_kg_h": "Chicken-litter (HTK) dosing belt scale [kg/h]",
+        "wit304_quality": "WIT304 PLC diagnostic bit",
     }
 
 

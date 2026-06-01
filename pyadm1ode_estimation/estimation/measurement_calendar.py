@@ -18,12 +18,12 @@ measurement DataFrame, applying per-channel validity windows:
 * a **sporadic** measurement only in a narrow window around its timestamp.
 
 Within the validity window, the most recent finite value in the
-channel's column is used. Outside the window — or if no finite value
-exists in the column near *t* — the channel is gated *off*, and the
+channel's column is used. Outside the window, or if no finite value
+exists in the column near *t*, the channel is gated *off* and the
 filter skips it for that step.
 
 The DataFrame is expected to be indexed by time in **days** (the unit
-the rest of the estimation package uses). Columns are channel names —
+the rest of the estimation package uses). Columns are channel names,
 matching either the ``ObservationChannel.name`` (the default) or the
 explicit ``gate_column`` if one is configured.
 """
@@ -38,7 +38,6 @@ import pandas as pd
 
 from .observation_model import ObservationModel
 
-
 # ---------------------------------------------------------------------------
 # Sample-rate spec
 # ---------------------------------------------------------------------------
@@ -52,7 +51,7 @@ class SampleRate:
     ``validity_window_d`` days. Outside that window (or with no
     measurement in the column at all) the channel is gated *off*.
 
-    Use the classmethod constructors for the common cases; the raw
+    Use the classmethod constructors for the common cases. The raw
     constructor accepts an explicit window in days for custom rates.
     """
 
@@ -78,7 +77,7 @@ class SampleRate:
 
     @classmethod
     def periodic(cls, period_h: float) -> "SampleRate":
-        """Periodic sampling every ``period_h`` hours; one period of
+        """Periodic sampling every ``period_h`` hours, one period of
         validity after each measurement."""
         if period_h <= 0:
             raise ValueError(f"period_h must be > 0, got {period_h}")
@@ -86,17 +85,17 @@ class SampleRate:
 
     @classmethod
     def daily(cls) -> "SampleRate":
-        """Daily measurement; valid for 24 h."""
+        """Daily measurement, valid for 24 h."""
         return cls.periodic(period_h=24.0)
 
     @classmethod
     def weekly(cls) -> "SampleRate":
-        """Weekly measurement; valid for 7 d."""
+        """Weekly measurement, valid for 7 d."""
         return cls.periodic(period_h=24.0 * 7.0)
 
     @classmethod
     def sporadic(cls, tolerance_min: float = 5.0) -> "SampleRate":
-        """One-off lab measurement; valid only in a ``tolerance_min``
+        """One-off lab measurement, valid only in a ``tolerance_min``
         window around the actual sample timestamp.
 
         Default ``5 min`` is generous enough that the filter sees the
@@ -170,10 +169,10 @@ class MeasurementCalendar:
     def gate_values_at(self, t: float, df: pd.DataFrame) -> Dict[str, float]:
         """Return ``{name: 1.0 if active else 0.0}`` at time ``t``.
 
-        A channel is *active* iff its column in ``df`` has at least one
+        A channel is *active* if its column in ``df`` has at least one
         finite value within the validity window
         ``[t - validity_window_d, t]``. The window is half-open on the
-        upper side — measurements exactly at ``t`` are included; future
+        upper side. Measurements exactly at ``t`` are included, future
         measurements are not.
         """
         gates: Dict[str, float] = {}

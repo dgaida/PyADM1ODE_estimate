@@ -5,7 +5,7 @@ The :class:`SensorSource` protocol decouples the filter loop from
 DataFrame). All adapters return the same shape:
 ``(t_days, y_dict)`` per yield, where ``y_dict`` contains only the
 channels that produced a valid reading on that step. Invalid /
-missing channels are simply absent — the UKF skips them.
+missing channels are simply absent - the UKF skips them.
 
 This module ships one concrete implementation:
 :class:`DataFrameSensorSource`. It reads from an in-memory
@@ -115,7 +115,7 @@ class DataFrameSensorSource:
     Missing values must be encoded as ``NaN`` (the standard pandas
     convention).
 
-    The class is intentionally minimal — it is the canonical reference
+    The class is intentionally minimal. It is the canonical reference
     for the :class:`SensorSource` protocol and the cleanest path for
     backtesting against historical exports. Live database adapters
     should mimic the same I/O contract.
@@ -177,9 +177,7 @@ class DataFrameSensorSource:
                 # pandas returns NaN for missing scalar entries; let
                 # SensorChannelDef.transform deal with NaN.
                 quality = (
-                    row.get(d.quality_column)
-                    if d.quality_column is not None
-                    else None
+                    row.get(d.quality_column) if d.quality_column is not None else None
                 )
                 val = d.transform(raw, quality)
                 if val is not None:

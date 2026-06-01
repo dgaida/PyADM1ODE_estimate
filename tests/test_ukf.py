@@ -41,7 +41,7 @@ class LinearProcess:
     def step(self, x, dt):
         return self.F @ x
 
-    def refresh_outputs(self, x, dt_stub=1e-5):  # noqa: ARG002
+    def refresh_outputs(self, x, equilibration_dt=1.0 / 24.0):  # noqa: ARG002
         return None
 
     def snapshot(self):

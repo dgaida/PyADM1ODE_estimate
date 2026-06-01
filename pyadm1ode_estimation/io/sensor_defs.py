@@ -9,7 +9,7 @@ the data-side transformations a real plant SCADA needs:
 * Range validation (negative Q_gas, pH > 14 ...)
 * Quality-flag handling (vendor status codes that mean "ignore me")
 
-It does **not** carry any UKF mathematics — the noise model and
+It does **not** carry any UKF mathematics, the noise model and
 extractor live on the :class:`ObservationChannel`. The split lets you
 swap SCADA implementations (PostgreSQL, InfluxDB, OPC-UA, Kafka, …)
 without touching the filter setup.
@@ -50,7 +50,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable, Optional, Tuple
 
-
 # ---------------------------------------------------------------------------
 # Built-in unit conversion table
 # ---------------------------------------------------------------------------
@@ -59,7 +58,7 @@ from typing import Callable, Optional, Tuple
 # ``value_out = scale * value_in + offset``.
 #
 # Conversions that need extra context (densities, COD factors,
-# molar masses, gas norm conditions) are NOT in this table — the
+# molar masses, gas norm conditions) are NOT in this table. The
 # caller must provide an explicit ``converter`` callable for those.
 #
 # The table is intentionally small (~20 entries) and focused on the
@@ -69,47 +68,41 @@ from typing import Callable, Optional, Tuple
 
 UNIT_CONVERSIONS: dict[Tuple[str, str], Tuple[float, float]] = {
     # ---- Volumetric flow ----------------------------------------
-    ("m3/d",   "m3/d"):  (1.0,        0.0),
-    ("m3/h",   "m3/d"):  (24.0,       0.0),
-    ("Nm3/h",  "m3/d"):  (24.0,       0.0),     # operator typically equates them
-    ("Nm3/d",  "m3/d"):  (1.0,        0.0),
-    ("L/h",    "m3/d"):  (0.024,      0.0),
-    ("L/min",  "m3/d"):  (1.44,       0.0),
-    ("L/s",    "m3/d"):  (86.4,       0.0),
-
+    ("m3/d", "m3/d"): (1.0, 0.0),
+    ("m3/h", "m3/d"): (24.0, 0.0),
+    ("Nm3/h", "m3/d"): (24.0, 0.0),
+    ("Nm3/d", "m3/d"): (1.0, 0.0),
+    ("L/h", "m3/d"): (0.024, 0.0),
+    ("L/min", "m3/d"): (1.44, 0.0),
+    ("L/s", "m3/d"): (86.4, 0.0),
     # ---- Mass flow ----------------------------------------------
-    ("kg/h",   "kg/d"):  (24.0,       0.0),
-    ("kg/d",   "kg/d"):  (1.0,        0.0),
-    ("t/h",    "kg/d"):  (24_000.0,   0.0),
-    ("t/d",    "kg/d"):  (1_000.0,    0.0),
-
+    ("kg/h", "kg/d"): (24.0, 0.0),
+    ("kg/d", "kg/d"): (1.0, 0.0),
+    ("t/h", "kg/d"): (24_000.0, 0.0),
+    ("t/d", "kg/d"): (1_000.0, 0.0),
     # ---- Concentration ------------------------------------------
-    ("g/L",    "kg/m3"): (1.0,        0.0),
-    ("mg/L",   "kg/m3"): (1.0e-3,     0.0),
-    ("kg/m3",  "kg/m3"): (1.0,        0.0),
-
+    ("g/L", "kg/m3"): (1.0, 0.0),
+    ("mg/L", "kg/m3"): (1.0e-3, 0.0),
+    ("kg/m3", "kg/m3"): (1.0, 0.0),
     # ---- Temperature --------------------------------------------
-    ("°C",     "K"):     (1.0,        273.15),
-    ("C",      "K"):     (1.0,        273.15),
-    ("K",      "K"):     (1.0,        0.0),
-    ("K",      "°C"):    (1.0,       -273.15),
-
+    ("°C", "K"): (1.0, 273.15),
+    ("C", "K"): (1.0, 273.15),
+    ("K", "K"): (1.0, 0.0),
+    ("K", "°C"): (1.0, -273.15),
     # ---- Pressure -----------------------------------------------
-    ("bar",    "Pa"):    (1.0e5,      0.0),
-    ("bar",    "bar"):   (1.0,        0.0),
-    ("mbar",   "Pa"):    (100.0,      0.0),
-    ("Pa",     "bar"):   (1.0e-5,     0.0),
-
+    ("bar", "Pa"): (1.0e5, 0.0),
+    ("bar", "bar"): (1.0, 0.0),
+    ("mbar", "Pa"): (100.0, 0.0),
+    ("Pa", "bar"): (1.0e-5, 0.0),
     # ---- Time (occasionally needed for sample intervals) ---------
-    ("s",      "d"):     (1.0 / 86_400.0, 0.0),
-    ("min",    "d"):     (1.0 / 1_440.0,  0.0),
-    ("h",      "d"):     (1.0 / 24.0,     0.0),
-    ("d",      "d"):     (1.0,            0.0),
-
+    ("s", "d"): (1.0 / 86_400.0, 0.0),
+    ("min", "d"): (1.0 / 1_440.0, 0.0),
+    ("h", "d"): (1.0 / 24.0, 0.0),
+    ("d", "d"): (1.0, 0.0),
     # ---- Dimensionless ------------------------------------------
-    ("-",      "-"):     (1.0,        0.0),
-    ("%",      "-"):     (0.01,       0.0),     # 50 % → 0.5
-    ("ppm",    "-"):     (1.0e-6,     0.0),
+    ("-", "-"): (1.0, 0.0),
+    ("%", "-"): (0.01, 0.0),
+    ("ppm", "-"): (1.0e-6, 0.0),
 }
 
 
@@ -202,8 +195,9 @@ class SensorChannelDef:
     # Transformation
     # ------------------------------------------------------------------
 
-    def transform(self, raw: Optional[float],
-                  quality: Optional[object] = None) -> Optional[float]:
+    def transform(
+        self, raw: Optional[float], quality: Optional[object] = None
+    ) -> Optional[float]:
         """Apply the full transformation pipeline. Returns ``None`` if
         the value should be dropped (NULL, bad quality, out of range).
 

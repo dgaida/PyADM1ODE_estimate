@@ -1,6 +1,6 @@
 """Simple single-fermenter example plant.
 
-This is a example of a small mass-balance-closed plant: 
+This is a example of a small mass-balance-closed plant:
 one fermenter (with substrate feed and gas headspace), one
 digestate-storage tank downstream (no substrate feed, lower
 temperature), and one CHP that consumes the biogas from the
