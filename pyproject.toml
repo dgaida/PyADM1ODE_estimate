@@ -42,3 +42,8 @@ docs = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["pyadm1ode_estimation*"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: integration tests that spin up worker pools or take >5 s",
+]

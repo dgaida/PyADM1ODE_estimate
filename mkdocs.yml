@@ -127,6 +127,7 @@ nav:
   - Entwicklung:
       - Übersicht: development/index.md
       - Ecosystem-Integration: development/ecosystem-integration.md
+      - SR-UKF Performance: development/ukf_performance.md
   - Fehlerbehebung: troubleshooting.md
   - Ecosystem:
       - Übersicht: ecosystem.md

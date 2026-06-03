@@ -33,7 +33,7 @@ from .base import EstimationStep, StateEstimator
 from .measurement_calendar import MeasurementCalendar, SampleRate
 from .observation_model import ObservationChannel, ObservationModel
 from .process_model import ADM1ProcessModel
-from .quickstart import build_ukf
+from .quickstart import build_filter_components, build_ukf
 from .specs import (
     InputSpec,
     KineticSpec,
@@ -58,5 +58,6 @@ __all__ = [
     "StateEstimator",
     "StateVectorSpec",
     "adm1da_full_spec",
+    "build_filter_components",
     "build_ukf",
 ]

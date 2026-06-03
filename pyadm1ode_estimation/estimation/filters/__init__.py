@@ -7,6 +7,8 @@ is the sole filter in the package. Callers never have to think about
 the square-root formulation as a separate variant.
 """
 
+from .constrained_ukf import ConstrainedUKF
+from .parallel_ukf import ParallelUKF
 from .sr_ukf import UnscentedKalmanFilter
 
-__all__ = ["UnscentedKalmanFilter"]
+__all__ = ["ConstrainedUKF", "ParallelUKF", "UnscentedKalmanFilter"]

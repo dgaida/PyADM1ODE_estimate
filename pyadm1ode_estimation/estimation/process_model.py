@@ -72,43 +72,78 @@ class ADM1ProcessModel:
     # microseconds, much cheaper than ``copy.deepcopy(plant)``, which
     # walks every numpy buffer in pyadm1.
     def snapshot(self) -> None:
-        """Record the current plant state for later restoration."""
-        digester = self.plant.components[self.spec.digester_id]
+        """Record the current plant state for later restoration.
+
+        Captures the full mutable state of every component the
+        ``plant.step`` call touches — not just the primary digester. In
+        a multi-stage plant the downstream storage tanks also evolve
+        during ``step``, and their state at the end of one sigma-point
+        evaluation must NOT leak into the next sigma. The earlier
+        single-digester snapshot let storage drift accumulate across
+        sigma points within a predict, which was harmless in the
+        serial loop (all sigmas saw the same drift prefix) but breaks
+        :class:`~pyadm1ode_estimation.estimation.filters.ParallelUKF`,
+        where each worker has its own storage trajectory.
+
+        The dict produced here is the per-task payload shipped to
+        worker processes — keep it picklable and small.
+        """
         snap: Dict[str, Any] = {
-            "adm1_state": list(digester.adm1_state),
-            "Q_substrates": list(getattr(digester, "Q_substrates", []) or []),
             "sim_time": float(self.plant.simulation_time),
+            "components": {},  # per-component adm1_state + Q_substrates
+            "gas_storage": {},  # per-component gas_storage state
         }
-        # Gas storage state across every digester, if present.
-        storage_snap: Dict[str, Dict[str, Any]] = {}
         for cid, comp in self.plant.components.items():
+            comp_snap: Dict[str, Any] = {}
+            if hasattr(comp, "adm1_state"):
+                comp_snap["adm1_state"] = list(comp.adm1_state)
+            q_subs = getattr(comp, "Q_substrates", None)
+            if q_subs is not None:
+                comp_snap["Q_substrates"] = list(q_subs)
+            if comp_snap:
+                snap["components"][cid] = comp_snap
+
             gs = getattr(comp, "gas_storage", None)
             if gs is None:
                 continue
-            storage_snap[cid] = dict(getattr(gs, "outputs_data", {}) or {})
+            gs_snap = dict(getattr(gs, "outputs_data", {}) or {})
             for attr in ("stored_volume_m3", "_stored_volume_m3"):
                 if hasattr(gs, attr):
-                    storage_snap[cid][f"__attr__{attr}"] = getattr(gs, attr)
-        snap["gas_storage"] = storage_snap
+                    gs_snap[f"__attr__{attr}"] = getattr(gs, attr)
+            snap["gas_storage"][cid] = gs_snap
+
         self._baseline = snap
 
     def restore(self) -> None:
         """Restore the plant state recorded by the last :meth:`snapshot`."""
         if not self._baseline:
             return
-        digester = self.plant.components[self.spec.digester_id]
-        digester.adm1_state = list(self._baseline["adm1_state"])
-        if self._baseline["Q_substrates"]:
-            digester.Q_substrates = list(self._baseline["Q_substrates"])
         self.plant.simulation_time = float(self._baseline["sim_time"])
-        for cid, snap in self._baseline.get("gas_storage", {}).items():
+
+        # Per-component restoration: adm1_state and Q_substrates for every
+        # component captured by snapshot(). Components that didn't have one
+        # of these at snapshot time are simply absent from the dict.
+        for cid, comp_snap in self._baseline.get("components", {}).items():
+            comp = self.plant.components.get(cid)
+            if comp is None:
+                continue
+            if "adm1_state" in comp_snap:
+                comp.adm1_state = list(comp_snap["adm1_state"])
+            if "Q_substrates" in comp_snap and comp_snap["Q_substrates"]:
+                comp.Q_substrates = list(comp_snap["Q_substrates"])
+
+        # Gas-storage state restoration: same layout as before, the storage
+        # snap is keyed by component id.
+        for cid, gs_snap in self._baseline.get("gas_storage", {}).items():
             comp = self.plant.components.get(cid)
             gs = getattr(comp, "gas_storage", None) if comp else None
             if gs is None:
                 continue
-            attr_updates = {k: v for k, v in snap.items() if k.startswith("__attr__")}
+            attr_updates = {
+                k: v for k, v in gs_snap.items() if k.startswith("__attr__")
+            }
             outputs_part = {
-                k: v for k, v in snap.items() if not k.startswith("__attr__")
+                k: v for k, v in gs_snap.items() if not k.startswith("__attr__")
             }
             try:
                 gs.outputs_data = dict(outputs_part)

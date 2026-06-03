@@ -194,6 +194,7 @@ def build_ukf(
     alpha: float = 1.0,
     beta: float = 2.0,
     kappa: float = 0.0,
+    gamma_override: Optional[float] = None,
 ) -> "UnscentedKalmanFilter":
     """Bundle the full 41-state SR-UKF setup into a single call.
 
@@ -236,6 +237,12 @@ def build_ukf(
             ``(1.0, 2.0, 0.0)`` are the unscaled (Julier-Uhlmann)
             settings recommended for the strongly nonlinear ADM1
             kinetics.
+        gamma_override: Override the canonical sigma-point radius
+            ``γ = √(n + λ)``. ``gamma_override=1.0`` implements the
+            Hellmann et al. 2024 (ECC) reduced-scaling trick that
+            yielded the largest accuracy improvement on ADM1-R4-Core in
+            their UKF benchmark (NRMSE_x 0.85 → 0.37). Default ``None``
+            keeps the canonical Wan–Van der Merwe scaling.
 
     Returns:
         A ready-to-run :class:`UnscentedKalmanFilter`.
@@ -283,6 +290,7 @@ def build_ukf(
         alpha=alpha,
         beta=beta,
         kappa=kappa,
+        gamma_override=gamma_override,
     )
 
     # ---- 5. Initial state + covariance ----------------------------------
@@ -300,4 +308,63 @@ def build_ukf(
     return ukf
 
 
-__all__ = ["build_ukf"]
+def build_filter_components(
+    plant: "BiogasPlant",
+    digester_id: str,
+    substrates: Sequence[InputSpec] = (),
+    sensors: Sequence[Union[str, ObservationChannel]] = (
+        "q_gas",
+        "q_ch4",
+        "ph",
+        "substrate_dose",
+    ),
+    *,
+    kinetic_overrides: Sequence[KineticSpec] = (),
+    sensor_quality: Optional[SensorQualityProfile] = None,
+    sensor_noise: Optional[dict] = None,
+):
+    """Build ``(process, obs, spec)`` without constructing a UKF.
+
+    Mirrors steps 1–3 of :func:`build_ukf` (spec → obs → process model
+    + initial snapshot) without going on to instantiate the filter
+    itself. Useful when a caller needs the three building blocks for
+    something other than the standard ``UnscentedKalmanFilter`` —
+    notably :class:`ParallelUKF` workers, which rebuild their local
+    process model and observation closures from scratch on each
+    worker process.
+
+    Returns:
+        A 3-tuple ``(process, obs, spec)``. ``process`` is already
+        snapshotted at the plant's current state.
+    """
+    if digester_id not in plant.components:
+        raise KeyError(
+            f"digester_id='{digester_id}' is not a component of the plant. "
+            f"Available: {sorted(plant.components)}"
+        )
+
+    spec = adm1da_full_spec(
+        digester_id=digester_id,
+        substrate_inputs=substrates,
+        kinetic_overrides=kinetic_overrides,
+        sensor_quality=sensor_quality,
+    )
+
+    obs_channels = _resolve_sensors(
+        sensors=sensors,
+        digester_id=digester_id,
+        spec=spec,
+        noise_overrides=sensor_noise,
+    )
+    if not obs_channels:
+        raise ValueError(
+            "No observation channels constructed - pass at least one sensor."
+        )
+    obs = ObservationModel(channels=obs_channels)
+
+    process = ADM1ProcessModel(plant, spec)
+    process.snapshot()
+    return process, obs, spec
+
+
+__all__ = ["build_ukf", "build_filter_components"]

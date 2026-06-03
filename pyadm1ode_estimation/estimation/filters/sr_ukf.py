@@ -1,4 +1,4 @@
-"""Square-Root Unscented Kalman Filter (Wan & Van der Merwe 2001).
+"""Square-Root Unscented Kalman Filter (Wan & Van der Merwe 2001, Alg. 3.1).
 
 Mathematically equivalent to the standard scaled UKF, but propagates the
 Cholesky factor ``S`` (with ``P = S @ S.T``) instead of the full covariance
@@ -14,16 +14,37 @@ magnitude in observability):
   decisive advantage when weakly observable axes coexist with strongly
   observable ones.
 
+Sigma-point reuse
+-----------------
+The measurement update consumes the *propagated* sigma points produced by
+``predict`` rather than redrawing a fresh symmetric set around
+``(x_pred, S_pred)``. This is the canonical Wan-VdM 2001 formulation
+(Algorithm 3.1, line 22: ``Y_{k|k-1} = H[X_{k|k-1}]``) and matches the
+``UKF-SR`` variant evaluated for ADM1 in Hellmann et al. 2024 (ECC).
+
+The approximation it makes is mathematically explicit: the propagated set
+covers ``sample_cov`` (post-``f`` distribution); a redraw would cover
+``P_pred = sample_cov + Q``. The dropped contribution is ``O(||Q|| /
+||P||)`` on the measurement Jacobian path. For ADM1 at ``dt = 1 h`` with
+the spec's typical ``Q/P`` ratio (≈ 1/250), this error is below the
+measurement-noise floor and well documented by the 24-h twin in
+:doc:`/development/ukf_performance`.
+
 Internal state:
-    self.x_hat : posterior mean (n,)
-    self._S    : posterior Cholesky factor, lower triangular (n, n)
-    self.P     : exposed as a @property computing S @ S.T on demand
-                 (so callers and EstimationStep diagnostics keep working).
+    self.x_hat                : posterior mean (n,)
+    self._S                   : posterior Cholesky factor, lower-triangular
+    self.P                    : property, ``S @ S.T`` computed on demand
+    self._cached_propagated   : (2n+1, n) propagated sigma points from the
+                                last predict; consumed by the next update
+    self._cached_h_all        : (2n+1, n_obs) h-values per propagated sigma
+                                point; consumed by the next update
+    self._cached_x_pred       : (n,) pre-clip predicted mean (matches the
+                                propagated set); used for cross-covariance
 """
 
 from __future__ import annotations
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 from scipy.linalg import solve_triangular
@@ -108,6 +129,18 @@ class UnscentedKalmanFilter:
             Gaussian priors.
         kappa: Secondary scaling. ``0`` is the canonical choice for
             ``n > 0``.
+        gamma_override: If set, replaces the canonical
+            ``γ = √(n + λ)`` sigma-point scaling. The weights
+            ``w_m``, ``w_c`` are still built from ``(α, β, κ)`` exactly
+            as for the canonical filter — only the radius at which the
+            sigma points are placed around the mean changes. The
+            Hellmann et al. 2024 (ECC, ADM1) reduced-scaling trick
+            (``γ = 1`` instead of ``γ ≈ √n``) sits behind this knob:
+            for high-dimensional, weakly nonlinear systems with
+            Gaussian-ish measurement noise, the tighter sigma cloud
+            gives lower NRMSE on weakly observable states than the
+            canonical Julier–Uhlmann scaling. Default ``None`` keeps
+            the canonical algorithm bit-stable.
     """
 
     def __init__(
@@ -119,6 +152,7 @@ class UnscentedKalmanFilter:
         alpha: float = 1.0,
         beta: float = 2.0,
         kappa: float = 0.0,
+        gamma_override: Optional[float] = None,
     ):
         if process.spec is not spec:
             raise ValueError("process.spec and spec must be the same object.")
@@ -136,7 +170,15 @@ class UnscentedKalmanFilter:
                 f"Invalid UKF scaling: n+lambda = {self.n + self.lam} ≤ 0. "
                 f"Try alpha closer to 1 or kappa > -n."
             )
-        self.gamma = np.sqrt(self.n + self.lam)
+        # Canonical scaling: γ = √(n + λ). The override path keeps the
+        # weights canonical but decouples the sigma-point radius — see
+        # Hellmann 2024 §5.1.2 for the empirical motivation on ADM1.
+        if gamma_override is None:
+            self.gamma = np.sqrt(self.n + self.lam)
+        else:
+            if gamma_override <= 0:
+                raise ValueError(f"gamma_override must be > 0, got {gamma_override}.")
+            self.gamma = float(gamma_override)
         self._w_m, self._w_c = self._build_weights()
 
         self.x_hat: np.ndarray = spec.initial_mean()
@@ -145,6 +187,29 @@ class UnscentedKalmanFilter:
         # a diagonal Cholesky.
         P0 = spec.initial_cov()
         self._S: np.ndarray = np.linalg.cholesky(P0)
+
+        # Single-slot cache for sqrt(Q): Q depends only on dt and on the
+        # channel parameters (fixed at spec construction), so a constant-dt
+        # run hits this cache on every predict after the first.
+        self._sqrt_Q_cache_dt: Optional[float] = None
+        self._sqrt_Q_cache: Optional[np.ndarray] = None
+
+        # Single-slot cache for sqrt(R): R depends only on the noise_std
+        # of the active channels (channel parameters are fixed at construct
+        # time). Key is the ordered tuple of active channel names; a step
+        # with the same active set hits the cache. Mutating
+        # ``ObservationChannel.noise_std`` after the fact invalidates this
+        # cache and is not supported.
+        self._sqrt_R_cache_key: Optional[Tuple[str, ...]] = None
+        self._sqrt_R_cache: Optional[np.ndarray] = None
+
+        # Sigma-reuse cache: populated by predict(), consumed by the next
+        # update(). Cleared by reset(). When None, update() falls back to
+        # the t=0 path (evaluate h at sigma points around the current
+        # prior via process.refresh_outputs).
+        self._cached_propagated: Optional[np.ndarray] = None
+        self._cached_h_all: Optional[np.ndarray] = None
+        self._cached_x_pred: Optional[np.ndarray] = None
 
     # ------------------------------------------------------------------
     # Public covariance as a property (computed on demand)
@@ -174,6 +239,25 @@ class UnscentedKalmanFilter:
         w_c[0] = w_m[0] + (1.0 - self.alpha**2 + self.beta)
         return w_m, w_c
 
+    def _propagate_sigma_points(self, sigma: np.ndarray, dt: float) -> tuple:
+        """Step every sigma point through the plant + read ``h`` for each.
+
+        Returns ``(propagated, h_all)`` with shapes ``(2n+1, n)`` and
+        ``(2n+1, n_obs)``. ``self.process`` must already be snapshotted
+        when this is called — every step starts from that baseline.
+
+        :class:`ParallelUKF` overrides this to dispatch the loop over a
+        worker pool. The base implementation runs serially.
+        """
+        n_sigma = sigma.shape[0]
+        n_obs = len(self.obs.channels)
+        propagated = np.empty((n_sigma, self.n))
+        h_all = np.empty((n_sigma, n_obs))
+        for i, s in enumerate(sigma):
+            propagated[i] = self.process.step(s, dt)
+            h_all[i] = self.obs.predict(self.process.plant, propagated[i])
+        return propagated, h_all
+
     def _sigma_points(self, x: np.ndarray, S: np.ndarray) -> np.ndarray:
         """Build the 2n+1 symmetric sigma points around ``x`` using ``S``.
 
@@ -186,11 +270,11 @@ class UnscentedKalmanFilter:
         sigma[0] = x
         # Columns of S are the directions of the principal-axes ellipsoid.
         # Adding +/- gamma * S[:, i] places points on the gamma-sigma
-        # surface along each axis.
-        gS = self.gamma * S
-        for i in range(n):
-            sigma[i + 1] = x + gS[:, i]
-            sigma[n + i + 1] = x - gS[:, i]
+        # surface along each axis. Broadcast over all axes at once
+        # (rows of (gamma * S).T are the per-axis offsets).
+        gS_T = self.gamma * S.T
+        sigma[1 : n + 1] = x + gS_T
+        sigma[n + 1 :] = x - gS_T
         return sigma
 
     # ------------------------------------------------------------------
@@ -204,6 +288,11 @@ class UnscentedKalmanFilter:
         # near-symmetric but not bit-equal.
         P0_arr = 0.5 * (P0_arr + P0_arr.T)
         self._S = np.linalg.cholesky(P0_arr)
+        # Invalidate the sigma-reuse cache: any h-values left from a prior
+        # predict() correspond to the old prior, not this fresh one.
+        self._cached_propagated = None
+        self._cached_h_all = None
+        self._cached_x_pred = None
 
     # ------------------------------------------------------------------
     # Predict
@@ -214,7 +303,11 @@ class UnscentedKalmanFilter:
         # ADM1 state must not drift between sigma evaluations.
         self.process.snapshot()
         sigma = self._sigma_points(self.x_hat, self._S)
-        propagated = np.array([self.process.step(s, dt) for s in sigma])
+
+        # Propagate sigma points + read h(plant) in one pass. Delegated to a
+        # hook so :class:`ParallelUKF` (and future variants) can override
+        # the loop without re-implementing the full predict body.
+        propagated, h_all = self._propagate_sigma_points(sigma, dt)
 
         # Predicted mean (weighted average).
         x_pred = np.sum(self._w_m[:, None] * propagated, axis=0)
@@ -233,8 +326,14 @@ class UnscentedKalmanFilter:
         sqrt_wc = np.sqrt(self._w_c[1:])
         weighted_diffs = sqrt_wc[:, None] * diff[1:]  # (2n, n)
 
-        Q = self.spec.process_noise_cov(dt)
-        sqrt_Q = np.linalg.cholesky(Q)  # Q is diagonal → trivial
+        # Cached cholesky(Q): Q = spec.process_noise_cov(dt) depends only
+        # on dt, and run_filter calls predict with a constant dt. Recompute
+        # only when dt changes.
+        if self._sqrt_Q_cache is None or self._sqrt_Q_cache_dt != dt:
+            Q = self.spec.process_noise_cov(dt)
+            self._sqrt_Q_cache = np.linalg.cholesky(Q)  # Q is diagonal → trivial
+            self._sqrt_Q_cache_dt = dt
+        sqrt_Q = self._sqrt_Q_cache
 
         stacked = np.vstack([weighted_diffs, sqrt_Q.T])  # (2n + n, n)
         # QR of (2n+n, n) gives Q-factor (2n+n, n) and R (n, n).
@@ -248,10 +347,18 @@ class UnscentedKalmanFilter:
             sign = +1 if self._w_c[0] > 0 else -1
             S_pred = _cholupdate(S_pred, u, sign=sign)
 
+        # Cache the propagated sigma-point set, the pre-clip predicted mean
+        # and the per-channel h-values for the next update(). The next
+        # predict() will overwrite all three; reset() invalidates them.
+        self._cached_propagated = propagated
+        self._cached_h_all = h_all
+        self._cached_x_pred = x_pred
+
         self.x_hat = self.spec.clip(x_pred)
         self._S = S_pred
 
-        # Restore baseline, propagate mean once more, snapshot.
+        # Restore baseline, propagate mean once more, snapshot. The next
+        # predict()'s sigma points start from this baseline.
         self.process.restore()
         self.process.step(self.x_hat, dt)
         self.process.snapshot()
@@ -284,17 +391,32 @@ class UnscentedKalmanFilter:
                 active_channels=[],
             )
 
-        # Build sigma points around the prior, evaluate h(·) for each.
-        # process.refresh_outputs restores from snapshot on every call,
-        # so each sigma point's observation is consistent with the same
-        # background plant state.
-        self.process.snapshot()
-        sigma = self._sigma_points(self.x_hat, self._S)
         m = len(active)
-        y_sigma = np.zeros((len(sigma), m))
-        for i, s in enumerate(sigma):
-            self.process.refresh_outputs(s, equilibration_dt=equilibration_dt)
-            y_sigma[i] = self.obs.predict(self.process.plant, s, active=active)
+
+        if self._cached_h_all is not None:
+            # Re-use path (canonical Wan-VdM 2001 Alg. 3.1 line 22): the
+            # propagated sigma points from the last predict() and their
+            # cached h-values already cover the predicted distribution.
+            # No further plant integration needed for the measurement step.
+            chan_index = {c.name: i for i, c in enumerate(self.obs.channels)}
+            active_idx = np.array([chan_index[c.name] for c in active], dtype=int)
+            y_sigma = self._cached_h_all[:, active_idx]
+            x_diff_source = self._cached_propagated
+            x_centre = self._cached_x_pred
+        else:
+            # No predict() has run yet (e.g. the first observation at t=0
+            # in run_filter). Evaluate h at sigma points sampled around
+            # the current prior. This path costs the standard 2n+1 plant
+            # equilibration steps, but only runs once per filter lifetime
+            # — every subsequent update consumes the predict-side cache.
+            self.process.snapshot()
+            sigma = self._sigma_points(self.x_hat, self._S)
+            y_sigma = np.zeros((len(sigma), m))
+            for i, s in enumerate(sigma):
+                self.process.refresh_outputs(s, equilibration_dt=equilibration_dt)
+                y_sigma[i] = self.obs.predict(self.process.plant, s, active=active)
+            x_diff_source = sigma
+            x_centre = self.x_hat
 
         # Drop channels whose model prediction is non-finite at any sigma
         # point: the model cannot reliably predict them this step, so they
@@ -324,8 +446,14 @@ class UnscentedKalmanFilter:
         # Innovation Cholesky factor S_y via QR + cholupdate.
         sqrt_wc = np.sqrt(self._w_c[1:])
         weighted_y_diffs = sqrt_wc[:, None] * y_diff[1:]  # (2n, m)
-        R_meas = self.obs.R(active=active)
-        sqrt_R = np.linalg.cholesky(R_meas)  # R is diagonal → trivial
+        # Cached cholesky(R): R only changes when the set of active
+        # channels changes (gate flips or per-step NaN-prediction drops).
+        active_key = tuple(c.name for c in active)
+        if self._sqrt_R_cache is None or self._sqrt_R_cache_key != active_key:
+            R_meas = self.obs.R(active=active)
+            self._sqrt_R_cache = np.linalg.cholesky(R_meas)  # R is diagonal → trivial
+            self._sqrt_R_cache_key = active_key
+        sqrt_R = self._sqrt_R_cache
 
         stacked = np.vstack([weighted_y_diffs, sqrt_R.T])  # (2n + m, m)
         _, R_qr = np.linalg.qr(stacked)
@@ -336,12 +464,14 @@ class UnscentedKalmanFilter:
             sign = +1 if self._w_c[0] > 0 else -1
             S_y = _cholupdate(S_y, u_y, sign=sign)
 
-        # Cross-covariance T_xy = sum w_c[i] (chi_i - x_hat) (Y_i - y_pred)^T.
-        # This stays in non-square-root form (it's not symmetric in general).
-        x_diff = sigma - self.x_hat
-        T_xy = np.zeros((self.n, m))
-        for i in range(2 * self.n + 1):
-            T_xy += self._w_c[i] * np.outer(x_diff[i], y_diff[i])
+        # Cross-covariance T_xy = sum w_c[i] (chi_i - x_centre) (Y_i - y_pred)^T.
+        # Stays in non-square-root form (not symmetric in general).
+        # ``x_diff_source`` and ``x_centre`` come from either the predict-side
+        # cache (propagated sigma points around x_pred) or the t=0 fallback
+        # (fresh sigma points around x_hat). Vectorised matmul replaces the
+        # explicit sum-of-outer-products (<1e-15 relative roundoff).
+        x_diff = x_diff_source - x_centre
+        T_xy = (self._w_c[:, None] * x_diff).T @ y_diff
 
         # Kalman gain K = T_xy (S_y S_y^T)^{-1} via two triangular solves.
         # Let U = T_xy (S_y^T)^{-1}, then K = U S_y^{-1}.
