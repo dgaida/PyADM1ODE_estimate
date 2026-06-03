@@ -1,0 +1,2694 @@
+
+<!doctype html>
+<html lang="de" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="State estimation framework for PyADM1ODE biogas plant models">
+      
+      
+        <meta name="author" content="Daniel Gaida">
+      
+      
+        <link rel="canonical" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/development/ukf_performance/">
+      
+      
+        <link rel="prev" href="../ecosystem-integration/">
+      
+      
+        <link rel="next" href="../../troubleshooting/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="de">
+        
+          <link rel="alternate" href="../../en/development/ukf_performance/" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SR-UKF Performance - PyADM1ODE Estimate</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sr-ukf-performance-architektur-und-optimierungen" class="md-skip">
+          Zum Inhalt
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Kopfzeile">
+    <a href="../.." title="PyADM1ODE Estimate" class="md-header__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PyADM1ODE Estimate
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SR-UKF Performance
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Sprache wechseln">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="de" class="md-select__link">
+              Deutsch
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../en/development/ukf_performance/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Suche" placeholder="Suche" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Suche">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Teilen" aria-label="Teilen" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Zurücksetzen" aria-label="Zurücksetzen" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Suche wird initialisiert
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Zum Repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Hauptnavigation" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Erste Schritte
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../usage/" class="md-tabs__link">
+          
+  
+  
+  Nutzung
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../observability/" class="md-tabs__link">
+          
+  
+  
+  Observability
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../theory/" class="md-tabs__link">
+          
+  
+  
+  Theorie
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../examples/" class="md-tabs__link">
+          
+  
+  
+  Beispiele
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API-Referenz
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Entwicklung
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../troubleshooting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Fehlerbehebung
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ecosystem/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="PyADM1ODE Estimate" class="md-nav__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PyADM1ODE Estimate
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Zum Repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Erste Schritte
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nutzung
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Nutzung
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/ukf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UKF im Einsatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/twin_experiments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Twin-Experimente
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/calibration_artifact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kalibrierungs-Artefakt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Observability
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../observability/literature_review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Literaturüberblick
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../observability/sensor_state_dependencies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensor-Zustand-Abhängigkeiten
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theorie
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theorie
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/adm1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADM1da-Modell
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/pinn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PINN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Beispiele
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Beispiele
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API-Referenz
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API-Referenz
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entwicklung
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Entwicklung
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ecosystem-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem-Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SR-UKF Performance
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SR-UKF Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Inhaltsverzeichnis">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Inhaltsverzeichnis
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#aktueller-algorithmus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aktueller Algorithmus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optimierungs-wellen-2026-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimierungs-Wellen (2026-06)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Optimierungs-Wellen (2026-06)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#welle-1-verlustfreie-linalg-optimierungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Welle 1 — verlustfreie Linalg-Optimierungen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#welle-2-sigma-punkt-wiederverwendung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Welle 2 — Sigma-Punkt-Wiederverwendung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#literaturgrundlage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Literaturgrundlage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wie-verifiziert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wie verifiziert
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wie verifiziert">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bit-stabile-regression-nichtlinearer-mock-prozess" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bit-stabile Regression — nichtlinearer Mock-Prozess
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lineare-kf-konsistenz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lineare-KF-Konsistenz
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-invalidierung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache-Invalidierung
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#welle-3-reduced-sigma-scaling-opt-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Welle 3 — Reduced Sigma Scaling (opt-in)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Welle 3 — Reduced Sigma Scaling (opt-in)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#empirischer-sweep-auf-der-simple-plant-n43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empirischer γ-Sweep auf der simple plant (n=43)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#warum-nicht-monoton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Warum nicht-monoton
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#empfehlung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empfehlung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#welle-4-prozess-parallelisierung-der-sigma-auswertung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Welle 4 — Prozess-Parallelisierung der Sigma-Auswertung
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Welle 4 — Prozess-Parallelisierung der Sigma-Auswertung">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architektur" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architektur
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benchmark-simple-plant-24-h-twin-fester-seed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benchmark (simple plant, 24-h-Twin, fester Seed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anwendung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anwendung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#welle-5-constrained-ukf-implementiert-negativ-resultat-auf-adm1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Welle 5 — Constrained UKF: implementiert, negativ-Resultat auf ADM1
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Welle 5 — Constrained UKF: implementiert, negativ-Resultat auf ADM1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#empirisches-ergebnis-24h-twin-simple-plant-n43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empirisches Ergebnis (24h-Twin, simple plant, n=43)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strukturelle-ursache-sigma-spread-kollaps-am-multi-skalierten-zustandsraum" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strukturelle Ursache: Sigma-Spread-Kollaps am multi-skalierten Zustandsraum
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#was-als-nachstes-auf-der-liste-steht" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Was als nächstes auf der Liste steht
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fehlerbehebung
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ecosystem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://dgaida.github.io/PyADM1ODE/latest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PyADM1ODE (Basis)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://dgaida.github.io/PyADM1ODE_calibration/latest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PyADM1ODE_calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Inhaltsverzeichnis">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Inhaltsverzeichnis
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#aktueller-algorithmus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aktueller Algorithmus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optimierungs-wellen-2026-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimierungs-Wellen (2026-06)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Optimierungs-Wellen (2026-06)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#welle-1-verlustfreie-linalg-optimierungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Welle 1 — verlustfreie Linalg-Optimierungen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#welle-2-sigma-punkt-wiederverwendung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Welle 2 — Sigma-Punkt-Wiederverwendung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#literaturgrundlage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Literaturgrundlage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wie-verifiziert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wie verifiziert
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wie verifiziert">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bit-stabile-regression-nichtlinearer-mock-prozess" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bit-stabile Regression — nichtlinearer Mock-Prozess
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lineare-kf-konsistenz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lineare-KF-Konsistenz
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-invalidierung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache-Invalidierung
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#welle-3-reduced-sigma-scaling-opt-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Welle 3 — Reduced Sigma Scaling (opt-in)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Welle 3 — Reduced Sigma Scaling (opt-in)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#empirischer-sweep-auf-der-simple-plant-n43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empirischer γ-Sweep auf der simple plant (n=43)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#warum-nicht-monoton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Warum nicht-monoton
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#empfehlung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empfehlung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#welle-4-prozess-parallelisierung-der-sigma-auswertung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Welle 4 — Prozess-Parallelisierung der Sigma-Auswertung
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Welle 4 — Prozess-Parallelisierung der Sigma-Auswertung">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architektur" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architektur
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benchmark-simple-plant-24-h-twin-fester-seed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benchmark (simple plant, 24-h-Twin, fester Seed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anwendung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anwendung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#welle-5-constrained-ukf-implementiert-negativ-resultat-auf-adm1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Welle 5 — Constrained UKF: implementiert, negativ-Resultat auf ADM1
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Welle 5 — Constrained UKF: implementiert, negativ-Resultat auf ADM1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#empirisches-ergebnis-24h-twin-simple-plant-n43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empirisches Ergebnis (24h-Twin, simple plant, n=43)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strukturelle-ursache-sigma-spread-kollaps-am-multi-skalierten-zustandsraum" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strukturelle Ursache: Sigma-Spread-Kollaps am multi-skalierten Zustandsraum
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#was-als-nachstes-auf-der-liste-steht" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Was als nächstes auf der Liste steht
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="sr-ukf-performance-architektur-und-optimierungen">SR-UKF Performance — Architektur und Optimierungen<a class="headerlink" href="#sr-ukf-performance-architektur-und-optimierungen" title="Permanent link">&para;</a></h1>
+<p>Der <a href="../../api/"><code>UnscentedKalmanFilter</code></a> implementiert die
+kanonische Square-Root-UKF nach <strong>Wan &amp; van der Merwe 2001
+(Algorithmus 3.1)</strong>, in der Variante mit Sigma-Punkt-Wiederverwendung
+zwischen Predict und Measurement Update. Diese Seite dokumentiert,
+welche Optimierungen den Code dorthin gebracht haben und wie ihre
+Korrektheit verifiziert wird.</p>
+<h2 id="aktueller-algorithmus">Aktueller Algorithmus<a class="headerlink" href="#aktueller-algorithmus" title="Permanent link">&para;</a></h2>
+<p>Pro Filterschritt:</p>
+<ol>
+<li><strong>Predict</strong> zieht <code>2n+1</code> Sigma-Punkte um <code>(x_hat, S)</code>, propagiert sie
+   durch <code>process.step(σ_i, dt)</code> und liest <strong>gleichzeitig</strong>
+   <code>h(plant, σ_i_propagated)</code> für <em>alle</em> Beobachtungskanäle aus.
+   Predicted Mean + Cholesky-Faktor via QR-Stack mit <code>√Q</code>.</li>
+<li><strong>Update</strong> verbraucht die im Predict gecachten <code>h</code>-Werte direkt
+   (Spaltenauswahl über die aktiven Kanäle). Keine zweite Sigma-Punkt-
+   Auswertung, kein zweiter Plant-Durchlauf. Cross-Kovarianz
+   <code>T_xy</code> aus <code>(propagated − x_pred)</code>-Differenzen.</li>
+</ol>
+<p>ODE-Last pro Filterschritt: <strong><code>2n+1</code> Plant-Integrationen</strong> (nur im
+Predict). Die frühere "Redraw"-Variante hatte <code>2 · (2n+1) = 4n+2</code> —
+die doppelte Last für mathematisch keinen Gewinn.</p>
+<h2 id="optimierungs-wellen-2026-06">Optimierungs-Wellen (2026-06)<a class="headerlink" href="#optimierungs-wellen-2026-06" title="Permanent link">&para;</a></h2>
+<h3 id="welle-1-verlustfreie-linalg-optimierungen">Welle 1 — verlustfreie Linalg-Optimierungen<a class="headerlink" href="#welle-1-verlustfreie-linalg-optimierungen" title="Permanent link">&para;</a></h3>
+<p>Alle vier Änderungen ergebnisidentisch bis auf letzte Float-Bits
+(<code>atol=1e-12</code>):</p>
+<ol>
+<li><strong><code>_sigma_points</code> vektorisiert</strong> — Python-Schleife → zwei Broadcasts.</li>
+<li><strong><code>T_xy</code> vektorisiert</strong> — Schleife <code>for i: outer(...)</code> → ein
+   Matrix-Produkt.</li>
+<li><strong><code>cholesky(Q)</code> gecacht</strong> — keyed auf <code>dt</code>, Hit bei konstantem <code>dt</code>.</li>
+<li><strong><code>cholesky(R)</code> gecacht</strong> — keyed auf das aktive Kanal-Tupel.</li>
+</ol>
+<h3 id="welle-2-sigma-punkt-wiederverwendung">Welle 2 — Sigma-Punkt-Wiederverwendung<a class="headerlink" href="#welle-2-sigma-punkt-wiederverwendung" title="Permanent link">&para;</a></h3>
+<p>Strukturelle Änderung, die ~50% der ODE-Aufrufe einspart. Der frühere
+Code zog im <code>update()</code> einen frischen Sigma-Satz um <code>(x_pred, S_pred)</code>
+und stoppte den Plant für jeden noch einmal — eine Erweiterung, die
+nicht zur kanonischen Wan-VdM-2001-Form gehört. Im 24-h-ADM1-Twin
+(festem Seed, simple-Plant) brachte die Umstellung <strong>1.84× Speedup</strong>
+(429 s → 234 s) bei vergleichbarer Genauigkeit pro Quality-Block.</p>
+<p>Mathematische Approximation, die dabei akzeptiert wurde: der
+<code>H · Q · H^T</code>-Beitrag zur Innovationskovarianz <code>S_y</code> wird weggelassen
+(die propagierten Sigma-Punkte decken <code>sample_cov</code>, nicht <code>sample_cov +
+Q</code>). Wu et al. 2005 zeigen, dass das gegenüber der state-augmentierten
+UKF einen Genauigkeitsverlust bedeutet — der für ADM1 mit kleinem
+<code>Q/P</code> (≈ 1/250 bei <code>dt = 1h</code>) jedoch zwei Größenordnungen unter dem
+Messrauschen liegt. Hellmann et al. 2024 (ECC, AD-spezifisch)
+finden auf einem ADM1-R4-Modell die gleichen Trajektorien zwischen
+ihrer <code>UKF-SR</code>-Variante (= jetzt unsere Form) und <code>UKF-add</code> ohne
+Augmentierung.</p>
+<h2 id="literaturgrundlage">Literaturgrundlage<a class="headerlink" href="#literaturgrundlage" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Quelle</th>
+<th>Aussage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wan &amp; van der Merwe (2001) "The Square-Root Unscented Kalman Filter for State and Parameter-Estimation"</td>
+<td>Algorithmus 3.1, Zeile 22: <code>Y_{k|k-1} = H[X_{k|k-1}]</code> — h wird direkt auf den propagierten Sigma-Punkten ausgewertet, kein Redraw.</td>
+</tr>
+<tr>
+<td>Wu, Hu, Wu &amp; Hu (2005) "Unscented Kalman filtering for additive noise case: Augmented vs. non-augmented"</td>
+<td>Augmentierte Form (Q-Dimensionen im Sigma-Satz) ist theoretisch überlegen, weil sie Odd-Moment-Information aus Q im Messpfad propagiert. Effekt skaliert mit <code>||Q|| / ||P||</code>.</td>
+</tr>
+<tr>
+<td>Hellmann, Wilms, Streif &amp; Weinrich (2024, ECC) "Comparison of Unscented Kalman Filter Design for Agricultural Anaerobic Digestion Model"</td>
+<td>Direkte ADM1-Studie, 9 UKF-Varianten. UKF-SR (= unsere Form) und UKF-aug ergeben bei reduzierter Sigma-Skalierung praktisch identische NRMSE bei niedrigerer Laufzeit für UKF-SR.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="wie-verifiziert">Wie verifiziert<a class="headerlink" href="#wie-verifiziert" title="Permanent link">&para;</a></h2>
+<h3 id="bit-stabile-regression-nichtlinearer-mock-prozess">Bit-stabile Regression — nichtlinearer Mock-Prozess<a class="headerlink" href="#bit-stabile-regression-nichtlinearer-mock-prozess" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/tests/test_ukf_regression.py"><code>tests/test_ukf_regression.py</code></a>
+fährt einen 20-Schritt-Twin mit nichtlinearem Mock-Prozess
+(elementweise Quadratik + lineare Kopplung) und vergleicht den
+finalen Posterior gegen einen hartcodierten Goldwert (<code>atol=1e-12,
+rtol=0</code>). Goldwerte wurden nach der Hauptpfad-Migration neu erzeugt.</p>
+<p><strong>Goldwerte regenerieren</strong> (nach absichtlichen Algorithmus-Änderungen):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="s">import sys</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="s">sys.path.insert(0, &quot;.&quot;)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="s">import conftest  # DLL-Pfade auf Windows</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="s">sys.path.insert(0, &quot;tests&quot;)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="s">import test_ukf_regression as m</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="s">import numpy as np</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="s">np.set_printoptions(precision=16, floatmode=&quot;maxprec&quot;)</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="s">x, S = m._run_regression_trajectory()</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="s">print(&quot;X =&quot;, repr(x))</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="s">print(&quot;S =&quot;, repr(S))</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="s">PY</span>
+</span></code></pre></div>
+<h3 id="lineare-kf-konsistenz">Lineare-KF-Konsistenz<a class="headerlink" href="#lineare-kf-konsistenz" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/tests/test_ukf.py"><code>tests/test_ukf.py::TestUKFLinear</code></a>
+hat zwei Tests zum Vergleich mit dem geschlossenen Kalman-Filter:</p>
+<ul>
+<li><code>test_ukf_matches_classical_kf_with_negligible_Q</code> — bei <code>Q ≈ 1e-16</code>
+  (zehn Größenordnungen unter <code>P</code>) stimmt die SR-UKF-Trajektorie mit
+  dem KF auf <code>atol=1e-6</code> überein. Pinnt die Algebra-Korrektheit der
+  Reuse-Form fest.</li>
+<li><code>test_ukf_approximates_classical_kf_with_random_walk_Q</code> — bei
+  <code>Q/P ≈ 1%</code> weicht die Trajektorie um wenige Prozent vom KF ab,
+  konsistent mit dem weggelassenen <code>H Q H^T</code>-Term. <code>atol=0.05</code>.
+  Pinnt die Größenordnung der Approximation fest; deutliche
+  Abweichungen würden auf eine ungewollte Algorithmusverschiebung
+  hinweisen.</li>
+</ul>
+<h3 id="cache-invalidierung">Cache-Invalidierung<a class="headerlink" href="#cache-invalidierung" title="Permanent link">&para;</a></h3>
+<p>Vier weitere Tests in <code>test_ukf_regression.py</code> mit zählenden Wrappern:</p>
+<ul>
+<li><code>test_sqrt_Q_cache_hits_under_constant_dt</code></li>
+<li><code>test_sqrt_Q_cache_invalidates_on_dt_change</code></li>
+<li><code>test_sqrt_R_cache_hits_under_constant_active_set</code></li>
+<li><code>test_sqrt_R_cache_invalidates_on_active_set_change</code></li>
+</ul>
+<h3 id="welle-3-reduced-sigma-scaling-opt-in">Welle 3 — Reduced Sigma Scaling (opt-in)<a class="headerlink" href="#welle-3-reduced-sigma-scaling-opt-in" title="Permanent link">&para;</a></h3>
+<p>Der <code>UnscentedKalmanFilter</code> akzeptiert seit 2026-06 einen
+<code>gamma_override</code>-Parameter, der die kanonische Sigma-Punkt-Radius
+<code>γ = √(n + λ)</code> durch einen frei wählbaren Wert ersetzt. Die Gewichte
+<code>w_m</code>, <code>w_c</code> bleiben kanonisch (aus <code>α, β, κ</code> gebaut) — nur die
+Position der Sigma-Punkte auf dem Kovarianz-Ellipsoid ändert sich.</p>
+<p>Empirische Motivation aus Hellmann et al. 2024 §5.1.2: auf
+ADM1-R4-Core sinkt NRMSE_x bei <code>γ = 1</code> (statt kanonisch <code>√(n+λ) ≈ 2.45</code>)
+von 0.85 auf 0.37 — der größte Einzelgewinn im Paper. Begründung:
+für hochdimensionale, schwach-nichtlineare Systeme mit Gauß-ähnlichem
+Messrauschen liefert die engere Sigma-Wolke ein besseres Smoothing als
+die kanonische Julier–Uhlmann-Skalierung.</p>
+<p>Anwendung:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">ukf</span> <span class="o">=</span> <span class="n">build_ukf</span><span class="p">(</span><span class="n">plant</span><span class="p">,</span> <span class="n">digester_id</span><span class="o">=</span><span class="s2">&quot;primary&quot;</span><span class="p">,</span> <span class="n">substrates</span><span class="o">=...</span><span class="p">,</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>                <span class="n">gamma_override</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Default <code>None</code> lässt die Sigma-Skalierung unverändert — alle bestehenden
+Setups laufen weiter exakt wie vorher.</p>
+<h4 id="empirischer-sweep-auf-der-simple-plant-n43">Empirischer γ-Sweep auf der simple plant (n=43)<a class="headerlink" href="#empirischer-sweep-auf-der-simple-plant-n43" title="Permanent link">&para;</a></h4>
+<p>24-h-Twin, fester Seed (42), identische Truth und Messungen, nur γ
+variiert. Wandzeit pro Variante 229-242 s — γ ist ein reiner Qualitäts-
+und Kalibrierungs-Knopf, kein Speed-Knopf.</p>
+<table>
+<thead>
+<tr>
+<th>γ</th>
+<th>Mean NIS (Ziel ≈ 5)</th>
+<th>Avg. Coverage</th>
+<th>schlimmster Block</th>
+<th>Bewertung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>canonical (≈ 6.56)</td>
+<td>6.75</td>
+<td><strong>96.5 %</strong></td>
+<td>charge_balance 70 %</td>
+<td>sauber kalibriert</td>
+</tr>
+<tr>
+<td>5.0</td>
+<td>9.79</td>
+<td>91.2 %</td>
+<td>charge_balance 60 %</td>
+<td>leicht überzuversichtlich</td>
+</tr>
+<tr>
+<td>4.0</td>
+<td><strong>17.23</strong></td>
+<td>84.8 %</td>
+<td><strong>nitrogen 16 %</strong></td>
+<td>Kalibrierung kollabiert</td>
+</tr>
+<tr>
+<td><strong>3.0</strong></td>
+<td><strong>44.80</strong></td>
+<td>81.2 %</td>
+<td>nitrogen 20 %</td>
+<td><strong>katastrophal</strong></td>
+</tr>
+<tr>
+<td>2.0</td>
+<td>17.80</td>
+<td>84.0 %</td>
+<td>charge_balance 50 %</td>
+<td>schlecht</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>9.06</td>
+<td>87.4 %</td>
+<td>charge_balance 48 %</td>
+<td>mäßig</td>
+</tr>
+<tr>
+<td>1.0</td>
+<td>6.32</td>
+<td>88.4 %</td>
+<td>charge_balance 50 %</td>
+<td>bestes Mean, überzuversichtlich</td>
+</tr>
+</tbody>
+</table>
+<p>RMSE: auf gut beobachtbaren Blöcken sinkt der Fehler bei γ=1 um
+40-73 %, auf den schwach beobachtbaren <code>input_flow</code>-Kanälen steigt er
+um 25 %. Mittlere γ-Werte (2-5) sind in <strong>beiden</strong> Metriken strikt
+schlechter als die Endpunkte canonical und γ=1.</p>
+<h4 id="warum-nicht-monoton">Warum nicht-monoton<a class="headerlink" href="#warum-nicht-monoton" title="Permanent link">&para;</a></h4>
+<p>Die Gewichte <code>w_m</code>, <code>w_c</code> sind aus der kanonischen Skalierung
+<code>γ = √(n+λ)</code> so gebaut, dass die unscented Transform Mittelwert und
+Kovarianz bis zur dritten Ordnung exakt rekonstruiert — <em>nur in
+Kombination</em> mit genau diesem γ. Hellmann's Trick entkoppelt γ von
+den Gewichten: tighte Sigma-Wolke + Gewichte einer weiten Wolke →
+die rekonstruierte Posterior-Kovarianz ist systematisch zu klein,
+NIS explodiert.</p>
+<p>Bei γ=1 wirkt eine andere Dynamik (effektives Tiefpass-Smoothing der
+Messung) wieder regularisierend und liefert akzeptables NIS aus
+formal "falschem" Grund. Im Übergangsbereich (γ ≈ 2-5) wirkt keiner
+der beiden Effekte sauber → die Filter-Konsistenz kollabiert.</p>
+<h4 id="empfehlung">Empfehlung<a class="headerlink" href="#empfehlung" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Default <code>gamma_override=None</code></strong> für UQ-relevante Anwendungen
+  (Coverage-Kalibrierung ist hier Priorität).</li>
+<li><strong><code>gamma_override=1.0</code></strong> opt-in für Modi, wo nur der posterior Mean
+  verbraucht wird (z.B. MPC-Targets, Steuerungssignale) und Coverage
+  zweitrangig ist.</li>
+<li><strong>Werte zwischen 1 und 6 vermeiden</strong> — kein Sweet Spot, beide
+  Metriken werden gleichzeitig schlechter.</li>
+<li>Für <em>gleichzeitig</em> gute Mean und Calibration: state-augmentierte
+  Form (Welle 4 in der Roadmap), die die <code>Q</code>-Inkonsistenz direkt im
+  Algorithmus behebt, statt sie über γ zu kompensieren.</li>
+</ul>
+<h3 id="welle-4-prozess-parallelisierung-der-sigma-auswertung">Welle 4 — Prozess-Parallelisierung der Sigma-Auswertung<a class="headerlink" href="#welle-4-prozess-parallelisierung-der-sigma-auswertung" title="Permanent link">&para;</a></h3>
+<p>Neue Klasse <a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/pyadm1ode_estimation/estimation/filters/parallel_ukf.py"><code>ParallelUKF</code></a>
+verteilt die <code>2n+1</code> Plant-Integrationen einer <code>predict()</code>-Iteration
+auf einen <code>multiprocessing.spawn</code>-Worker-Pool. Linalg-Pfad (QR,
+Cholupdate, Gewichte) bleibt auf dem Hauptprozess; nur die
+embarrassingly parallel Sigma-Propagation wandert in Worker.</p>
+<h4 id="architektur">Architektur<a class="headerlink" href="#architektur" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Jeder Worker baut sich beim Pool-Start <strong>seine eigene</strong> <code>(process,
+  obs, spec)</code>-Tupel über einen user-bereitgestellten Top-Level-Builder
+  auf. Damit umgehen wir das Pickle-Problem der <code>obs</code>-Closures, die auf
+  Plant-Referenzen verweisen würden.</li>
+<li>Pro Task wird nur das winzige Snapshot-Dict (~1 KB) zwischen
+  Hauptprozess und Workern ausgetauscht. Die Plant-Objekte selbst
+  überqueren die IPC-Grenze nur einmal beim Pool-Spawn.</li>
+<li><code>process.step</code> ruft intern <code>restore()</code> auf — wir mussten
+  <a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/pyadm1ode_estimation/estimation/process_model.py"><code>process_model.snapshot/restore</code></a>
+  erweitern, sodass <em>alle</em> Komponenten mit <code>adm1_state</code> zurückgesetzt
+  werden, nicht nur das primäre Digester-Modul. Das schließt einen
+  schon im seriellen Code latent vorhandenen Drift-Bug (Storage-Tank
+  akkumulierte Zustand über Sigma-Punkte hinweg) und macht den UKF
+  theoretisch sauberer: jede Sigma-Punkt-Auswertung sieht jetzt
+  unabhängig dieselbe Baseline.</li>
+</ul>
+<h4 id="benchmark-simple-plant-24-h-twin-fester-seed">Benchmark (simple plant, 24-h-Twin, fester Seed)<a class="headerlink" href="#benchmark-simple-plant-24-h-twin-fester-seed" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Variante</th>
+<th>Wandzeit</th>
+<th>Speedup</th>
+<th>s pro Filterschritt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>serial</td>
+<td>238.6 s</td>
+<td>1.00×</td>
+<td>9.94</td>
+</tr>
+<tr>
+<td>parallel_2</td>
+<td>207.7 s</td>
+<td>1.15×</td>
+<td>8.66</td>
+</tr>
+<tr>
+<td>parallel_4</td>
+<td>111.9 s</td>
+<td>2.13×</td>
+<td>4.66</td>
+</tr>
+<tr>
+<td>parallel_8</td>
+<td>80.6 s</td>
+<td><strong>2.96×</strong></td>
+<td>3.36</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Block-RMSE und 2σ-Coverage sind über alle Worker-Zahlen
+bit-identisch.</strong> Mean-Trajektorien-Differenz vs. seriell: exakt
+0 σ auf jedem Kanal. Mean NIS = 7.08 für alle Varianten.</p>
+<p>Sub-lineare Skalierung erwartbar (Amdahl):
+* Pool-Spawn-Overhead (~2-3 s pro Worker bei Windows-spawn)
+* Linalg-Pfad bleibt sequenziell und wird relativ größer mit mehr Workern
+* Über 4 physische Cores hinaus (vermutlich Hyperthreads in diesem Setup)
+  geht der Gewinn deutlich zurück</p>
+<p>Für deinen typischen Twin-Workflow (5 Tage × 24 h = 120 Schritte)
+heißt das: serial ≈ 20 min → parallel_8 ≈ 7 min.</p>
+<h4 id="anwendung">Anwendung<a class="headerlink" href="#anwendung" title="Permanent link">&para;</a></h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">InputSpec</span><span class="p">,</span> <span class="n">build_filter_components</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">)</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParallelUKF</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.example_plants</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_simple_plant</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Top-level (importable) — multiprocessing.spawn pickelt eine Referenz</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># darauf, KEINE Lambdas oder closure-bound Methoden hier.</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">make_components</span><span class="p">():</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">plant</span> <span class="o">=</span> <span class="n">build_simple_plant</span><span class="p">()</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="k">return</span> <span class="n">build_filter_components</span><span class="p">(</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="n">plant</span><span class="p">,</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="n">digester_id</span><span class="o">=</span><span class="s2">&quot;fermenter&quot;</span><span class="p">,</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="n">substrates</span><span class="o">=</span><span class="p">[</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>            <span class="n">InputSpec</span><span class="p">(</span><span class="s2">&quot;maize_silage&quot;</span><span class="p">,</span>  <span class="n">substrate_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">initial_flow</span><span class="o">=</span><span class="mf">10.0</span><span class="p">),</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>            <span class="n">InputSpec</span><span class="p">(</span><span class="s2">&quot;cattle_slurry&quot;</span><span class="p">,</span> <span class="n">substrate_index</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial_flow</span><span class="o">=</span><span class="mf">5.0</span><span class="p">),</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>        <span class="p">],</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>        <span class="n">sensors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;q_gas&quot;</span><span class="p">,</span> <span class="s2">&quot;q_ch4&quot;</span><span class="p">,</span> <span class="s2">&quot;ph&quot;</span><span class="p">,</span> <span class="s2">&quot;substrate_dose&quot;</span><span class="p">],</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="p">)</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="n">process</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">spec</span> <span class="o">=</span> <span class="n">make_components</span><span class="p">()</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="n">ukf</span> <span class="o">=</span> <span class="n">ParallelUKF</span><span class="p">(</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span class="n">process</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>    <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>    <span class="n">components_builder</span><span class="o">=</span><span class="n">make_components</span><span class="p">,</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="p">)</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="c1"># ... normale predict/update-Schleife ...</span>
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="n">ukf</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>  <span class="c1"># Worker-Pool freigeben</span>
+</span></code></pre></div>
+<p><code>n_workers=1</code> fällt explizit auf den seriellen Hauptpfad zurück —
+kein Pool-Overhead, identisches Verhalten zur Basisklasse.</p>
+<h3 id="welle-5-constrained-ukf-implementiert-negativ-resultat-auf-adm1">Welle 5 — Constrained UKF: implementiert, negativ-Resultat auf ADM1<a class="headerlink" href="#welle-5-constrained-ukf-implementiert-negativ-resultat-auf-adm1" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/pyadm1ode_estimation/estimation/filters/constrained_ukf.py"><code>ConstrainedUKF</code></a>
+implementiert Hellmann 2024's <code>cUKF-add</code>: jeder propagierte Sigma-Punkt
+wird im Update statt über die Kalman-Verstärkung durch ein
+<strong>box-constrained QP</strong> pro Sigma korrigiert.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>\chi^{\text{corr}}_i = \arg\min_\chi \;
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  \|y - h(\chi)\|^2_{R^{-1}}
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  + \|\chi - \chi^-_i\|^2_{(P^-)^{-1}}
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>\quad \text{s.t.} \quad x_{\text{lo}} \le \chi \le x_{\text{hi}}
+</span></code></pre></div>
+<p>Implementierungs-Choices:
+* <code>h</code> linearisiert über LS-Fit von den <code>2n+1</code> propagierten Sigma-Punkten
+  und ihren bereits gecachten h-Werten (keine extra Plant-Auswertung)
+* Per-Sigma-QP über <code>scipy.optimize.minimize(method="trust-constr")</code>
+  mit analytischem Gradient + Hessian
+* Posterior in Square-Root-Form nach Hellmann eq. 11:
+  <code>P = Σ Wᶜ (χᶜ - x̂)(χᶜ - x̂)^⊤ + Q + K R Kᵀ</code>
+* 4 Unit-Tests pinnen Korrektheit: bei weiten Bounds &amp; linearem h
+  reproduziert <code>cUKF ≡ UKF</code> zu <code>atol=1e-6</code>; bei engen Bounds wird die
+  Schranke respektiert; smoke test auf der ADM1-Plant läuft durch.</p>
+<h4 id="empirisches-ergebnis-24h-twin-simple-plant-n43">Empirisches Ergebnis (24h-Twin, simple plant, n=43)<a class="headerlink" href="#empirisches-ergebnis-24h-twin-simple-plant-n43" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Variante</th>
+<th>Wandzeit</th>
+<th>Mean NIS</th>
+<th>Avg. Block-RMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UKF (Baseline)</td>
+<td>232.1 s</td>
+<td>7.08</td>
+<td>Referenz</td>
+</tr>
+<tr>
+<td>cUKF</td>
+<td><strong>571.9 s</strong> (2.5× langsamer)</td>
+<td>9.32 (schlechter)</td>
+<td><strong>2-5× schlechter</strong> auf gut beobachtbaren Blöcken</td>
+</tr>
+</tbody>
+</table>
+<p>Methanogenese-RMSE: 0.015 → 0.077 (5× schlechter). Disintegration:
+0.20 → 0.95. Coverage durchweg gesunken oder gleich. Mean-Trajektorien
+auf einzelnen Kanälen bis zu <strong>2390 σ</strong> abweichend von der UKF-Baseline.</p>
+<h4 id="strukturelle-ursache-sigma-spread-kollaps-am-multi-skalierten-zustandsraum">Strukturelle Ursache: Sigma-Spread-Kollaps am multi-skalierten Zustandsraum<a class="headerlink" href="#strukturelle-ursache-sigma-spread-kollaps-am-multi-skalierten-zustandsraum" title="Permanent link">&para;</a></h4>
+<p>ADM1 hat 43 Konzentrationskanäle, die <strong>über sechs Größenordnungen
+spannen</strong> — von Substratdosis (10 m³/d) bis Spurengasen (≈ 10⁻⁸ mol/L).
+Die Spec definiert <code>lower = 0</code> für alle Konzentrationen.</p>
+<p>Für kleine Kanäle (Methanogenese-Spuren, Acidogenese-Zwischenprodukte)
+liegen die propagierten Sigma-Punkte teilweise sehr nahe an der
+Null-Schranke. Per-Sigma-Bounding zieht dort einen substantiellen
+Anteil der Sigmas exakt auf die Schranke → die korrigierte
+Sigma-Menge clustert → <code>Σ Wᶜ (χᶜ - x̂)²</code> kollabiert auf der
+betroffenen Achse → Posterior-Kovarianz untertreibt drastisch →
+nächster Predict startet mit zu enger Sigma-Wolke → Filter
+"blendet sich aus". Die Folge sind die ~10²-σ-Mean-Drifts auf den
+schwächsten Kanälen.</p>
+<p>Hellmann (2024) berichtet das nicht, weil ihr Modell mit n=6
+Zuständen alle im kg/m³-Bereich liegt (<code>x_0 = [4.09, 10.52, 11.04,
+2.57, 0.96, 2.02]</code>). Die Null-Schranke ist dort effektiv inaktiv. Die
+multi-skalierten Konzentrationen von ADM1 sind eine qualitativ andere
+Situation.</p>
+<p><strong>Befund</strong>: Das ist keine Implementierungs- oder
+Linearisierungs-Schwäche, sondern eine strukturelle Limitation der
+per-Sigma-Bound-Strategie auf bound-reichen Zustandsräumen. Für die
+Dissertation ist das ein eigenständiger negativer Befund: Hellmanns
+<code>cUKF-add</code> — die beste Variante in ihrem n=6-Benchmark —
+<strong>überträgt sich nicht direkt</strong> auf ein realistisches multi-stage
+ADM1 mit Konzentrationskanälen über sechs Größenordnungen.</p>
+<p>Die Klasse bleibt im Repo als opt-in für Anwendungsfälle, wo die
+Bounds praktisch inaktiv sind (z.B. einfachere AD-Modelle nach
+Hellmann 2024 oder Bioreaktor-Modelle mit moderaten
+Zustandsbereichen).</p>
+<h2 id="was-als-nachstes-auf-der-liste-steht">Was als nächstes auf der Liste steht<a class="headerlink" href="#was-als-nachstes-auf-der-liste-steht" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Idee</th>
+<th>Erwarteter Effekt</th>
+<th>Aufwand</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Log-Skalierung kleiner Kanäle</strong></td>
+<td>Parametrisiere <code>x_i = exp(z_i)</code> für Spurengas-Kanäle. Schranke <code>x_i &gt; 0</code> wird durch die Transformation impliziert, kein per-Sigma-Bounding nötig. Würde voraussichtlich Hellmanns cUKF-Gewinne auch auf ADM1 freischalten.</td>
+<td>Mittel — Spec-Erweiterung (<code>channel.log_scale</code>), transparente Durchreichung durch process/obs/spec.</td>
+</tr>
+<tr>
+<td><strong>State-augmentierte Form</strong> (Wu 2005, Hellmann's <code>UKF-aug</code>)</td>
+<td>Korrekte Behandlung von <code>Q</code> im Messpfad. Bei ADM1 mit kleinem <code>Q/P</code> empirisch klein, aber theoretisch sauberer; könnte die γ-Sweep-Disaster-Region (Welle 3) algorithmisch auflösen.</td>
+<td>Mittel — <code>2(n+m)+1</code> Sigma-Punkte statt <code>2n+1</code>, mit Q-Sigma-Punkten effizient eingruppierbar (Wu 2005 §IV).</td>
+</tr>
+<tr>
+<td><strong>Spherical-Simplex-Sigma-Punkte</strong> (Julier 2003)</td>
+<td><code>n+2</code> statt <code>2n+1</code> Sigma-Punkte → ~2× zusätzlich, stackt mit der Parallelisierung.</td>
+<td>Mittel — rekursive Simplex-Konstruktion, eigene Validierung.</td>
+</tr>
+<tr>
+<td><strong>NLP-cUKF mit Plant-Callback</strong></td>
+<td>Hellmanns echte Variante (h(χ) per QP-Iteration aus dem Plant lesen statt linearisieren). Würde die Linearisierungs-Approximation entfernen, löst aber das Sigma-Spread-Kollaps-Problem nicht — daher voraussichtlich keine Verbesserung gegenüber dem jetzigen Welle-5-Ergebnis.</td>
+<td>Hoch — ~10 Plant-Equilibrationen pro QP-Iteration, parallelisierbar über Welle-4-Pool.</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Zurück zum Seitenanfang
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Daniel Gaida — part of the <a href="https://dgaida.github.io/PyADM1ODE/latest/">PyADM1ODE ecosystem</a>
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

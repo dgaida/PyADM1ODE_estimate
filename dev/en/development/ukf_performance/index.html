@@ -1,0 +1,2682 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="State estimation framework for PyADM1ODE biogas plant models">
+      
+      
+        <meta name="author" content="Daniel Gaida">
+      
+      
+        <link rel="canonical" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/en/development/ukf_performance/">
+      
+      
+        <link rel="prev" href="../ecosystem-integration/">
+      
+      
+        <link rel="next" href="../../troubleshooting/">
+      
+      
+        
+          <link rel="alternate" href="../../../development/ukf_performance/" hreflang="de">
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SR-UKF Performance - PyADM1ODE Estimate</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sr-ukf-performance-architecture-and-optimisations" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="PyADM1ODE Estimate" class="md-header__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PyADM1ODE Estimate
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SR-UKF Performance
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../development/ukf_performance/" hreflang="de" class="md-select__link">
+              Deutsch
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Erste Schritte
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../usage/" class="md-tabs__link">
+          
+  
+  
+  Nutzung
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../observability/" class="md-tabs__link">
+          
+  
+  
+  Observability
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../theory/" class="md-tabs__link">
+          
+  
+  
+  Theorie
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../examples/" class="md-tabs__link">
+          
+  
+  
+  Beispiele
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API-Referenz
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Entwicklung
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../troubleshooting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Fehlerbehebung
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ecosystem/" class="md-tabs__link">
+          
+  
+  
+  Ecosystem
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="PyADM1ODE Estimate" class="md-nav__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PyADM1ODE Estimate
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Erste Schritte
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nutzung
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Nutzung
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/ukf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UKF im Einsatz
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/twin_experiments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Twin-Experimente
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/calibration_artifact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kalibrierungs-Artefakt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Observability
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../observability/literature_review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Literaturüberblick
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../observability/sensor_state_dependencies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensor-Zustand-Abhängigkeiten
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theorie
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theorie
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/adm1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADM1da-Modell
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/pinn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PINN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Beispiele
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Beispiele
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API-Referenz
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API-Referenz
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entwicklung
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Entwicklung
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ecosystem-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem-Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SR-UKF Performance
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SR-UKF Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#current-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current algorithm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optimisation-waves-2026-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimisation waves (2026-06)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Optimisation waves (2026-06)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wave-1-lossless-linalg-refactors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wave 1 — lossless linalg refactors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wave-2-sigma-point-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wave 2 — sigma-point reuse
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#literature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Literature
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-verified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How verified
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How verified">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bit-stable-regression-nonlinear-mock-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bit-stable regression — nonlinear mock process
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linear-kf-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linear-KF consistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wave-3-reduced-sigma-scaling-opt-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wave 3 — Reduced sigma scaling (opt-in)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wave 3 — Reduced sigma scaling (opt-in)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#empirical-sweep-on-the-simple-plant-n43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empirical γ sweep on the simple plant (n=43)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-non-monotonic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why non-monotonic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wave-4-process-pool-parallelisation-of-sigma-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wave 4 — Process-pool parallelisation of sigma propagation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wave 4 — Process-pool parallelisation of sigma propagation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benchmark-simple-plant-24-h-twin-fixed-seed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benchmark (simple plant, 24-h twin, fixed seed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wave-5-constrained-ukf-implemented-negative-result-on-adm1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wave 5 — Constrained UKF: implemented, negative result on ADM1
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wave 5 — Constrained UKF: implemented, negative result on ADM1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#empirical-result-24-hour-twin-simple-plant-n43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empirical result (24-hour twin, simple plant, n=43)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structural-cause-sigma-spread-collapse-on-a-multi-scale-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structural cause: sigma-spread collapse on a multi-scale state
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next-on-the-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's next on the list
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fehlerbehebung
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ecosystem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Übersicht
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://dgaida.github.io/PyADM1ODE/latest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PyADM1ODE (Basis)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://dgaida.github.io/PyADM1ODE_calibration/latest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PyADM1ODE_calibration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#current-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current algorithm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optimisation-waves-2026-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optimisation waves (2026-06)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Optimisation waves (2026-06)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wave-1-lossless-linalg-refactors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wave 1 — lossless linalg refactors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wave-2-sigma-point-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wave 2 — sigma-point reuse
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#literature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Literature
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-verified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How verified
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How verified">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bit-stable-regression-nonlinear-mock-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bit-stable regression — nonlinear mock process
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linear-kf-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linear-KF consistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache-invalidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache invalidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wave-3-reduced-sigma-scaling-opt-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wave 3 — Reduced sigma scaling (opt-in)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wave 3 — Reduced sigma scaling (opt-in)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#empirical-sweep-on-the-simple-plant-n43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empirical γ sweep on the simple plant (n=43)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-non-monotonic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why non-monotonic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wave-4-process-pool-parallelisation-of-sigma-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wave 4 — Process-pool parallelisation of sigma propagation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wave 4 — Process-pool parallelisation of sigma propagation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benchmark-simple-plant-24-h-twin-fixed-seed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benchmark (simple plant, 24-h twin, fixed seed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wave-5-constrained-ukf-implemented-negative-result-on-adm1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wave 5 — Constrained UKF: implemented, negative result on ADM1
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wave 5 — Constrained UKF: implemented, negative result on ADM1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#empirical-result-24-hour-twin-simple-plant-n43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empirical result (24-hour twin, simple plant, n=43)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structural-cause-sigma-spread-collapse-on-a-multi-scale-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structural cause: sigma-spread collapse on a multi-scale state
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next-on-the-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's next on the list
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="sr-ukf-performance-architecture-and-optimisations">SR-UKF Performance — Architecture and Optimisations<a class="headerlink" href="#sr-ukf-performance-architecture-and-optimisations" title="Permanent link">&para;</a></h1>
+<p>The <a href="../../api/"><code>UnscentedKalmanFilter</code></a> implements the
+canonical Square-Root UKF after <strong>Wan &amp; van der Merwe 2001
+(Algorithm 3.1)</strong>, in the variant that re-uses sigma points between
+predict and measurement update. This page documents which optimisations
+brought the code to that state and how their correctness is verified.</p>
+<h2 id="current-algorithm">Current algorithm<a class="headerlink" href="#current-algorithm" title="Permanent link">&para;</a></h2>
+<p>Per filter step:</p>
+<ol>
+<li><strong>Predict</strong> draws <code>2n+1</code> sigma points around <code>(x_hat, S)</code>,
+   propagates them through <code>process.step(σ_i, dt)</code>, and <em>in the same
+   loop</em> reads <code>h(plant, σ_i_propagated)</code> for every observation
+   channel. Predicted mean + Cholesky factor via QR-stack with <code>√Q</code>.</li>
+<li><strong>Update</strong> consumes the predict-side h-cache directly (column
+   selection over the active channels). No second sigma-point draw, no
+   second plant pass. Cross-covariance <code>T_xy</code> from
+   <code>(propagated − x_pred)</code> differences.</li>
+</ol>
+<p>ODE load per filter step: <strong><code>2n+1</code> plant integrations</strong> (predict only).
+The earlier "redraw" variant did <code>2 · (2n+1) = 4n+2</code> — twice the load
+for no mathematical gain.</p>
+<h2 id="optimisation-waves-2026-06">Optimisation waves (2026-06)<a class="headerlink" href="#optimisation-waves-2026-06" title="Permanent link">&para;</a></h2>
+<h3 id="wave-1-lossless-linalg-refactors">Wave 1 — lossless linalg refactors<a class="headerlink" href="#wave-1-lossless-linalg-refactors" title="Permanent link">&para;</a></h3>
+<p>All four changes are bit-stable to last-bit roundoff (<code>atol=1e-12</code>):</p>
+<ol>
+<li><strong><code>_sigma_points</code> vectorised</strong> — Python loop → two broadcasts.</li>
+<li><strong><code>T_xy</code> vectorised</strong> — <code>for i: outer(...)</code> → one matmul.</li>
+<li><strong><code>cholesky(Q)</code> cached</strong> — keyed on <code>dt</code>, hit when <code>dt</code> is constant.</li>
+<li><strong><code>cholesky(R)</code> cached</strong> — keyed on the active-channel tuple.</li>
+</ol>
+<h3 id="wave-2-sigma-point-reuse">Wave 2 — sigma-point reuse<a class="headerlink" href="#wave-2-sigma-point-reuse" title="Permanent link">&para;</a></h3>
+<p>Structural change saving ~50 % of ODE calls. The earlier code drew a
+fresh sigma set around <code>(x_pred, S_pred)</code> inside <code>update()</code> and stepped
+the plant once per sigma — an extension that is <strong>not</strong> part of the
+canonical Wan-VdM 2001 form. In a 24-hour ADM1 twin (fixed seed, simple
+plant), the migration delivered <strong>1.84× speedup</strong> (429 s → 234 s) with
+comparable per-block accuracy.</p>
+<p>The mathematical approximation it accepts: the <code>H · Q · H^T</code>
+contribution to the innovation covariance <code>S_y</code> is dropped (propagated
+sigma points cover <code>sample_cov</code>, not <code>sample_cov + Q</code>). Wu et al. 2005
+show this is inferior to the state-augmented UKF — by an amount that
+scales with <code>||Q|| / ||P||</code>. For ADM1 at <code>dt = 1 h</code> with the spec's
+typical <code>Q/P</code> ratio (≈ 1/250), the effect is two orders of magnitude
+below the measurement-noise floor. Hellmann et al. 2024 (ECC, ADM1
+specifically) find identical trajectories between their <code>UKF-SR</code>
+variant (= our current form) and <code>UKF-add</code> without augmentation.</p>
+<h2 id="literature">Literature<a class="headerlink" href="#literature" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Statement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wan &amp; van der Merwe (2001) "The Square-Root Unscented Kalman Filter for State and Parameter-Estimation"</td>
+<td>Algorithm 3.1, line 22: <code>Y_{k|k-1} = H[X_{k|k-1}]</code> — h is evaluated directly on the propagated sigma points, no redraw.</td>
+</tr>
+<tr>
+<td>Wu, Hu, Wu &amp; Hu (2005) "Unscented Kalman filtering for additive noise case: Augmented vs. non-augmented"</td>
+<td>The augmented form (Q-dimensions in the sigma set) is theoretically superior because it propagates Q's odd-moment information through the measurement path. Effect scales with <code>||Q|| / ||P||</code>.</td>
+</tr>
+<tr>
+<td>Hellmann, Wilms, Streif &amp; Weinrich (2024, ECC) "Comparison of Unscented Kalman Filter Design for Agricultural Anaerobic Digestion Model"</td>
+<td>Direct ADM1 study, 9 UKF variants. UKF-SR (= our form) and UKF-aug deliver practically identical NRMSE under reduced sigma scaling, with lower runtime for UKF-SR.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-verified">How verified<a class="headerlink" href="#how-verified" title="Permanent link">&para;</a></h2>
+<h3 id="bit-stable-regression-nonlinear-mock-process">Bit-stable regression — nonlinear mock process<a class="headerlink" href="#bit-stable-regression-nonlinear-mock-process" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/tests/test_ukf_regression.py"><code>tests/test_ukf_regression.py</code></a>
+runs a 20-step twin with a nonlinear mock process (elementwise
+quadratic + linear coupling) and compares the final posterior against
+hardcoded golden values (<code>atol=1e-12, rtol=0</code>). Goldens were regenerated
+after the main-path migration.</p>
+<p><strong>Regenerate goldens</strong> (after deliberate algorithm changes):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="s">import sys</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="s">sys.path.insert(0, &quot;.&quot;)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="s">import conftest  # Windows DLL paths</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="s">sys.path.insert(0, &quot;tests&quot;)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="s">import test_ukf_regression as m</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="s">import numpy as np</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="s">np.set_printoptions(precision=16, floatmode=&quot;maxprec&quot;)</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="s">x, S = m._run_regression_trajectory()</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="s">print(&quot;X =&quot;, repr(x))</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="s">print(&quot;S =&quot;, repr(S))</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="s">PY</span>
+</span></code></pre></div>
+<h3 id="linear-kf-consistency">Linear-KF consistency<a class="headerlink" href="#linear-kf-consistency" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/tests/test_ukf.py"><code>tests/test_ukf.py::TestUKFLinear</code></a>
+has two tests against the closed-form Kalman filter:</p>
+<ul>
+<li><code>test_ukf_matches_classical_kf_with_negligible_Q</code> — with <code>Q ≈ 1e-16</code>
+  (ten orders of magnitude below <code>P</code>) the SR-UKF trajectory matches the
+  KF to <code>atol=1e-6</code>. Pins the algebraic correctness of the reuse form.</li>
+<li><code>test_ukf_approximates_classical_kf_with_random_walk_Q</code> — with
+  <code>Q/P ≈ 1 %</code> the trajectory diverges from the KF by a few percent,
+  consistent with the dropped <code>H Q H^T</code> term. <code>atol=0.05</code>. Pins the
+  magnitude of the approximation; a clear violation would signal an
+  unintended algorithmic shift.</li>
+</ul>
+<h3 id="cache-invalidation">Cache invalidation<a class="headerlink" href="#cache-invalidation" title="Permanent link">&para;</a></h3>
+<p>Four further tests in <code>test_ukf_regression.py</code> use counting wrappers:</p>
+<ul>
+<li><code>test_sqrt_Q_cache_hits_under_constant_dt</code></li>
+<li><code>test_sqrt_Q_cache_invalidates_on_dt_change</code></li>
+<li><code>test_sqrt_R_cache_hits_under_constant_active_set</code></li>
+<li><code>test_sqrt_R_cache_invalidates_on_active_set_change</code></li>
+</ul>
+<h3 id="wave-3-reduced-sigma-scaling-opt-in">Wave 3 — Reduced sigma scaling (opt-in)<a class="headerlink" href="#wave-3-reduced-sigma-scaling-opt-in" title="Permanent link">&para;</a></h3>
+<p>Since 2026-06, <code>UnscentedKalmanFilter</code> accepts a <code>gamma_override</code>
+parameter that replaces the canonical sigma-point radius
+<code>γ = √(n + λ)</code> with a user-supplied value. The weights <code>w_m</code>,
+<code>w_c</code> remain canonical (built from <code>α, β, κ</code>) — only the position
+of the sigma points on the covariance ellipsoid changes.</p>
+<p>Empirical motivation from Hellmann et al. 2024 §5.1.2: on
+ADM1-R4-Core, <code>γ = 1</code> (instead of canonical <code>√(n+λ) ≈ 2.45</code>) cuts
+NRMSE_x from 0.85 to 0.37 — the single largest gain in the paper. The
+intuition: for high-dimensional, weakly nonlinear systems with
+Gaussian-ish measurement noise the tighter sigma cloud smooths better
+than the canonical Julier–Uhlmann scaling.</p>
+<p>Usage:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">ukf</span> <span class="o">=</span> <span class="n">build_ukf</span><span class="p">(</span><span class="n">plant</span><span class="p">,</span> <span class="n">digester_id</span><span class="o">=</span><span class="s2">&quot;primary&quot;</span><span class="p">,</span> <span class="n">substrates</span><span class="o">=...</span><span class="p">,</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>                <span class="n">gamma_override</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Default <code>None</code> leaves the sigma-point scaling unchanged — all
+existing setups continue to behave exactly as before.</p>
+<h4 id="empirical-sweep-on-the-simple-plant-n43">Empirical γ sweep on the simple plant (n=43)<a class="headerlink" href="#empirical-sweep-on-the-simple-plant-n43" title="Permanent link">&para;</a></h4>
+<p>24-hour twin, fixed seed (42), identical truth and measurements,
+only γ varies. Wall time per variant 229-242 s — γ is a pure quality
+and calibration knob, not a speed knob.</p>
+<table>
+<thead>
+<tr>
+<th>γ</th>
+<th>Mean NIS (target ≈ 5)</th>
+<th>Avg. coverage</th>
+<th>Worst block</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>canonical (≈ 6.56)</td>
+<td>6.75</td>
+<td><strong>96.5 %</strong></td>
+<td>charge_balance 70 %</td>
+<td>well calibrated</td>
+</tr>
+<tr>
+<td>5.0</td>
+<td>9.79</td>
+<td>91.2 %</td>
+<td>charge_balance 60 %</td>
+<td>mildly overconfident</td>
+</tr>
+<tr>
+<td>4.0</td>
+<td><strong>17.23</strong></td>
+<td>84.8 %</td>
+<td><strong>nitrogen 16 %</strong></td>
+<td>calibration collapse</td>
+</tr>
+<tr>
+<td><strong>3.0</strong></td>
+<td><strong>44.80</strong></td>
+<td>81.2 %</td>
+<td>nitrogen 20 %</td>
+<td><strong>catastrophic</strong></td>
+</tr>
+<tr>
+<td>2.0</td>
+<td>17.80</td>
+<td>84.0 %</td>
+<td>charge_balance 50 %</td>
+<td>bad</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>9.06</td>
+<td>87.4 %</td>
+<td>charge_balance 48 %</td>
+<td>mediocre</td>
+</tr>
+<tr>
+<td>1.0</td>
+<td>6.32</td>
+<td>88.4 %</td>
+<td>charge_balance 50 %</td>
+<td>best mean, overconfident</td>
+</tr>
+</tbody>
+</table>
+<p>RMSE: on well-observable blocks the point-estimate error drops by
+40-73 % at γ=1; on the weakly-observable <code>input_flow</code> channels it
+rises by 25 %. Intermediate γ values (2-5) are strictly worse than
+either endpoint on <strong>both</strong> metrics.</p>
+<h4 id="why-non-monotonic">Why non-monotonic<a class="headerlink" href="#why-non-monotonic" title="Permanent link">&para;</a></h4>
+<p>The weights <code>w_m</code>, <code>w_c</code> are derived from the canonical scaling
+<code>γ = √(n+λ)</code> such that the unscented transform recovers mean and
+covariance to third order — <em>only</em> when paired with that exact γ.
+Hellmann's trick decouples γ from the weights: tight sigma cloud +
+weights built for a wider cloud → the reconstructed posterior
+covariance is systematically too small, NIS explodes.</p>
+<p>At γ=1 a different dynamic (effective low-pass smoothing of the
+measurement) takes over and provides acceptable NIS — for formally
+"wrong" reasons. In the transition zone (γ ≈ 2-5) neither effect
+applies cleanly, so filter consistency collapses.</p>
+<h4 id="recommendation">Recommendation<a class="headerlink" href="#recommendation" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Default <code>gamma_override=None</code></strong> for UQ-relevant applications
+  (coverage calibration is the priority there).</li>
+<li><strong><code>gamma_override=1.0</code></strong> as opt-in for modes that only consume
+  the posterior mean (e.g. MPC targets, control signals), where
+  coverage is secondary.</li>
+<li><strong>Avoid values between 1 and 6</strong> — no sweet spot, both metrics
+  degrade simultaneously.</li>
+<li>For <em>simultaneously</em> good mean and calibration: state-augmented
+  form (Wave 4 on the roadmap) fixes the <code>Q</code> inconsistency in the
+  algorithm itself instead of compensating via γ.</li>
+</ul>
+<h3 id="wave-4-process-pool-parallelisation-of-sigma-propagation">Wave 4 — Process-pool parallelisation of sigma propagation<a class="headerlink" href="#wave-4-process-pool-parallelisation-of-sigma-propagation" title="Permanent link">&para;</a></h3>
+<p>New class <a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/pyadm1ode_estimation/estimation/filters/parallel_ukf.py"><code>ParallelUKF</code></a>
+dispatches the <code>2n+1</code> plant integrations of a <code>predict()</code> step to
+a <code>multiprocessing.spawn</code> worker pool. The linalg path (QR,
+cholupdate, weights) stays on the main process; only the embarrassingly
+parallel sigma-point propagation moves to workers.</p>
+<h4 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Each worker builds <strong>its own</strong> <code>(process, obs, spec)</code> triple at
+  pool startup via a user-provided top-level builder. This sidesteps
+  the pickle issue with <code>obs</code> closures referring to plant objects.</li>
+<li>Per task only the tiny snapshot dict (~1 kB) crosses the IPC
+  boundary. The plant objects themselves cross only once at pool spawn.</li>
+<li><code>process.step</code> calls <code>restore()</code> internally — we extended
+  <a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/pyadm1ode_estimation/estimation/process_model.py"><code>process_model.snapshot/restore</code></a>
+  so that <em>every</em> component with <code>adm1_state</code> is reset, not just the
+  primary digester. This fixes a latent drift bug in the serial code
+  (storage tank accumulated state across sigma points within a predict)
+  and makes the UKF theoretically cleaner: every sigma point now sees
+  an independent baseline.</li>
+</ul>
+<h4 id="benchmark-simple-plant-24-h-twin-fixed-seed">Benchmark (simple plant, 24-h twin, fixed seed)<a class="headerlink" href="#benchmark-simple-plant-24-h-twin-fixed-seed" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>Wall time</th>
+<th>Speedup</th>
+<th>s per filter step</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>serial</td>
+<td>238.6 s</td>
+<td>1.00×</td>
+<td>9.94</td>
+</tr>
+<tr>
+<td>parallel_2</td>
+<td>207.7 s</td>
+<td>1.15×</td>
+<td>8.66</td>
+</tr>
+<tr>
+<td>parallel_4</td>
+<td>111.9 s</td>
+<td>2.13×</td>
+<td>4.66</td>
+</tr>
+<tr>
+<td>parallel_8</td>
+<td>80.6 s</td>
+<td><strong>2.96×</strong></td>
+<td>3.36</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Block-RMSE and 2σ coverage are bit-identical across worker counts.</strong>
+Mean-trajectory delta vs. serial: exactly 0 σ on every channel. Mean
+NIS = 7.08 for all variants.</p>
+<p>Sub-linear scaling expected (Amdahl):
+* Pool-spawn overhead (~2-3 s per worker on Windows spawn)
+* Linalg path stays sequential and grows in relative weight with more workers
+* Beyond ~4 physical cores (likely hyperthreads on this setup) the gain plateaus</p>
+<p>For a typical twin workflow (5 days × 24 h = 120 steps), that means
+serial ≈ 20 min → parallel_8 ≈ 7 min.</p>
+<h4 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">InputSpec</span><span class="p">,</span> <span class="n">build_filter_components</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">)</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParallelUKF</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.example_plants</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_simple_plant</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Top-level (importable) — multiprocessing.spawn pickles a reference,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># so NO lambdas or closure-bound methods here.</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">make_components</span><span class="p">():</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">plant</span> <span class="o">=</span> <span class="n">build_simple_plant</span><span class="p">()</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="k">return</span> <span class="n">build_filter_components</span><span class="p">(</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="n">plant</span><span class="p">,</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="n">digester_id</span><span class="o">=</span><span class="s2">&quot;fermenter&quot;</span><span class="p">,</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="n">substrates</span><span class="o">=</span><span class="p">[</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>            <span class="n">InputSpec</span><span class="p">(</span><span class="s2">&quot;maize_silage&quot;</span><span class="p">,</span>  <span class="n">substrate_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">initial_flow</span><span class="o">=</span><span class="mf">10.0</span><span class="p">),</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>            <span class="n">InputSpec</span><span class="p">(</span><span class="s2">&quot;cattle_slurry&quot;</span><span class="p">,</span> <span class="n">substrate_index</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial_flow</span><span class="o">=</span><span class="mf">5.0</span><span class="p">),</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>        <span class="p">],</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>        <span class="n">sensors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;q_gas&quot;</span><span class="p">,</span> <span class="s2">&quot;q_ch4&quot;</span><span class="p">,</span> <span class="s2">&quot;ph&quot;</span><span class="p">,</span> <span class="s2">&quot;substrate_dose&quot;</span><span class="p">],</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="p">)</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="n">process</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">spec</span> <span class="o">=</span> <span class="n">make_components</span><span class="p">()</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="n">ukf</span> <span class="o">=</span> <span class="n">ParallelUKF</span><span class="p">(</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span class="n">process</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>    <span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>    <span class="n">components_builder</span><span class="o">=</span><span class="n">make_components</span><span class="p">,</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="p">)</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="c1"># ... normal predict/update loop ...</span>
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="n">ukf</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>  <span class="c1"># release the worker pool</span>
+</span></code></pre></div>
+<p><code>n_workers=1</code> falls back to the serial main path — no pool
+overhead, identical behaviour to the base class.</p>
+<h3 id="wave-5-constrained-ukf-implemented-negative-result-on-adm1">Wave 5 — Constrained UKF: implemented, negative result on ADM1<a class="headerlink" href="#wave-5-constrained-ukf-implemented-negative-result-on-adm1" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/pyadm1ode_estimation/estimation/filters/constrained_ukf.py"><code>ConstrainedUKF</code></a>
+implements Hellmann 2024's <code>cUKF-add</code>: every propagated sigma point is
+corrected through a <strong>per-sigma box-constrained QP</strong> instead of the
+standard Kalman gain.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>\chi^{\text{corr}}_i = \arg\min_\chi \;
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  \|y - h(\chi)\|^2_{R^{-1}}
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  + \|\chi - \chi^-_i\|^2_{(P^-)^{-1}}
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>\quad \text{s.t.} \quad x_{\text{lo}} \le \chi \le x_{\text{hi}}
+</span></code></pre></div>
+<p>Implementation choices:
+* <code>h</code> linearised by least-squares fit from the cached propagated sigma
+  cloud (no extra plant evaluations)
+* Per-sigma QP via <code>scipy.optimize.minimize(method="trust-constr")</code>
+  with analytic gradient and Hessian
+* Posterior in square-root form per Hellmann eq. 11:
+  <code>P = Σ Wᶜ (χᶜ - x̂)(χᶜ - x̂)^⊤ + Q + K R Kᵀ</code>
+* Four unit tests pin correctness: with wide bounds and linear h,
+  <code>cUKF ≡ UKF</code> to <code>atol=1e-6</code>; with tight bounds the box constraint
+  is respected; smoke test on the ADM1 plant runs end-to-end.</p>
+<h4 id="empirical-result-24-hour-twin-simple-plant-n43">Empirical result (24-hour twin, simple plant, n=43)<a class="headerlink" href="#empirical-result-24-hour-twin-simple-plant-n43" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>Wall time</th>
+<th>Mean NIS</th>
+<th>Avg. block RMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UKF (baseline)</td>
+<td>232.1 s</td>
+<td>7.08</td>
+<td>reference</td>
+</tr>
+<tr>
+<td>cUKF</td>
+<td><strong>571.9 s</strong> (2.5× slower)</td>
+<td>9.32 (worse)</td>
+<td><strong>2-5× worse</strong> on well-observable blocks</td>
+</tr>
+</tbody>
+</table>
+<p>Methanogenesis RMSE: 0.015 → 0.077 (5× worse). Disintegration: 0.20 →
+0.95. Coverage uniformly down or flat. Per-channel mean trajectories
+diverge by up to <strong>2390 σ</strong> from the UKF baseline.</p>
+<h4 id="structural-cause-sigma-spread-collapse-on-a-multi-scale-state">Structural cause: sigma-spread collapse on a multi-scale state<a class="headerlink" href="#structural-cause-sigma-spread-collapse-on-a-multi-scale-state" title="Permanent link">&para;</a></h4>
+<p>ADM1 has 43 concentration channels spanning <strong>six orders of
+magnitude</strong> — from substrate dosing (10 m³/d) to trace gases
+(≈ 10⁻⁸ mol/L). The spec sets <code>lower = 0</code> on all concentrations.</p>
+<p>For small-magnitude channels (methanogenesis traces, acidogenesis
+intermediates) the propagated sigma points sit close to the
+lower bound. Per-sigma bounding pulls a substantial fraction of the
+sigmas exactly onto the bound → the corrected sigma set clusters →
+<code>Σ Wᶜ (χᶜ - x̂)²</code> collapses along that axis → posterior covariance
+under-estimates dramatically → next predict starts with too tight a
+sigma cloud → the filter goes "blind". The result is the ~10²-σ mean
+drifts on the weakest channels.</p>
+<p>Hellmann (2024) doesn't see this because their n=6 model keeps every
+state in the kg/m³ range (<code>x_0 = [4.09, 10.52, 11.04, 2.57, 0.96,
+2.02]</code>). The zero bound is effectively inactive there. ADM1's
+multi-scale concentrations are a qualitatively different situation.</p>
+<p><strong>Finding</strong>: this is not an implementation or linearisation defect
+but a structural limitation of per-sigma-point bounding on
+bound-rich state spaces. For the doctoral work it stands on its own
+as a negative result: Hellmann's <code>cUKF-add</code> — the best variant in
+their n=6 benchmark — <strong>does not transfer directly</strong> to a realistic
+multi-stage ADM1 with concentration channels across six orders of
+magnitude.</p>
+<p>The class stays in the repo as opt-in for use cases where the bounds
+are practically inactive (simpler AD models per Hellmann 2024, or
+bioreactor models with moderate state ranges).</p>
+<h2 id="whats-next-on-the-list">What's next on the list<a class="headerlink" href="#whats-next-on-the-list" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Idea</th>
+<th>Expected impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Log-scaling of small channels</strong></td>
+<td>Parametrise <code>x_i = exp(z_i)</code> for trace-gas channels. The <code>x_i &gt; 0</code> bound becomes implicit in the transform, no per-sigma bounding needed. Likely route to recover Hellmann's cUKF gains on ADM1.</td>
+<td>Medium — spec extension (<code>channel.log_scale</code>) plumbed transparently through process/obs/spec.</td>
+</tr>
+<tr>
+<td><strong>State-augmented form</strong> (Wu 2005, Hellmann's <code>UKF-aug</code>)</td>
+<td>Correct treatment of <code>Q</code> in the measurement path. Empirically small for ADM1 at small <code>Q/P</code>, but theoretically cleaner; could algorithmically resolve the Wave 3 γ-sweep disaster region.</td>
+<td>Medium — <code>2(n+m)+1</code> sigma points instead of <code>2n+1</code>, with the Q-block efficiently groupable (Wu 2005 §IV).</td>
+</tr>
+<tr>
+<td><strong>Spherical-simplex sigma points</strong> (Julier 2003)</td>
+<td><code>n+2</code> instead of <code>2n+1</code> sigma points → another ~2×, stacks with the parallelisation.</td>
+<td>Medium — recursive simplex construction, its own validation.</td>
+</tr>
+<tr>
+<td><strong>NLP cUKF with plant callback</strong></td>
+<td>Hellmann's true variant (evaluate <code>h(χ)</code> per QP iteration via plant.step instead of linearising). Removes the linearisation approximation but does NOT fix the sigma-spread collapse — so unlikely to beat the current Wave 5 result.</td>
+<td>High — ~10 plant equilibrations per QP iteration, parallelisable via the Wave 4 pool.</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Daniel Gaida — part of the <a href="https://dgaida.github.io/PyADM1ODE/latest/">PyADM1ODE ecosystem</a>
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
