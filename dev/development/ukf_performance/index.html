@@ -2192,11 +2192,11 @@ Korrektheit verifiziert wird.</p>
 <h2 id="aktueller-algorithmus">Aktueller Algorithmus<a class="headerlink" href="#aktueller-algorithmus" title="Permanent link">&para;</a></h2>
 <p>Pro Filterschritt:</p>
 <ol>
-<li><strong>Predict</strong> zieht <code>2n+1</code> Sigma-Punkte um <code>(x_hat, S)</code>, propagiert sie
+<li><strong>Predict</strong> zieht <code>2n+1</code> Sigma-Punkte um <code>(x_hat, S)</code>, propagiert sie<br />
    durch <code>process.step(σ_i, dt)</code> und liest <strong>gleichzeitig</strong>
    <code>h(plant, σ_i_propagated)</code> für <em>alle</em> Beobachtungskanäle aus.
-   Predicted Mean + Cholesky-Faktor via QR-Stack mit <code>√Q</code>.</li>
-<li><strong>Update</strong> verbraucht die im Predict gecachten <code>h</code>-Werte direkt
+   Predicted Mean + Cholesky-Faktor via QR-Stack mit <code>√Q</code>.  </li>
+<li><strong>Update</strong> verbraucht die im Predict gecachten <code>h</code>-Werte direkt<br />
    (Spaltenauswahl über die aktiven Kanäle). Keine zweite Sigma-Punkt-
    Auswertung, kein zweiter Plant-Durchlauf. Cross-Kovarianz
    <code>T_xy</code> aus <code>(propagated − x_pred)</code>-Differenzen.</li>
@@ -2209,11 +2209,11 @@ die doppelte Last für mathematisch keinen Gewinn.</p>
 <p>Alle vier Änderungen ergebnisidentisch bis auf letzte Float-Bits
 (<code>atol=1e-12</code>):</p>
 <ol>
-<li><strong><code>_sigma_points</code> vektorisiert</strong> — Python-Schleife → zwei Broadcasts.</li>
-<li><strong><code>T_xy</code> vektorisiert</strong> — Schleife <code>for i: outer(...)</code> → ein
-   Matrix-Produkt.</li>
-<li><strong><code>cholesky(Q)</code> gecacht</strong> — keyed auf <code>dt</code>, Hit bei konstantem <code>dt</code>.</li>
-<li><strong><code>cholesky(R)</code> gecacht</strong> — keyed auf das aktive Kanal-Tupel.</li>
+<li><strong><code>_sigma_points</code> vektorisiert</strong> — Python-Schleife → zwei Broadcasts.  </li>
+<li><strong><code>T_xy</code> vektorisiert</strong> — Schleife <code>for i: outer(...)</code> → ein<br />
+   Matrix-Produkt.  </li>
+<li><strong><code>cholesky(Q)</code> gecacht</strong> — keyed auf <code>dt</code>, Hit bei konstantem <code>dt</code>.  </li>
+<li><strong><code>cholesky(R)</code> gecacht</strong> — keyed auf das aktive Kanal-Tupel.  </li>
 </ol>
 <h3 id="welle-2-sigma-punkt-wiederverwendung">Welle 2 — Sigma-Punkt-Wiederverwendung<a class="headerlink" href="#welle-2-sigma-punkt-wiederverwendung" title="Permanent link">&para;</a></h3>
 <p>Strukturelle Änderung, die ~50% der ODE-Aufrufe einspart. Der frühere
@@ -2280,12 +2280,12 @@ rtol=0</code>). Goldwerte wurden nach der Hauptpfad-Migration neu erzeugt.</p>
 <p><a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/tests/test_ukf.py"><code>tests/test_ukf.py::TestUKFLinear</code></a>
 hat zwei Tests zum Vergleich mit dem geschlossenen Kalman-Filter:</p>
 <ul>
-<li><code>test_ukf_matches_classical_kf_with_negligible_Q</code> — bei <code>Q ≈ 1e-16</code>
+<li><code>test_ukf_matches_classical_kf_with_negligible_Q</code> — bei <code>Q ≈ 1e-16</code><br />
   (zehn Größenordnungen unter <code>P</code>) stimmt die SR-UKF-Trajektorie mit
   dem KF auf <code>atol=1e-6</code> überein. Pinnt die Algebra-Korrektheit der
-  Reuse-Form fest.</li>
-<li><code>test_ukf_approximates_classical_kf_with_random_walk_Q</code> — bei
-  <code>Q/P ≈ 1%</code> weicht die Trajektorie um wenige Prozent vom KF ab,
+  Reuse-Form fest.  </li>
+<li><code>test_ukf_approximates_classical_kf_with_random_walk_Q</code> — bei<br />
+<code>Q/P ≈ 1%</code> weicht die Trajektorie um wenige Prozent vom KF ab,
   konsistent mit dem weggelassenen <code>H Q H^T</code>-Term. <code>atol=0.05</code>.
   Pinnt die Größenordnung der Approximation fest; deutliche
   Abweichungen würden auf eine ungewollte Algorithmusverschiebung
@@ -2294,10 +2294,10 @@ hat zwei Tests zum Vergleich mit dem geschlossenen Kalman-Filter:</p>
 <h3 id="cache-invalidierung">Cache-Invalidierung<a class="headerlink" href="#cache-invalidierung" title="Permanent link">&para;</a></h3>
 <p>Vier weitere Tests in <code>test_ukf_regression.py</code> mit zählenden Wrappern:</p>
 <ul>
-<li><code>test_sqrt_Q_cache_hits_under_constant_dt</code></li>
-<li><code>test_sqrt_Q_cache_invalidates_on_dt_change</code></li>
-<li><code>test_sqrt_R_cache_hits_under_constant_active_set</code></li>
-<li><code>test_sqrt_R_cache_invalidates_on_active_set_change</code></li>
+<li><code>test_sqrt_Q_cache_hits_under_constant_dt</code>  </li>
+<li><code>test_sqrt_Q_cache_invalidates_on_dt_change</code>  </li>
+<li><code>test_sqrt_R_cache_hits_under_constant_active_set</code>  </li>
+<li><code>test_sqrt_R_cache_invalidates_on_active_set_change</code>  </li>
 </ul>
 <h3 id="welle-3-reduced-sigma-scaling-opt-in">Welle 3 — Reduced Sigma Scaling (opt-in)<a class="headerlink" href="#welle-3-reduced-sigma-scaling-opt-in" title="Permanent link">&para;</a></h3>
 <p>Der <code>UnscentedKalmanFilter</code> akzeptiert seit 2026-06 einen
@@ -2401,14 +2401,14 @@ formal "falschem" Grund. Im Übergangsbereich (γ ≈ 2-5) wirkt keiner
 der beiden Effekte sauber → die Filter-Konsistenz kollabiert.</p>
 <h4 id="empfehlung">Empfehlung<a class="headerlink" href="#empfehlung" title="Permanent link">&para;</a></h4>
 <ul>
-<li><strong>Default <code>gamma_override=None</code></strong> für UQ-relevante Anwendungen
-  (Coverage-Kalibrierung ist hier Priorität).</li>
-<li><strong><code>gamma_override=1.0</code></strong> opt-in für Modi, wo nur der posterior Mean
+<li><strong>Default <code>gamma_override=None</code></strong> für UQ-relevante Anwendungen<br />
+  (Coverage-Kalibrierung ist hier Priorität).  </li>
+<li><strong><code>gamma_override=1.0</code></strong> opt-in für Modi, wo nur der posterior Mean<br />
   verbraucht wird (z.B. MPC-Targets, Steuerungssignale) und Coverage
-  zweitrangig ist.</li>
-<li><strong>Werte zwischen 1 und 6 vermeiden</strong> — kein Sweet Spot, beide
-  Metriken werden gleichzeitig schlechter.</li>
-<li>Für <em>gleichzeitig</em> gute Mean und Calibration: state-augmentierte
+  zweitrangig ist.  </li>
+<li><strong>Werte zwischen 1 und 6 vermeiden</strong> — kein Sweet Spot, beide<br />
+  Metriken werden gleichzeitig schlechter.  </li>
+<li>Für <em>gleichzeitig</em> gute Mean und Calibration: state-augmentierte<br />
   Form (Welle 4 in der Roadmap), die die <code>Q</code>-Inkonsistenz direkt im
   Algorithmus behebt, statt sie über γ zu kompensieren.</li>
 </ul>
@@ -2420,15 +2420,15 @@ Cholupdate, Gewichte) bleibt auf dem Hauptprozess; nur die
 embarrassingly parallel Sigma-Propagation wandert in Worker.</p>
 <h4 id="architektur">Architektur<a class="headerlink" href="#architektur" title="Permanent link">&para;</a></h4>
 <ul>
-<li>Jeder Worker baut sich beim Pool-Start <strong>seine eigene</strong> <code>(process,
+<li>Jeder Worker baut sich beim Pool-Start <strong>seine eigene</strong> <code>(process,  
   obs, spec)</code>-Tupel über einen user-bereitgestellten Top-Level-Builder
   auf. Damit umgehen wir das Pickle-Problem der <code>obs</code>-Closures, die auf
-  Plant-Referenzen verweisen würden.</li>
-<li>Pro Task wird nur das winzige Snapshot-Dict (~1 KB) zwischen
+  Plant-Referenzen verweisen würden.  </li>
+<li>Pro Task wird nur das winzige Snapshot-Dict (~1 KB) zwischen<br />
   Hauptprozess und Workern ausgetauscht. Die Plant-Objekte selbst
-  überqueren die IPC-Grenze nur einmal beim Pool-Spawn.</li>
-<li><code>process.step</code> ruft intern <code>restore()</code> auf — wir mussten
-  <a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/pyadm1ode_estimation/estimation/process_model.py"><code>process_model.snapshot/restore</code></a>
+  überqueren die IPC-Grenze nur einmal beim Pool-Spawn.  </li>
+<li><code>process.step</code> ruft intern <code>restore()</code> auf — wir mussten<br />
+<a href="https://github.com/dgaida/PyADM1ODE_estimate/blob/master/pyadm1ode_estimation/estimation/process_model.py"><code>process_model.snapshot/restore</code></a>
   erweitern, sodass <em>alle</em> Komponenten mit <code>adm1_state</code> zurückgesetzt
   werden, nicht nur das primäre Digester-Modul. Das schließt einen
   schon im seriellen Code latent vorhandenen Drift-Bug (Storage-Tank
@@ -2476,10 +2476,10 @@ embarrassingly parallel Sigma-Propagation wandert in Worker.</p>
 <p><strong>Block-RMSE und 2σ-Coverage sind über alle Worker-Zahlen
 bit-identisch.</strong> Mean-Trajektorien-Differenz vs. seriell: exakt
 0 σ auf jedem Kanal. Mean NIS = 7.08 für alle Varianten.</p>
-<p>Sub-lineare Skalierung erwartbar (Amdahl):
-* Pool-Spawn-Overhead (~2-3 s pro Worker bei Windows-spawn)
-* Linalg-Pfad bleibt sequenziell und wird relativ größer mit mehr Workern
-* Über 4 physische Cores hinaus (vermutlich Hyperthreads in diesem Setup)
+<p>Sub-lineare Skalierung erwartbar (Amdahl):<br />
+<em> Pool-Spawn-Overhead (~2-3 s pro Worker bei Windows-spawn)<br />
+</em> Linalg-Pfad bleibt sequenziell und wird relativ größer mit mehr Workern<br />
+* Über 4 physische Cores hinaus (vermutlich Hyperthreads in diesem Setup)<br />
   geht der Gewinn deutlich zurück</p>
 <p>Für deinen typischen Twin-Workflow (5 Tage × 24 h = 120 Schritte)
 heißt das: serial ≈ 20 min → parallel_8 ≈ 7 min.</p>
@@ -2525,14 +2525,14 @@ wird im Update statt über die Kalman-Verstärkung durch ein
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  + \|\chi - \chi^-_i\|^2_{(P^-)^{-1}}
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>\quad \text{s.t.} \quad x_{\text{lo}} \le \chi \le x_{\text{hi}}
 </span></code></pre></div>
-<p>Implementierungs-Choices:
-* <code>h</code> linearisiert über LS-Fit von den <code>2n+1</code> propagierten Sigma-Punkten
-  und ihren bereits gecachten h-Werten (keine extra Plant-Auswertung)
-* Per-Sigma-QP über <code>scipy.optimize.minimize(method="trust-constr")</code>
-  mit analytischem Gradient + Hessian
-* Posterior in Square-Root-Form nach Hellmann eq. 11:
-  <code>P = Σ Wᶜ (χᶜ - x̂)(χᶜ - x̂)^⊤ + Q + K R Kᵀ</code>
-* 4 Unit-Tests pinnen Korrektheit: bei weiten Bounds &amp; linearem h
+<p>Implementierungs-Choices:<br />
+<em> <code>h</code> linearisiert über LS-Fit von den <code>2n+1</code> propagierten Sigma-Punkten<br />
+  und ihren bereits gecachten h-Werten (keine extra Plant-Auswertung)<br />
+</em> Per-Sigma-QP über <code>scipy.optimize.minimize(method="trust-constr")</code><br />
+  mit analytischem Gradient + Hessian<br />
+<em> Posterior in Square-Root-Form nach Hellmann eq. 11:<br />
+<code>P = Σ Wᶜ (χᶜ - x̂)(χᶜ - x̂)^⊤ + Q + K R Kᵀ</code><br />
+</em> 4 Unit-Tests pinnen Korrektheit: bei weiten Bounds &amp; linearem h<br />
   reproduziert <code>cUKF ≡ UKF</code> zu <code>atol=1e-6</code>; bei engen Bounds wird die
   Schranke respektiert; smoke test auf der ADM1-Plant läuft durch.</p>
 <h4 id="empirisches-ergebnis-24h-twin-simple-plant-n43">Empirisches Ergebnis (24h-Twin, simple plant, n=43)<a class="headerlink" href="#empirisches-ergebnis-24h-twin-simple-plant-n43" title="Permanent link">&para;</a></h4>
