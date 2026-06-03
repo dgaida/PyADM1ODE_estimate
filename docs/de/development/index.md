@@ -8,8 +8,8 @@ Hinweise für Entwickler:innen, die am Repo selbst oder am Ökosystem arbeiten.
   neue Erweiterung im PyADM1ODE-Ökosystem dokumentiert und mit den anderen
   Repos verlinkt wird. Auch nützlich, wenn die zwei bestehenden Repos
   (`PyADM1ODE`, `PyADM1ODE_calibration`) auf den gleichen Stand wie
-  `PyADM1ODE_estimate` gebracht werden sollen.
-* [SR-UKF Performance](ukf_performance.md) — verlustfreie Optimierungen
+  `PyADM1ODE_estimate` gebracht werden sollen.  
+* [SR-UKF Performance](ukf_performance.md) — verlustfreie Optimierungen  
   am Square-Root-UKF (Vektorisierung + Cholesky-Caching) und die
   Regressionstest-Strategie, die ihre Bit-Stabilität absichert.
 

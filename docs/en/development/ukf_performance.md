@@ -10,11 +10,11 @@ brought the code to that state and how their correctness is verified.
 
 Per filter step:
 
-1. **Predict** draws `2n+1` sigma points around `(x_hat, S)`,
+1. **Predict** draws `2n+1` sigma points around `(x_hat, S)`,  
    propagates them through `process.step(σ_i, dt)`, and *in the same
    loop* reads `h(plant, σ_i_propagated)` for every observation
-   channel. Predicted mean + Cholesky factor via QR-stack with `√Q`.
-2. **Update** consumes the predict-side h-cache directly (column
+   channel. Predicted mean + Cholesky factor via QR-stack with `√Q`.  
+2. **Update** consumes the predict-side h-cache directly (column  
    selection over the active channels). No second sigma-point draw, no
    second plant pass. Cross-covariance `T_xy` from
    `(propagated − x_pred)` differences.
@@ -29,10 +29,10 @@ for no mathematical gain.
 
 All four changes are bit-stable to last-bit roundoff (`atol=1e-12`):
 
-1. **`_sigma_points` vectorised** — Python loop → two broadcasts.
-2. **`T_xy` vectorised** — `for i: outer(...)` → one matmul.
-3. **`cholesky(Q)` cached** — keyed on `dt`, hit when `dt` is constant.
-4. **`cholesky(R)` cached** — keyed on the active-channel tuple.
+1. **`_sigma_points` vectorised** — Python loop → two broadcasts.  
+2. **`T_xy` vectorised** — `for i: outer(...)` → one matmul.  
+3. **`cholesky(Q)` cached** — keyed on `dt`, hit when `dt` is constant.  
+4. **`cholesky(R)` cached** — keyed on the active-channel tuple.  
 
 ### Wave 2 — sigma-point reuse
 
@@ -93,10 +93,10 @@ PY
 [`tests/test_ukf.py::TestUKFLinear`](https://github.com/dgaida/PyADM1ODE_estimate/blob/master/tests/test_ukf.py)
 has two tests against the closed-form Kalman filter:
 
-* `test_ukf_matches_classical_kf_with_negligible_Q` — with `Q ≈ 1e-16`
+* `test_ukf_matches_classical_kf_with_negligible_Q` — with `Q ≈ 1e-16`  
   (ten orders of magnitude below `P`) the SR-UKF trajectory matches the
-  KF to `atol=1e-6`. Pins the algebraic correctness of the reuse form.
-* `test_ukf_approximates_classical_kf_with_random_walk_Q` — with
+  KF to `atol=1e-6`. Pins the algebraic correctness of the reuse form.  
+* `test_ukf_approximates_classical_kf_with_random_walk_Q` — with  
   `Q/P ≈ 1 %` the trajectory diverges from the KF by a few percent,
   consistent with the dropped `H Q H^T` term. `atol=0.05`. Pins the
   magnitude of the approximation; a clear violation would signal an
@@ -106,10 +106,10 @@ has two tests against the closed-form Kalman filter:
 
 Four further tests in `test_ukf_regression.py` use counting wrappers:
 
-* `test_sqrt_Q_cache_hits_under_constant_dt`
-* `test_sqrt_Q_cache_invalidates_on_dt_change`
-* `test_sqrt_R_cache_hits_under_constant_active_set`
-* `test_sqrt_R_cache_invalidates_on_active_set_change`
+* `test_sqrt_Q_cache_hits_under_constant_dt`  
+* `test_sqrt_Q_cache_invalidates_on_dt_change`  
+* `test_sqrt_R_cache_hits_under_constant_active_set`  
+* `test_sqrt_R_cache_invalidates_on_active_set_change`  
 
 ### Wave 3 — Reduced sigma scaling (opt-in)
 
@@ -173,14 +173,14 @@ applies cleanly, so filter consistency collapses.
 
 #### Recommendation
 
-* **Default ``gamma_override=None``** for UQ-relevant applications
-  (coverage calibration is the priority there).
-* **``gamma_override=1.0``** as opt-in for modes that only consume
+* **Default ``gamma_override=None``** for UQ-relevant applications  
+  (coverage calibration is the priority there).  
+* **``gamma_override=1.0``** as opt-in for modes that only consume  
   the posterior mean (e.g. MPC targets, control signals), where
-  coverage is secondary.
-* **Avoid values between 1 and 6** — no sweet spot, both metrics
-  degrade simultaneously.
-* For *simultaneously* good mean and calibration: state-augmented
+  coverage is secondary.  
+* **Avoid values between 1 and 6** — no sweet spot, both metrics  
+  degrade simultaneously.  
+* For *simultaneously* good mean and calibration: state-augmented  
   form (Wave 4 on the roadmap) fixes the `Q` inconsistency in the
   algorithm itself instead of compensating via γ.
 
@@ -194,12 +194,12 @@ parallel sigma-point propagation moves to workers.
 
 #### Architecture
 
-* Each worker builds **its own** ``(process, obs, spec)`` triple at
+* Each worker builds **its own** ``(process, obs, spec)`` triple at  
   pool startup via a user-provided top-level builder. This sidesteps
-  the pickle issue with ``obs`` closures referring to plant objects.
-* Per task only the tiny snapshot dict (~1 kB) crosses the IPC
-  boundary. The plant objects themselves cross only once at pool spawn.
-* ``process.step`` calls ``restore()`` internally — we extended
+  the pickle issue with ``obs`` closures referring to plant objects.  
+* Per task only the tiny snapshot dict (~1 kB) crosses the IPC  
+  boundary. The plant objects themselves cross only once at pool spawn.  
+* ``process.step`` calls ``restore()`` internally — we extended  
   [``process_model.snapshot/restore``](https://github.com/dgaida/PyADM1ODE_estimate/blob/master/pyadm1ode_estimation/estimation/process_model.py)
   so that *every* component with ``adm1_state`` is reset, not just the
   primary digester. This fixes a latent drift bug in the serial code
@@ -220,10 +220,10 @@ parallel sigma-point propagation moves to workers.
 Mean-trajectory delta vs. serial: exactly 0 σ on every channel. Mean
 NIS = 7.08 for all variants.
 
-Sub-linear scaling expected (Amdahl):
-* Pool-spawn overhead (~2-3 s per worker on Windows spawn)
-* Linalg path stays sequential and grows in relative weight with more workers
-* Beyond ~4 physical cores (likely hyperthreads on this setup) the gain plateaus
+Sub-linear scaling expected (Amdahl):  
+* Pool-spawn overhead (~2-3 s per worker on Windows spawn)  
+* Linalg path stays sequential and grows in relative weight with more workers  
+* Beyond ~4 physical cores (likely hyperthreads on this setup) the gain plateaus  
 
 For a typical twin workflow (5 days × 24 h = 120 steps), that means
 serial ≈ 20 min → parallel_8 ≈ 7 min.
@@ -278,14 +278,14 @@ standard Kalman gain.
 \quad \text{s.t.} \quad x_{\text{lo}} \le \chi \le x_{\text{hi}}
 ```
 
-Implementation choices:
-* `h` linearised by least-squares fit from the cached propagated sigma
-  cloud (no extra plant evaluations)
-* Per-sigma QP via `scipy.optimize.minimize(method="trust-constr")`
-  with analytic gradient and Hessian
-* Posterior in square-root form per Hellmann eq. 11:
-  `P = Σ Wᶜ (χᶜ - x̂)(χᶜ - x̂)^⊤ + Q + K R Kᵀ`
-* Four unit tests pin correctness: with wide bounds and linear h,
+Implementation choices:  
+* `h` linearised by least-squares fit from the cached propagated sigma  
+  cloud (no extra plant evaluations)  
+* Per-sigma QP via `scipy.optimize.minimize(method="trust-constr")`  
+  with analytic gradient and Hessian  
+* Posterior in square-root form per Hellmann eq. 11:  
+  `P = Σ Wᶜ (χᶜ - x̂)(χᶜ - x̂)^⊤ + Q + K R Kᵀ`  
+* Four unit tests pin correctness: with wide bounds and linear h,  
   `cUKF ≡ UKF` to `atol=1e-6`; with tight bounds the box constraint
   is respected; smoke test on the ADM1 plant runs end-to-end.
 

@@ -7,8 +7,8 @@ Notes for developers working on the repository itself or on the ecosystem.
 * [Ecosystem integration](ecosystem-integration.md) — checklist for hooking a  
   new extension into the PyADM1ODE ecosystem. Also useful when bringing the
   two sibling repos (`PyADM1ODE`, `PyADM1ODE_calibration`) up to the same
-  documentation standard as `PyADM1ODE_estimate`.
-* [SR-UKF performance](ukf_performance.md) — lossless optimisations of the
+  documentation standard as `PyADM1ODE_estimate`.  
+* [SR-UKF performance](ukf_performance.md) — lossless optimisations of the  
   Square-Root UKF (vectorisation + Cholesky caching) and the regression-test
   strategy that guarantees their bit-stability.
 
