@@ -168,39 +168,25 @@ def test_cukf_respects_upper_bound_when_measurement_pulls_high():
 
 
 # --------------------------------------------------------------------------
-# End-to-end on the ADM1 plant (skipped if pyadm1 is unavailable)
+# End-to-end through ADM1ProcessModel — uses the picklable mock plant so the
+# tests run without pyadm1's substrate YAML catalog (which CI environments
+# typically lack). Real-plant smoke testing is the bench script's job.
 # --------------------------------------------------------------------------
-pytest.importorskip("pyadm1")
-pytest.importorskip("pyadm1ode_estimation.example_plants")
-
-from pyadm1ode_estimation.estimation import (  # noqa: E402
-    InputSpec,
-    build_filter_components,
-)
-from pyadm1ode_estimation.example_plants import build_simple_plant  # noqa: E402
-
-
-def _build_cukf_for_simple_plant():
-    plant = build_simple_plant()
-    process, obs, spec = build_filter_components(
-        plant,
-        digester_id="fermenter",
-        substrates=[
-            InputSpec("maize_silage", substrate_index=0, initial_flow=10.0),
-            InputSpec("cattle_slurry", substrate_index=1, initial_flow=5.0),
-        ],
-        sensors=["q_gas", "q_ch4", "ph", "substrate_dose"],
-    )
-    return ConstrainedUKF(process, obs, spec)
+from _mock_plant import build_mock_components  # noqa: E402
 
 
 @pytest.mark.slow
-def test_cukf_runs_on_simple_plant_without_crashing():
-    """Smoke test: three predict + update cycles on the actual ADM1
-    plant. Must complete without raising, must produce finite posterior
-    means inside the spec bounds.
+def test_cukf_runs_through_adm1_process_model_without_crashing():
+    """Smoke test: three predict + update cycles on the ADM1ProcessModel
+    + ConstrainedUKF stack, using the mock plant for the underlying ODE.
+
+    Verifies the integration between ConstrainedUKF, ADM1ProcessModel
+    snapshot/restore, the spec's 41-channel layout, and the QP solver —
+    everything except the pyadm1 ODE itself. Must complete without
+    raising, must produce a finite posterior inside the spec bounds.
     """
-    cukf = _build_cukf_for_simple_plant()
+    process, obs, spec = build_mock_components()
+    cukf = ConstrainedUKF(process, obs, spec)
     rng = np.random.default_rng(0)
     lo, hi = cukf.spec.bounds()
     n_obs = len(cukf.obs.channels)

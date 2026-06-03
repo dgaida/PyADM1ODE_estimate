@@ -332,9 +332,11 @@ class ConstrainedUKF(UnscentedKalmanFilter):
                 method=self.optimizer_method,
                 bounds=self._bounds,
                 tol=self.optimizer_tol,
-                options={"maxiter": self.max_iter, "verbose": 0}
-                if self.optimizer_method == "trust-constr"
-                else {"maxiter": self.max_iter},
+                options=(
+                    {"maxiter": self.max_iter, "verbose": 0}
+                    if self.optimizer_method == "trust-constr"
+                    else {"maxiter": self.max_iter}
+                ),
             )
             corrected[i] = self.spec.clip(result.x)
         return corrected

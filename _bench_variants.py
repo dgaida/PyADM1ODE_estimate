@@ -59,7 +59,6 @@ from pyadm1ode_estimation.estimation.twin import (  # noqa: E402
 )
 from pyadm1ode_estimation.example_plants import build_simple_plant  # noqa: E402
 
-
 DIGESTER_ID = "fermenter"
 SUBSTRATES = [
     InputSpec("maize_silage", substrate_index=0, initial_flow=10.0),
