@@ -1525,6 +1525,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/realistic_conditions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Realistische Testbedingungen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1970,7 +1998,7 @@ states you don't estimate.)</p>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">ObservationChannel</span><span class="p">,</span> <span class="n">ObservationModel</span><span class="p">,</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="p">)</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.observation_model</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">extract_q_gas_total</span><span class="p">,</span> <span class="n">extract_q_ch4_total</span><span class="p">,</span> <span class="n">make_state_extractor</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">make_q_gas_extractor</span><span class="p">,</span> <span class="n">make_q_ch4_extractor</span><span class="p">,</span> <span class="n">make_state_extractor</span><span class="p">,</span>
 </span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">)</span>
 </span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">make_ph_extractor</span><span class="p">(</span><span class="n">digester_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -1984,8 +2012,8 @@ states you don't estimate.)</p>
 </span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">channels</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">)</span>
 </span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>
 </span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="n">obs</span> <span class="o">=</span> <span class="n">ObservationModel</span><span class="p">(</span><span class="n">channels</span><span class="o">=</span><span class="p">[</span>
-</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="n">ObservationChannel</span><span class="p">(</span><span class="s2">&quot;Q_gas&quot;</span><span class="p">,</span>            <span class="n">extract_q_gas_total</span><span class="p">,</span>          <span class="n">noise_std</span><span class="o">=</span><span class="mf">10.0</span><span class="p">),</span>
-</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>    <span class="n">ObservationChannel</span><span class="p">(</span><span class="s2">&quot;Q_ch4&quot;</span><span class="p">,</span>            <span class="n">extract_q_ch4_total</span><span class="p">,</span>          <span class="n">noise_std</span><span class="o">=</span><span class="mf">5.0</span><span class="p">),</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="n">ObservationChannel</span><span class="p">(</span><span class="s2">&quot;Q_gas&quot;</span><span class="p">,</span>            <span class="n">make_q_gas_extractor</span><span class="p">(</span><span class="s2">&quot;primary&quot;</span><span class="p">),</span> <span class="n">noise_std</span><span class="o">=</span><span class="mf">10.0</span><span class="p">),</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>    <span class="n">ObservationChannel</span><span class="p">(</span><span class="s2">&quot;Q_ch4&quot;</span><span class="p">,</span>            <span class="n">make_q_ch4_extractor</span><span class="p">(</span><span class="s2">&quot;primary&quot;</span><span class="p">),</span> <span class="n">noise_std</span><span class="o">=</span><span class="mf">5.0</span><span class="p">),</span>
 </span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>    <span class="n">ObservationChannel</span><span class="p">(</span><span class="s2">&quot;pH&quot;</span><span class="p">,</span>               <span class="n">make_ph_extractor</span><span class="p">(</span><span class="s2">&quot;primary&quot;</span><span class="p">),</span> <span class="n">noise_std</span><span class="o">=</span><span class="mf">0.05</span><span class="p">),</span>
 </span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>    <span class="n">ObservationChannel</span><span class="p">(</span><span class="s2">&quot;Q_maize_silage&quot;</span><span class="p">,</span>   <span class="n">make_state_extractor</span><span class="p">(</span><span class="n">_idx</span><span class="p">(</span><span class="s2">&quot;maize_silage&quot;</span><span class="p">)),</span>   <span class="n">noise_std</span><span class="o">=</span><span class="mf">0.24</span><span class="p">),</span>
 </span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>    <span class="n">ObservationChannel</span><span class="p">(</span><span class="s2">&quot;Q_solid_manure&quot;</span><span class="p">,</span>   <span class="n">make_state_extractor</span><span class="p">(</span><span class="n">_idx</span><span class="p">(</span><span class="s2">&quot;solid_manure&quot;</span><span class="p">)),</span>   <span class="n">noise_std</span><span class="o">=</span><span class="mf">0.69</span><span class="p">),</span>
@@ -1994,6 +2022,18 @@ states you don't estimate.)</p>
 </span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>    <span class="n">ObservationChannel</span><span class="p">(</span><span class="s2">&quot;Q_cereal_grain&quot;</span><span class="p">,</span>   <span class="n">make_state_extractor</span><span class="p">(</span><span class="n">_idx</span><span class="p">(</span><span class="s2">&quot;cereal_grain&quot;</span><span class="p">)),</span>   <span class="n">noise_std</span><span class="o">=</span><span class="mf">0.01</span><span class="p">),</span>
 </span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="p">])</span>
 </span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Stage-scoped vs. whole-plant gas</p>
+<p><code>make_q_gas_extractor("primary")</code> / <code>make_q_ch4_extractor("primary")</code> read
+only the <strong>estimated</strong> digester's own production. In a multi-stage cascade
+the downstream stages (post-fermenter, digestate storage) also produce gas
+that the filter does not estimate — feeding the plant total into the
+innovation would bias the estimated stage. Use the stage-scoped extractors
+whenever a per-stage gas meter exists. Only when the physical meter sits
+downstream of every stage (e.g. a single flow meter in front of the CHP)
+use the whole-plant sums <code>extract_q_gas_total</code> / <code>extract_q_ch4_total</code>
+(catalog names <code>q_gas_total</code> / <code>q_ch4_total</code> in <code>build_ukf</code>).</p>
+</div>
 <h2 id="setting-up-and-running-the-filter">Setting up and running the filter<a class="headerlink" href="#setting-up-and-running-the-filter" title="Permanent link">&para;</a></h2>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnscentedKalmanFilter</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>

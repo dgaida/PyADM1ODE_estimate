@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="en" class="no-js">
+<html lang="de" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -12,35 +12,35 @@
         <meta name="author" content="Daniel Gaida">
       
       
-        <link rel="canonical" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/en/usage/calibration_artifact/">
+        <link rel="canonical" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/development/realistic_conditions/">
       
       
-        <link rel="prev" href="../twin_experiments/">
+        <link rel="prev" href="../ukf_performance/">
       
       
-        <link rel="next" href="../../observability/">
+        <link rel="next" href="../../troubleshooting/">
       
       
         
-          <link rel="alternate" href="../../../usage/calibration_artifact/" hreflang="de">
+          <link rel="alternate" href="./" hreflang="de">
         
-          <link rel="alternate" href="./" hreflang="en">
+          <link rel="alternate" href="../../en/development/realistic_conditions/" hreflang="en">
         
       
       
-      <link rel="icon" href="../../../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Kalibrierungs-Artefakt - PyADM1ODE Estimate</title>
+        <title>Realistische Testbedingungen - PyADM1ODE Estimate</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -59,11 +59,9 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
-    
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -88,8 +86,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#calibration-artifact" class="md-skip">
-          Skip to content
+        <a href="#realistische-testbedingungen-das-realismus-fundament" class="md-skip">
+          Zum Inhalt
         </a>
       
     </div>
@@ -105,8 +103,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../" title="PyADM1ODE Estimate" class="md-header__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Kopfzeile">
+    <a href="../.." title="PyADM1ODE Estimate" class="md-header__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -126,7 +124,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Kalibrierungs-Artefakt
+              Realistische Testbedingungen
             
           </span>
         </div>
@@ -166,20 +164,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="Select language">
+    <button class="md-header__button md-icon" aria-label="Sprache wechseln">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../../usage/calibration_artifact/" hreflang="de" class="md-select__link">
+            <a href="./" hreflang="de" class="md-select__link">
               Deutsch
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="./" hreflang="en" class="md-select__link">
+            <a href="../../en/development/realistic_conditions/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
@@ -200,21 +198,21 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Suche" placeholder="Suche" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="Search">
+      <nav class="md-search__options" aria-label="Suche">
         
-          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Teilen" aria-label="Teilen" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
             
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
           </a>
         
-        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Zurücksetzen" aria-label="Zurücksetzen" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -227,7 +225,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            Initializing search
+            Suche wird initialisiert
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -239,7 +237,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Zum Repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -260,7 +258,7 @@
         
           
             
-<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Hauptnavigation" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -270,7 +268,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../" class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -325,13 +323,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../usage/" class="md-tabs__link">
           
   
   
@@ -427,11 +423,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../development/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -504,7 +502,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../" title="PyADM1ODE Estimate" class="md-nav__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
+    <a href="../.." title="PyADM1ODE Estimate" class="md-nav__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -514,7 +512,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Zum Repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -534,7 +532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../" class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -612,31 +610,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
   
   
@@ -654,7 +649,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -672,7 +667,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../usage/" class="md-nav__link">
         
   
   
@@ -700,7 +695,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ukf/" class="md-nav__link">
+      <a href="../../usage/ukf/" class="md-nav__link">
         
   
   
@@ -728,7 +723,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../twin_experiments/" class="md-nav__link">
+      <a href="../../usage/twin_experiments/" class="md-nav__link">
         
   
   
@@ -753,37 +748,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Kalibrierungs-Artefakt
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../usage/calibration_artifact/" class="md-nav__link">
         
   
   
@@ -799,81 +767,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#format-overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Format overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#writing-calibration-side" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Writing (calibration side)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#reading-estimation-side" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reading (estimation side)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#design-decisions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Design decisions
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1358,28 +1251,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
-        
-          
-          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
             
   
   
@@ -1397,7 +1293,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_9">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1415,7 +1311,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../development/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -1443,7 +1339,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../development/ecosystem-integration/" class="md-nav__link">
+      <a href="../ecosystem-integration/" class="md-nav__link">
         
   
   
@@ -1471,7 +1367,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../development/ukf_performance/" class="md-nav__link">
+      <a href="../ukf_performance/" class="md-nav__link">
         
   
   
@@ -1496,10 +1392,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../development/realistic_conditions/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Realistische Testbedingungen
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1515,6 +1438,114 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Inhaltsverzeichnis">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Inhaltsverzeichnis
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#leitprinzip-plant-agnostisch-und-literatur-basiert-nicht-gefittet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leitprinzip: plant-agnostisch und literatur-basiert, nicht gefittet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modellfehler-kinetik-parameter-unsicherheit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modellfehler: Kinetik-Parameter-Unsicherheit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#messrauschen-1-pro-sensortyp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Messrauschen (1-σ, pro Sensortyp)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#abtastraten-reale-anlagen-kadenz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Abtastraten (reale Anlagen-Kadenz)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bewusst-nicht-enthalten-und-warum" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bewusst nicht enthalten (und warum)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verwendung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verwendung
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bewertungs-harness-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bewertungs-Harness &amp; Provenance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quellen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quellen
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1712,7 +1743,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+<nav class="md-nav md-nav--secondary" aria-label="Inhaltsverzeichnis">
   
   
   
@@ -1721,15 +1752,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Table of contents
+      Inhaltsverzeichnis
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#workflow" class="md-nav__link">
+  <a href="#leitprinzip-plant-agnostisch-und-literatur-basiert-nicht-gefittet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Workflow
+        Leitprinzip: plant-agnostisch und literatur-basiert, nicht gefittet
       
     </span>
   </a>
@@ -1737,10 +1768,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#format-overview" class="md-nav__link">
+  <a href="#modellfehler-kinetik-parameter-unsicherheit" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Format overview
+        Modellfehler: Kinetik-Parameter-Unsicherheit
       
     </span>
   </a>
@@ -1748,10 +1779,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#writing-calibration-side" class="md-nav__link">
+  <a href="#messrauschen-1-pro-sensortyp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Writing (calibration side)
+        Messrauschen (1-σ, pro Sensortyp)
       
     </span>
   </a>
@@ -1759,10 +1790,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#reading-estimation-side" class="md-nav__link">
+  <a href="#abtastraten-reale-anlagen-kadenz" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Reading (estimation side)
+        Abtastraten (reale Anlagen-Kadenz)
       
     </span>
   </a>
@@ -1770,10 +1801,43 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#design-decisions" class="md-nav__link">
+  <a href="#bewusst-nicht-enthalten-und-warum" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Design decisions
+        Bewusst nicht enthalten (und warum)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verwendung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verwendung
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bewertungs-harness-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bewertungs-Harness &amp; Provenance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quellen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quellen
       
     </span>
   </a>
@@ -1800,131 +1864,182 @@
   
 
 
-<h1 id="calibration-artifact">Calibration artifact<a class="headerlink" href="#calibration-artifact" title="Permanent link">&para;</a></h1>
-<p>The <code>CalibrationArtifact</code> is the <strong>interface between calibration and estimation</strong>.
-It is a versioned YAML file that calibration writes and estimation reads
-when the live filter starts up.</p>
-<h2 id="workflow">Workflow<a class="headerlink" href="#workflow" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>PyADM1ODE_calibration                     PyADM1ODE_estimate
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  │                                            │
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  │  optimizes kinetic parameters,             │
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  │  fits against historical measurements      │
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  │                                            │
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  ▼                                            │
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>[ artifact.yaml ] ───────── handoff ──────────►│
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                                               │
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>                                               │  load_artifact(...)
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>                                               │  apply_to_plant(...)
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>                                               │
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>                                               ▼
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>                                       calibrated BiogasPlant
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>                                               │
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>                                               ▼
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>                                       UKF starts from here
-</span></code></pre></div>
-<h2 id="format-overview">Format overview<a class="headerlink" href="#format-overview" title="Permanent link">&para;</a></h2>
-<p>The YAML has five main sections (each except <code>metadata</code> is optional):</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">schema_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nt">metadata</span><span class="p">:</span><span class="w">                </span><span class="c1"># Provenance: which plant, which data window</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">plant_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">plant_id_xyz</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">calibration_run_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-05-14-3w</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">timestamp</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-05-14T12:30:00Z</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="nt">data_window_start</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-04-01</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">data_window_end</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-04-21</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">adm1_version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ADM1da-0.3.4&quot;</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="nt">fitted_against</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">Q_gas</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">P_el</span><span class="p p-Indicator">]</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="nt">kinetic</span><span class="p">:</span><span class="w">                 </span><span class="c1"># adm1._kinetic overrides per digester</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">    </span><span class="nt">k_dis_PS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.045</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">    </span><span class="nt">k_hyd_ch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.2</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="nt">k_m_ac</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8.5</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="nt">substrates</span><span class="p">:</span><span class="w">              </span><span class="c1"># Substrate disintegration fractions</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">  </span><span class="nt">maize_silage</span><span class="p">:</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">    </span><span class="nt">f_ch_xc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.55</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="nt">initial_state</span><span class="p">:</span><span class="w">           </span><span class="c1"># ADM1da state at the end of the calibration window</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">  </span><span class="nt">primary</span><span class="p">:</span>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">    </span><span class="nt">_values</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...41 values in canonical ADM1da order...</span><span class="p p-Indicator">]</span>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="nt">residuals</span><span class="p">:</span><span class="w">               </span><span class="c1"># Fit quality per channel (informational)</span>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">  </span><span class="nt">Q_gas</span><span class="p">:</span>
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="w">    </span><span class="nt">rmse</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">145.0</span>
-</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="w">    </span><span class="nt">units</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">m3/d</span>
-</span></code></pre></div>
-<p>Full example:
-<a href="../../../assets/calibration_artifact_example.yaml">calibration_artifact_example.yaml</a>.</p>
-<h2 id="writing-calibration-side">Writing (calibration side)<a class="headerlink" href="#writing-calibration-side" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.artifacts</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">CalibrationArtifact</span><span class="p">,</span> <span class="n">CalibrationMetadata</span><span class="p">,</span> <span class="n">save_artifact</span><span class="p">,</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">artifact</span> <span class="o">=</span> <span class="n">CalibrationArtifact</span><span class="p">(</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">metadata</span><span class="o">=</span><span class="n">CalibrationMetadata</span><span class="p">(</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="n">plant_id</span><span class="o">=</span><span class="s2">&quot;plant_id_xyz&quot;</span><span class="p">,</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="n">calibration_run_id</span><span class="o">=</span><span class="s2">&quot;2026-05-14-3w&quot;</span><span class="p">,</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="n">timestamp</span><span class="o">=</span><span class="s2">&quot;2026-05-14T12:30:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="n">fitted_against</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Q_gas&quot;</span><span class="p">,</span> <span class="s2">&quot;P_el&quot;</span><span class="p">],</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="p">),</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="n">kinetic</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;primary&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;k_dis_PS&quot;</span><span class="p">:</span> <span class="mf">0.045</span><span class="p">,</span> <span class="s2">&quot;k_hyd_ch&quot;</span><span class="p">:</span> <span class="mf">4.2</span><span class="p">}},</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="n">initial_state</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;primary&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;_values&quot;</span><span class="p">:</span> <span class="n">list_of_41_floats</span><span class="p">}},</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="p">)</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="n">save_artifact</span><span class="p">(</span><span class="n">artifact</span><span class="p">,</span> <span class="s2">&quot;calibrated/plant_2026-05-14.yaml&quot;</span><span class="p">)</span>
-</span></code></pre></div>
-<h2 id="reading-estimation-side">Reading (estimation side)<a class="headerlink" href="#reading-estimation-side" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.artifacts</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_artifact</span><span class="p">,</span> <span class="n">apply_to_plant</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">artifact</span> <span class="o">=</span> <span class="n">load_artifact</span><span class="p">(</span><span class="s2">&quot;calibrated/plant_2026-05-14.yaml&quot;</span><span class="p">)</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">plant</span> <span class="o">=</span> <span class="n">build_plant</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>            <span class="c1"># plant-specific plant builder</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># strict=True: fail-fast on topology mismatch (recommended for production startup)</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># strict=False: warnings only, graceful degradation (good for tests, legacy artifacts)</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">diag</span> <span class="o">=</span> <span class="n">apply_to_plant</span><span class="p">(</span><span class="n">artifact</span><span class="p">,</span> <span class="n">plant</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Applied: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">diag</span><span class="p">[</span><span class="s1">&#39;applied&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> parameters&quot;</span><span class="p">)</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipped: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">diag</span><span class="p">[</span><span class="s1">&#39;skipped&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> parameters&quot;</span><span class="p">)</span>
-</span></code></pre></div>
-<h2 id="design-decisions">Design decisions<a class="headerlink" href="#design-decisions" title="Permanent link">&para;</a></h2>
+<h1 id="realistische-testbedingungen-das-realismus-fundament">Realistische Testbedingungen — das „Realismus-Fundament"<a class="headerlink" href="#realistische-testbedingungen-das-realismus-fundament" title="Permanent link">&para;</a></h1>
+<p>Um zu beurteilen, ob ein Zustandsschätzer <em>für das Projektziel gut genug</em> ist
+(Zustandsschätzung an einer realen landwirtschaftlichen Biogasanlage, letztlich
+für Bedienempfehlungen), muss das Twin-Experiment unter Bedingungen nahe einer
+realen Anlage laufen. Diese Seite definiert diese Bedingungen — und vor allem,
+<strong>wie sie gewählt werden</strong>.</p>
+<h2 id="leitprinzip-plant-agnostisch-und-literatur-basiert-nicht-gefittet">Leitprinzip: plant-agnostisch und literatur-basiert, nicht gefittet<a class="headerlink" href="#leitprinzip-plant-agnostisch-und-literatur-basiert-nicht-gefittet" title="Permanent link">&para;</a></h2>
+<p>Die Sensorik der realen Testanlage ist <strong>nicht final</strong> (es werden noch Sensoren
+ergänzt), und das Ziel ist eine Methode, die <strong>allgemein für Biogasanlagen</strong>
+funktioniert, nicht für einen Datensatz. Deshalb werden Rauschen und
+Modellfehler <strong>nicht an die aktuelle Datenlage angepasst</strong>:</p>
+<ul>
+<li><strong>Messrauschen</strong> hängt an <em>Sensortypen</em> als generische Instrumenten-Genauigkeit
+  — ergänzt/entfernt man einen Sensor, ändern sich die anderen nicht, und die
+  Bedingungen übertragen sich auf andere Anlagen.</li>
+<li><strong>Modellfehler</strong> — die Lücke zwischen ADM1 und Realität — <strong>lässt sich nicht
+  aus Betriebsdaten bestimmen</strong> (er ist mit Eingangs- und Messfehler vermengt).
+  Er wird daher aus der <strong>Kinetik-Parameter-Unsicherheit der ADM1-Literatur</strong>
+  gesetzt, als multiplikative Störung.</li>
+</ul>
+<p>Die Werte liegen in <a href="../../api/"><code>estimation/realism.py</code></a> und werden vom
+<code>--realistic</code>-Preset des Twins angewendet.</p>
+<h2 id="modellfehler-kinetik-parameter-unsicherheit">Modellfehler: Kinetik-Parameter-Unsicherheit<a class="headerlink" href="#modellfehler-kinetik-parameter-unsicherheit" title="Permanent link">&para;</a></h2>
+<p>Der Modellfehler ist eine <strong>multiplikative lognormale</strong> Störung der biologischen
+Kinetiken des Filters, während die Truth die „echten" Werte behält:</p>
+<p>$$ k_\text{Filter} = k_\text{nominal}\cdot e^{\mathcal N(0,\sigma)},\qquad
+   \sigma = 0.25 $$</p>
+<p>auf die Raten-/Affinitäts-Prefixe <code>k_dis</code>, <code>k_hyd</code>, <code>k_m_</code>, <code>k_dec</code>, <code>K_S</code>.
+Physikalische Gleichgewichtskonstanten (<code>K_a</code>, <code>K_w</code>, <code>K_H</code>) und Stöchiometrie
+(<code>Y_*</code>, <code>f_*</code>) bleiben unangetastet.</p>
+<p>Begründung von Form und Größe:</p>
 <table>
 <thead>
 <tr>
-<th>Decision</th>
-<th>Why</th>
+<th>Evidenz</th>
+<th>Wert</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>schema_version</code> mandatory</td>
-<td>Unknown versions → <code>ValueError</code>, no silent mis-read</td>
+<td>ADM1-Sensitivitätsanalysen stören Kinetik-/Stöchiometrie-Parameter</td>
+<td>~10 %</td>
 </tr>
 <tr>
-<td><code>plant_id</code> + <code>run_id</code> mandatory</td>
-<td>Audit trail for multiple parallel calibrations</td>
+<td>Die gas-relevanten <em>sensiblen</em> Parameter sind genau Zerfall / Disintegration / Hydrolyse / <code>k_m</code> / <code>K_S</code></td>
+<td>—</td>
 </tr>
 <tr>
-<td>Sections optional</td>
-<td>Partial calibrations (kinetic only) allowed</td>
+<td>UKF-für-AD-Studien injizieren bewusst einen Plant-Model-Mismatch auf die Ratenkonstanten</td>
+<td>~28–30 %</td>
 </tr>
 <tr>
-<td><code>strict=False</code> default</td>
-<td>Graceful degradation on evolved topology</td>
-</tr>
-<tr>
-<td><code>strict=True</code> for production</td>
-<td>Live filter startup should fail-fast on incompatibility</td>
-</tr>
-<tr>
-<td>Dict structures instead of fixed fields</td>
-<td>Plant-agnostic — a new plant doesn't require a schema update</td>
-</tr>
-<tr>
-<td><code>_values: [41 values]</code> array form</td>
-<td>Pragmatic without pyadm1 index-map introspection</td>
+<td>Monte-Carlo-Unsicherheitsstudien behandeln Kinetik-Parameter als <strong>lognormal</strong>; Hydrolyse am unsichersten, Gasstrom bleibt vergleichsweise robust</td>
+<td>lognormal, CoV bis ~50 %</td>
 </tr>
 </tbody>
 </table>
+<p><code>σ = 0.25</code> (CoV ≈ 25 %) liegt zwischen Sensitivitätsbereich (10 %) und
+Plant-Model-Mismatch-Ende (30 %). Es ist der <em>übertragbare</em> Stellvertreter für
+„das Modell ist nicht zu 100 % die Realität": die <strong>beobachteten</strong> Größen (Gas)
+bleiben verfolgbar, während <strong>unkorrigierte</strong> Zustände wegdriften — genau das
+realistische Verhalten, das der Schätzer aushalten muss.</p>
+<h2 id="messrauschen-1-pro-sensortyp">Messrauschen (1-σ, pro Sensortyp)<a class="headerlink" href="#messrauschen-1-pro-sensortyp" title="Permanent link">&para;</a></h2>
+<p>Generische Instrumenten-Genauigkeit, <strong>relativ</strong> außer wo absolut vermerkt:</p>
+<table>
+<thead>
+<tr>
+<th>Sensor</th>
+<th>Rauschen (1-σ)</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Biogas-Strom <code>q_gas</code></td>
+<td>3 % rel.</td>
+<td>Biogas-Volumen-Metrologie, ~3 % erweiterte Unsicherheit, Drift &lt; 0.15 %/24 h</td>
+</tr>
+<tr>
+<td>Methan-Strom <code>q_ch4</code></td>
+<td>4 % rel.</td>
+<td><code>q_gas</code> × NDIR CH₄ (≈ 0.7–1 % abs.) kombiniert</td>
+</tr>
+<tr>
+<td>CO₂-Strom <code>q_co2</code></td>
+<td>4 % rel.</td>
+<td><code>q_gas</code> × NDIR CO₂</td>
+</tr>
+<tr>
+<td>pH</td>
+<td>0.05 (absolut, pH-Einheiten)</td>
+<td>Glaselektroden-Genauigkeit</td>
+</tr>
+<tr>
+<td>VFA / FOS</td>
+<td>8 % rel.</td>
+<td>FOS/TAC-Titration</td>
+</tr>
+<tr>
+<td>TS / VS</td>
+<td>3 % rel.</td>
+<td>gravimetrisch</td>
+</tr>
+<tr>
+<td>Substratdosis</td>
+<td>3 % rel.</td>
+<td>Dosierwaage</td>
+</tr>
+</tbody>
+</table>
+<p>Manche UKF-für-AD-Studien blähen <code>R</code> zur Robustheit um ~1.5× auf; dieser Faktor
+ist als <code>R_INFLATION</code> verfügbar (Default 1.0).</p>
+<h2 id="abtastraten-reale-anlagen-kadenz">Abtastraten (reale Anlagen-Kadenz)<a class="headerlink" href="#abtastraten-reale-anlagen-kadenz" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Online (im Twin stündlich, an der Anlage Sekunden):</strong> <code>q_gas</code>, pH,
+  Substratdosen, Füllstände, BHKW, Temperaturen.</li>
+<li><strong>Täglich:</strong> Gaszusammensetzung CH₄ / CO₂ (NDIR). O₂ und H₂S werden praktisch
+  ebenfalls täglich gemessen, sind aber <strong>keine ADM1da-Zustände</strong> → nur
+  Monitoring, <em>nicht assimiliert</em>.</li>
+<li><strong>Laborkadenz:</strong> TS, VFA (gegated, z. B. VFA alle 12 h).</li>
+</ul>
+<h2 id="bewusst-nicht-enthalten-und-warum">Bewusst <em>nicht</em> enthalten (und warum)<a class="headerlink" href="#bewusst-nicht-enthalten-und-warum" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Anlagenspezifische Gas-Ableitungskette.</strong> An der realen Anlage ist <code>Q_gas</code>
+  kein Flowmeter-Wert, sondern wird aus Gasblasen-Füllstandsänderungen (ΔV,
+  differenziert → rauschverstärkt) + BHKW-Verbrauch + Fackel rekonstruiert.
+  Diese Fehlerstruktur ist anlagenspezifisch; das Fundament nutzt stattdessen
+  die generische Flowmeter-Spezifikation, damit die Bedingungen übertragbar
+  bleiben. (Ein anlagenspezifisches Rauschmodell kann beim Bewerten <em>dieser</em>
+  Anlage darübergelegt werden.)</li>
+<li><strong>O₂ / H₂S.</strong> Keine ADM1da-Zustände — können den UKF nicht informieren.</li>
+<li><strong>σ oder R an die aktuelle Datenlage fitten</strong> — würde zur unvollständigen
+  Sensorik hin verzerren.</li>
+</ul>
+<h2 id="verwendung">Verwendung<a class="headerlink" href="#verwendung" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Realismus-Preset (Modellfehler + Sensorrauschen + tägliche Gasanalytik):</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>python<span class="w"> </span>examples/run_twin_experiment.py<span class="w"> </span>--realistic<span class="w"> </span>--warmup-days<span class="w"> </span><span class="m">30</span><span class="w"> </span>--duration-days<span class="w"> </span><span class="m">14</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Reduzierter Zustandsvektor unter realistischen Bedingungen:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>python<span class="w"> </span>examples/run_twin_experiment.py<span class="w"> </span>--realistic<span class="w"> </span>--state-blocks<span class="w"> </span>methanogenesis<span class="w"> </span>charge_balance
+</span></code></pre></div>
+<p>Einzel-Flags (<code>--model-error-std</code>, <code>--gas-noise-std</code>) überschreiben das Preset
+weiterhin für Sensitivitäts-Sweeps.</p>
+<h2 id="bewertungs-harness-provenance">Bewertungs-Harness &amp; Provenance<a class="headerlink" href="#bewertungs-harness-provenance" title="Permanent link">&para;</a></h2>
+<p>Der Schätzer wird über ein <strong>gepaartes Monte-Carlo-Ensemble</strong> bewertet
+(<code>monte_carlo_eval.py</code>): pro Seed eine unabhängige Modellfehler-Realisierung
+(dieses Fundament) plus Rauschen und Prior-Störung, und <strong>alle Kandidaten sehen
+dieselbe Welt</strong> (Open-Loop-Modell, Roh-Sensor-Floor, UKF voll-41, UKF A+D-Kern,
+und <strong>A+D-Kern mit Known-Input</strong> <code>adcore_ki</code> — die Substratdosierung wird aus der
+gemessenen Dosis vorgesteuert statt geschätzt, sodass der Filter von
+Futterwechseln nicht „überrascht" wird; das senkt die Feed-Change-NIS von ~10³
+auf das Konsistenzband).
+Metrik: entscheidungs-gewichtete per-Block-NRMSE (Block-<strong>Median</strong>, <strong>konvergierte
+zweite Hälfte</strong>, um den UKF-Einschwingvorgang nicht zu bestrafen; <code>charge_balance</code>
+separat berichtet, da seine nahe-null Ionen schlecht konditioniert sind), dazu
+Kalibrierung (mittlere NIS, 2σ-Coverage) und gepaarte Gewinnraten.</p>
+<p><strong>Welcher Schätzer / welche Version</strong> getestet wurde, wird pro Lauf in
+<code>output/mc_eval_meta.txt</code> festgehalten — bei archivierten Ergebnissen mitnehmen,
+da <code>output/</code> gitignored ist. Erfasst werden: Zeitstempel, die git-Commits von
+PyADM1ODE_estimate und pyadm1 (mit <code>+dirty</code>-Flag bei uncommitteten Änderungen),
+die pyadm1-Version, die Filter-Klasse + Parameter, das Modellfehler-σ und der
+Sensor-Zeitplan. Der getestete Schätzer ist der <strong>Square-Root-UKF</strong>
+<code>estimation.filters.sr_ukf.UnscentedKalmanFilter</code> (α = 1.0, β = 2.0, κ = 0.0,
+γ = canonical √(n+λ)); der reduzierte <strong>„A+D-Kern"</strong> ist derselbe Filter,
+eingeschränkt auf <code>--state-blocks methanogenesis charge_balance</code> (18 von 41
+ADM1-Zuständen).</p>
+<h2 id="quellen">Quellen<a class="headerlink" href="#quellen" title="Permanent link">&para;</a></h2>
+<ul>
+<li>ADM1-Sensitivitätsanalyse — <a href="https://www.witpress.com/elibrary/wit-transactions-on-ecology-and-the-environment/258/38278">WIT Transactions (ADM1 local SA)</a>;
+  <a href="https://www.sciencedirect.com/science/article/abs/pii/S0301479720313815">Surrogate-based global SA of ADM1 (ScienceDirect)</a>.</li>
+<li>UKF / Plant-Model-Mismatch für AD — <a href="https://arxiv.org/html/2310.15958">Comparison of UKF designs for AD (arXiv:2310.15958)</a>;
+  Haugen et al. 2014, <em>State Estimation … Pilot AD Reactor</em> (<a href="https://doi.org/10.1155/2014/572621">DOI:10.1155/2014/572621</a>).</li>
+<li>ADM1 Monte-Carlo / lognormale Unsicherheit — <a href="https://iwaponline.com/wst/article/92/4/610/108810/Uncertainty-analysis-of-a-simplified-anaerobic">Uncertainty analysis of a simplified AD model (IWA WST 92(4):610)</a>;
+  <a href="https://www.sciencedirect.com/science/article/abs/pii/S1369703X23000050">Probabilistic ADM1 simulation of biogas (ScienceDirect)</a>.</li>
+<li>Sensor-Genauigkeit — NDIR-Biogasanalysatoren (<a href="https://www.olythe.io/analyzers/biogas-analyzer/">Olythe</a>, <a href="https://dynament.com/application/biogas-monitoring/">Dynament</a>);
+  Biogas-Volumen-Metrologie (<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12693810/">PMC12693810</a>).</li>
+</ul>
 
 
 
@@ -1948,7 +2063,7 @@ when the live filter starts up.</p>
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  Back to top
+  Zurück zum Seitenanfang
 </button>
         
       </main>
@@ -1985,10 +2100,10 @@ when the live filter starts up.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
