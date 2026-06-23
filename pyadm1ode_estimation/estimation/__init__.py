@@ -35,16 +35,20 @@ from .observation_model import ObservationChannel, ObservationModel
 from .process_model import ADM1ProcessModel
 from .quickstart import build_filter_components, build_ukf
 from .specs import (
+    BLOCK_INDICES,
+    STATE_BLOCKS,
     InputSpec,
     KineticSpec,
     Quality,
     SensorQualityProfile,
     adm1da_full_spec,
+    adm1da_reduced_spec,
 )
 from .state_vector import StateChannel, StateVectorSpec
 
 __all__ = [
     "ADM1ProcessModel",
+    "BLOCK_INDICES",
     "EstimationStep",
     "InputSpec",
     "KineticSpec",
@@ -52,12 +56,14 @@ __all__ = [
     "ObservationChannel",
     "ObservationModel",
     "Quality",
+    "STATE_BLOCKS",
     "SampleRate",
     "SensorQualityProfile",
     "StateChannel",
     "StateEstimator",
     "StateVectorSpec",
     "adm1da_full_spec",
+    "adm1da_reduced_spec",
     "build_filter_components",
     "build_ukf",
 ]

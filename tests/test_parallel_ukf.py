@@ -23,7 +23,10 @@ import pytest
 # ParallelUKF itself is stdlib + numpy, importable without pyadm1.
 # The mock plant builder we use below also avoids pyadm1's substrate
 # library, so this test module runs cleanly in CI.
-from _mock_plant import build_mock_components  # noqa: E402
+from _mock_plant import (  # noqa: E402
+    build_mock_components,
+    build_multistage_mock_components,
+)
 
 from pyadm1ode_estimation.estimation.filters import (  # noqa: E402
     ParallelUKF,
@@ -75,6 +78,60 @@ def test_parallel_matches_serial():
         spec_b,
         n_workers=2,
         components_builder=build_mock_components,
+    )
+    try:
+        traj_serial = _run_filter(serial)
+        traj_parallel = _run_filter(parallel)
+    finally:
+        parallel.shutdown()
+
+    assert len(traj_serial) == len(traj_parallel)
+    for k, ((x_s, S_s), (x_p, S_p)) in enumerate(zip(traj_serial, traj_parallel)):
+        np.testing.assert_allclose(
+            x_p,
+            x_s,
+            atol=1e-9,
+            rtol=0,
+            err_msg=f"x_hat mismatch at step {k}",
+        )
+        np.testing.assert_allclose(
+            S_p,
+            S_s,
+            atol=1e-9,
+            rtol=0,
+            err_msg=f"S mismatch at step {k}",
+        )
+
+
+@pytest.mark.slow
+def test_parallel_matches_serial_multistage():
+    """Parallel and serial trajectories must agree on a *multi-component*
+    plant whose gas storage carries state across ``step``.
+
+    This is the regression guard for the 2026-06 multi-component snapshot
+    fix. :meth:`_mock_plant._MockMultiStagePlant.step` couples the ADM1
+    decay to the gas-dome fill and then advances the fill — so if
+    ``ADM1ProcessModel.snapshot``/``restore`` ever stops capturing the
+    gas-storage state, sigma points inherit each other's fill level and
+    the per-worker propagation order diverges from the serial loop. The
+    single-digester :func:`build_mock_components` plant cannot catch that
+    because it has no gas storage at all.
+
+    Fully self-contained: the mock depends only on ``pyadm1ode_estimation``
+    (no ``pyadm1`` simulator, no substrate catalog, no data files), so it
+    runs in any CI environment. ``atol=1e-9`` covers BLAS reduction order
+    on the QR path, identical to :func:`test_parallel_matches_serial`.
+    """
+    proc_a, obs_a, spec_a = build_multistage_mock_components()
+    serial = UnscentedKalmanFilter(proc_a, obs_a, spec_a)
+
+    proc_b, obs_b, spec_b = build_multistage_mock_components()
+    parallel = ParallelUKF(
+        proc_b,
+        obs_b,
+        spec_b,
+        n_workers=2,
+        components_builder=build_multistage_mock_components,
     )
     try:
         traj_serial = _run_filter(serial)

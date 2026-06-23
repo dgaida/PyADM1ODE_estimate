@@ -219,6 +219,75 @@ def extract_p_th_used_total(plant: "BiogasPlant", x: np.ndarray) -> float:
     )
 
 
+def make_q_gas_extractor(digester_id: str) -> Extractor:
+    """Biogas volumetric flow of a *single* named digester.
+
+    Unlike :func:`extract_q_gas_total`, which sums ``Q_gas`` over *every*
+    digester in the plant, this reads only ``digester_id``'s own
+    production. Use it when the filter estimates one stage of a
+    multi-stage cascade: the whole-plant total mixes in gas from the
+    downstream stages (post-fermenter, digestate storage) that the
+    filter does not estimate, so feeding the total into the gas
+    innovation biases the estimated stage. A stage-scoped meter keeps
+    the measurement consistent with the estimated state.
+
+    Returns ``NaN`` when the digester has no ``Q_gas`` output yet, so the
+    UKF drops the channel for that step instead of correcting with a
+    fudged number (see :meth:`UnscentedKalmanFilter.update`).
+    """
+
+    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+        comp = plant.components[digester_id]
+        return float(comp.outputs_data.get("Q_gas", float("nan")))
+
+    return extractor
+
+
+def make_q_ch4_extractor(digester_id: str) -> Extractor:
+    """Methane volumetric flow of a *single* named digester.
+
+    Per-stage counterpart of :func:`extract_q_ch4_total`; see
+    :func:`make_q_gas_extractor` for the multi-stage rationale.
+    """
+
+    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+        comp = plant.components[digester_id]
+        return float(comp.outputs_data.get("Q_ch4", float("nan")))
+
+    return extractor
+
+
+def make_q_co2_extractor(digester_id: str) -> Extractor:
+    """CO2 volumetric flow of a *single* named digester (``Q_co2``).
+
+    Per-stage counterpart to the gas channels; pairs with the NDIR gas
+    analyser's CO2 reading. Returns ``NaN`` when unavailable so the UKF
+    drops the channel for that step.
+    """
+
+    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+        comp = plant.components[digester_id]
+        return float(comp.outputs_data.get("Q_co2", float("nan")))
+
+    return extractor
+
+
+def make_vfa_extractor(digester_id: str) -> Extractor:
+    """Total VFA concentration [g HAc-eq/L] of a single named digester.
+
+    Reads the digester's ``VFA`` indicator (sum of S_va/S_bu/S_pro/S_ac as
+    acetate equivalent — the FOS value of a Nordmann titration). Typically a
+    sparse lab/titration measurement (e.g. every 12 h), so it is usually
+    gated rather than fed every step.
+    """
+
+    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+        comp = plant.components[digester_id]
+        return float(comp.outputs_data.get("VFA", float("nan")))
+
+    return extractor
+
+
 def make_state_extractor(channel_index: int) -> Extractor:
     """Identity extractor - returns ``x[channel_index]``.
 

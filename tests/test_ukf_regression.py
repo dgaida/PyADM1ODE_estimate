@@ -10,14 +10,25 @@ elsewhere.
 
 This module exercises the unscented transform in nonlinear conditions
 with a fixed-seed mock process whose ``step`` mixes an elementwise
-quadratic with a small linear coupling. The golden values below were
-recorded from commit ``f9baf76`` (before any of the 2026-06 SR-UKF
-performance optimisations). Any change that shifts a recorded number
-beyond ``atol=1e-12`` is treated as a behavioural regression and must
-be justified separately.
+quadratic with a small linear coupling.
 
-The optimisation work documented in :doc:`/changes/ukf-perf-2026-06`
-keeps every value in this file unchanged.
+Provenance of the golden values
+-------------------------------
+The constants below were recorded from the **current** canonical
+Wan-VdM 2001 SR-UKF (Algorithm 3.1, line 22: sigma-point reuse), after
+the 2026-06 main-path migration — see the detailed note at the
+``GOLDEN_X_HAT`` definition. They are NOT a pre-optimisation baseline:
+the sigma-point reuse is a deliberate *behavioural* change from the
+earlier "redraw" variant (which re-evaluated ``h`` at a fresh sigma set
+around ``(x_pred, S_pred)``), so the goldens were re-recorded against
+the new maths and the older redraw baseline was retired.
+
+What this test therefore guards is *forward* bit-stability: with the
+maths now fixed, pure linalg refactors (caching, vectorising sums,
+reordering QR inputs) must keep every value here unchanged to within
+``atol=1e-12``. A change that shifts a recorded number is only allowed
+when paired with a documented change to the SR-UKF maths — see
+:doc:`/development/ukf_performance`.
 """
 
 from __future__ import annotations

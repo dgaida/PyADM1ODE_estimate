@@ -108,7 +108,7 @@ from pyadm1ode_estimation.estimation import (
     ObservationChannel, ObservationModel,
 )
 from pyadm1ode_estimation.estimation.observation_model import (
-    extract_q_gas_total, extract_q_ch4_total, make_state_extractor,
+    make_q_gas_extractor, make_q_ch4_extractor, make_state_extractor,
 )
 
 def make_ph_extractor(digester_id: str):
@@ -122,8 +122,8 @@ def _idx(name):
     return next(i for i, c in enumerate(spec.channels) if c.name == name)
 
 obs = ObservationModel(channels=[
-    ObservationChannel("Q_gas",            extract_q_gas_total,          noise_std=10.0),
-    ObservationChannel("Q_ch4",            extract_q_ch4_total,          noise_std=5.0),
+    ObservationChannel("Q_gas",            make_q_gas_extractor("primary"), noise_std=10.0),
+    ObservationChannel("Q_ch4",            make_q_ch4_extractor("primary"), noise_std=5.0),
     ObservationChannel("pH",               make_ph_extractor("primary"), noise_std=0.05),
     ObservationChannel("Q_maize_silage",   make_state_extractor(_idx("maize_silage")),   noise_std=0.24),
     ObservationChannel("Q_solid_manure",   make_state_extractor(_idx("solid_manure")),   noise_std=0.69),
@@ -132,6 +132,18 @@ obs = ObservationModel(channels=[
     ObservationChannel("Q_cereal_grain",   make_state_extractor(_idx("cereal_grain")),   noise_std=0.01),
 ])
 ```
+
+!!! note "Fermenter-skopiert vs. anlagenweit"
+    `make_q_gas_extractor("primary")` / `make_q_ch4_extractor("primary")` lesen
+    nur die Produktion des **geschätzten** Fermenters. In einer mehrstufigen
+    Kaskade erzeugen die nachgelagerten Stufen (Nachgärer, Gärrestlager)
+    ebenfalls Gas, das der Filter nicht schätzt — die Anlagensumme in die
+    Innovation zu geben, würde den geschätzten Fermenter verfälschen. Nutze die
+    fermenter-skopierten Extraktoren, sobald ein Stufen-Gasmesser vorhanden ist.
+    Nur wenn der physische Messpunkt hinter allen Stufen liegt (z. B. ein
+    einzelner Volumenstrommesser vor dem BHKW), die Anlagensummen
+    `extract_q_gas_total` / `extract_q_ch4_total` verwenden (Katalog-Namen
+    `q_gas_total` / `q_ch4_total` in `build_ukf`).
 
 ## Filter aufsetzen und betreiben
 

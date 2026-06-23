@@ -128,6 +128,7 @@ nav:
       - Übersicht: development/index.md
       - Ecosystem-Integration: development/ecosystem-integration.md
       - SR-UKF Performance: development/ukf_performance.md
+      - Realistische Testbedingungen: development/realistic_conditions.md
   - Fehlerbehebung: troubleshooting.md
   - Ecosystem:
       - Übersicht: ecosystem.md

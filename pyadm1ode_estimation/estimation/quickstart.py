@@ -5,8 +5,19 @@ The :func:`build_ukf` factory bundles the typical 6-step setup
 ``UnscentedKalmanFilter`` → snapshot → reset) into a single call.
 Sensors are picked from a small built-in catalog by name:
 
-* ``"q_gas"``  - total biogas volumetric flow rate
-* ``"q_ch4"``  - total methane volumetric flow rate
+* ``"q_gas"``  - biogas volumetric flow of the *estimated* digester
+  (``digester_id``) only — NOT the plant total. In a multi-stage
+  cascade the downstream stages (post-fermenter, storage) produce gas
+  the filter does not estimate; scoping the meter to ``digester_id``
+  keeps the measurement consistent with the estimated state.
+* ``"q_ch4"``  - methane volumetric flow of the estimated digester only.
+* ``"q_co2"``  - CO2 volumetric flow of the estimated digester (NDIR).
+* ``"vfa"``    - total VFA concentration [g HAc-eq/L] of the estimated
+  digester (FOS titration); usually a sparse, gated measurement.
+* ``"q_gas_total"`` / ``"q_ch4_total"`` - whole-plant sums over every
+  digester. Use these only when the physical meter sits downstream of
+  all stages (e.g. a single flow meter in front of the CHP) and the
+  filter is expected to absorb the downstream contribution.
 * ``"ph"``     - pH of the named digester
 * ``"substrate_dose"`` - direct observation of every augmented
   substrate-input channel in the spec
@@ -50,7 +61,11 @@ from .observation_model import (
     ObservationModel,
     extract_q_ch4_total,
     extract_q_gas_total,
+    make_q_ch4_extractor,
+    make_q_co2_extractor,
+    make_q_gas_extractor,
     make_state_extractor,
+    make_vfa_extractor,
 )
 from .process_model import ADM1ProcessModel
 from .specs import (
@@ -58,6 +73,7 @@ from .specs import (
     KineticSpec,
     SensorQualityProfile,
     adm1da_full_spec,
+    adm1da_reduced_spec,
 )
 from .state_vector import StateVectorSpec
 
@@ -70,9 +86,13 @@ if TYPE_CHECKING:
 # Default per-sensor noise std. Calibrated for a typical agricultural-AD
 # plant with online NDIR + pH probe + dosing scale.
 _DEFAULT_NOISE_STD = {
-    "q_gas": 10.0,  # m³/d biogas
-    "q_ch4": 5.0,  # m³/d methane
+    "q_gas": 10.0,  # m³/d biogas (single estimated digester)
+    "q_ch4": 5.0,  # m³/d methane (single estimated digester)
+    "q_co2": 5.0,  # m³/d CO2 (single estimated digester)
+    "q_gas_total": 10.0,  # m³/d biogas (whole-plant sum)
+    "q_ch4_total": 5.0,  # m³/d methane (whole-plant sum)
     "ph": 0.05,  # pH units
+    "vfa": 0.2,  # g HAc-eq/L (FOS titration)
     "substrate_dose": 0.05,  # 5 % relative on the augmented channel
 }
 
@@ -142,6 +162,42 @@ def _resolve_sensors(
         key = item.lower()
         noise = overrides.get(key, _DEFAULT_NOISE_STD.get(key))
         if key == "q_gas":
+            # Stage-scoped: only the estimated digester's own production,
+            # so the downstream stages' gas does not bias the innovation.
+            out.append(
+                ObservationChannel(
+                    name="Q_gas",
+                    extractor=make_q_gas_extractor(digester_id),
+                    noise_std=float(noise),
+                )
+            )
+        elif key == "q_ch4":
+            out.append(
+                ObservationChannel(
+                    name="Q_ch4",
+                    extractor=make_q_ch4_extractor(digester_id),
+                    noise_std=float(noise),
+                )
+            )
+        elif key == "q_co2":
+            out.append(
+                ObservationChannel(
+                    name="Q_co2",
+                    extractor=make_q_co2_extractor(digester_id),
+                    noise_std=float(noise),
+                )
+            )
+        elif key == "vfa":
+            out.append(
+                ObservationChannel(
+                    name="VFA",
+                    extractor=make_vfa_extractor(digester_id),
+                    noise_std=float(noise),
+                )
+            )
+        elif key == "q_gas_total":
+            # Whole-plant sum — only consistent when the meter physically
+            # sits downstream of every stage (see module docstring).
             out.append(
                 ObservationChannel(
                     name="Q_gas",
@@ -149,7 +205,7 @@ def _resolve_sensors(
                     noise_std=float(noise),
                 )
             )
-        elif key == "q_ch4":
+        elif key == "q_ch4_total":
             out.append(
                 ObservationChannel(
                     name="Q_ch4",
@@ -195,6 +251,8 @@ def build_ukf(
     beta: float = 2.0,
     kappa: float = 0.0,
     gamma_override: Optional[float] = None,
+    adm1_indices: Optional[Sequence[int]] = None,
+    process_noise_scale: float = 1.0,
 ) -> "UnscentedKalmanFilter":
     """Bundle the full 41-state SR-UKF setup into a single call.
 
@@ -243,6 +301,18 @@ def build_ukf(
             yielded the largest accuracy improvement on ADM1-R4-Core in
             their UKF benchmark (NRMSE_x 0.85 → 0.37). Default ``None``
             keeps the canonical Wan–Van der Merwe scaling.
+        adm1_indices: Optional subset of ADM1 indices (0..40) to estimate.
+            ``None`` (default) keeps the full 41-state vector. Pass a
+            subset — e.g. the literature's observable "A+D fused" core
+            ``BLOCK_INDICES["methanogenesis"] + BLOCK_INDICES["charge_balance"]``
+            — to estimate a reduced state vector (fewer sigma points);
+            the omitted ADM1 states propagate open-loop with the plant.
+        process_noise_scale: Global multiplier on the ADM1 process-noise
+            std (default ``1.0``). Raise it (e.g. ``5``–``20``) to make
+            the filter trust the model less and the measurements more —
+            the appropriate fix when the model's prediction (gas
+            production) is worse than the sensor. See
+            :func:`pyadm1ode_estimation.estimation.specs.adm1da_full_spec`.
 
     Returns:
         A ready-to-run :class:`UnscentedKalmanFilter`.
@@ -258,12 +328,25 @@ def build_ukf(
         )
 
     # ---- 1. Spec --------------------------------------------------------
-    spec = adm1da_full_spec(
-        digester_id=digester_id,
-        substrate_inputs=substrates,
-        kinetic_overrides=kinetic_overrides,
-        sensor_quality=sensor_quality,
-    )
+    # adm1_indices selects a reduced ADM1 subset (e.g. the literature's
+    # observable "A+D fused" core); None keeps the full 41-state vector.
+    if adm1_indices is None:
+        spec = adm1da_full_spec(
+            digester_id=digester_id,
+            substrate_inputs=substrates,
+            kinetic_overrides=kinetic_overrides,
+            sensor_quality=sensor_quality,
+            process_noise_scale=process_noise_scale,
+        )
+    else:
+        spec = adm1da_reduced_spec(
+            digester_id=digester_id,
+            adm1_indices=adm1_indices,
+            substrate_inputs=substrates,
+            kinetic_overrides=kinetic_overrides,
+            sensor_quality=sensor_quality,
+            process_noise_scale=process_noise_scale,
+        )
 
     # ---- 2. Observation model -------------------------------------------
     obs_channels = _resolve_sensors(
@@ -294,10 +377,15 @@ def build_ukf(
     )
 
     # ---- 5. Initial state + covariance ----------------------------------
+    # read_adm1_state fills the ADM1 channel positions from the plant and
+    # leaves non-ADM1 positions at 0; set every augmented channel to its
+    # spec initial. Iterate by channel KIND (not a hard-coded offset of 41)
+    # so a reduced spec — where the augmented block starts before index 41 —
+    # is initialised correctly.
     x0 = spec.read_adm1_state(plant)
-    aug_starts = 41
-    for i, ch in enumerate(spec.channels[aug_starts:], start=aug_starts):
-        x0[i] = ch.initial
+    for i, ch in enumerate(spec.channels):
+        if ch.kind != "adm1":
+            x0[i] = ch.initial
 
     sigma = max(float(initial_uncertainty_relative), 1.0e-3)
     p0_diag = (sigma * (np.abs(x0) + 1.0e-6)) ** 2
@@ -322,6 +410,8 @@ def build_filter_components(
     kinetic_overrides: Sequence[KineticSpec] = (),
     sensor_quality: Optional[SensorQualityProfile] = None,
     sensor_noise: Optional[dict] = None,
+    adm1_indices: Optional[Sequence[int]] = None,
+    process_noise_scale: float = 1.0,
 ):
     """Build ``(process, obs, spec)`` without constructing a UKF.
 
@@ -343,12 +433,23 @@ def build_filter_components(
             f"Available: {sorted(plant.components)}"
         )
 
-    spec = adm1da_full_spec(
-        digester_id=digester_id,
-        substrate_inputs=substrates,
-        kinetic_overrides=kinetic_overrides,
-        sensor_quality=sensor_quality,
-    )
+    if adm1_indices is None:
+        spec = adm1da_full_spec(
+            digester_id=digester_id,
+            substrate_inputs=substrates,
+            kinetic_overrides=kinetic_overrides,
+            sensor_quality=sensor_quality,
+            process_noise_scale=process_noise_scale,
+        )
+    else:
+        spec = adm1da_reduced_spec(
+            digester_id=digester_id,
+            adm1_indices=adm1_indices,
+            substrate_inputs=substrates,
+            kinetic_overrides=kinetic_overrides,
+            sensor_quality=sensor_quality,
+            process_noise_scale=process_noise_scale,
+        )
 
     obs_channels = _resolve_sensors(
         sensors=sensors,

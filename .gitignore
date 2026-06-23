@@ -44,3 +44,8 @@ data/*.json
 
 # MkDocs built site
 site/
+private_docs/
+output/
+
+reports/
+old/

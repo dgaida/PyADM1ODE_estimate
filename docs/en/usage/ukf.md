@@ -106,7 +106,7 @@ from pyadm1ode_estimation.estimation import (
     ObservationChannel, ObservationModel,
 )
 from pyadm1ode_estimation.estimation.observation_model import (
-    extract_q_gas_total, extract_q_ch4_total, make_state_extractor,
+    make_q_gas_extractor, make_q_ch4_extractor, make_state_extractor,
 )
 
 def make_ph_extractor(digester_id: str):
@@ -120,8 +120,8 @@ def _idx(name):
     return next(i for i, c in enumerate(spec.channels) if c.name == name)
 
 obs = ObservationModel(channels=[
-    ObservationChannel("Q_gas",            extract_q_gas_total,          noise_std=10.0),
-    ObservationChannel("Q_ch4",            extract_q_ch4_total,          noise_std=5.0),
+    ObservationChannel("Q_gas",            make_q_gas_extractor("primary"), noise_std=10.0),
+    ObservationChannel("Q_ch4",            make_q_ch4_extractor("primary"), noise_std=5.0),
     ObservationChannel("pH",               make_ph_extractor("primary"), noise_std=0.05),
     ObservationChannel("Q_maize_silage",   make_state_extractor(_idx("maize_silage")),   noise_std=0.24),
     ObservationChannel("Q_solid_manure",   make_state_extractor(_idx("solid_manure")),   noise_std=0.69),
@@ -130,6 +130,17 @@ obs = ObservationModel(channels=[
     ObservationChannel("Q_cereal_grain",   make_state_extractor(_idx("cereal_grain")),   noise_std=0.01),
 ])
 ```
+
+!!! note "Stage-scoped vs. whole-plant gas"
+    `make_q_gas_extractor("primary")` / `make_q_ch4_extractor("primary")` read
+    only the **estimated** digester's own production. In a multi-stage cascade
+    the downstream stages (post-fermenter, digestate storage) also produce gas
+    that the filter does not estimate — feeding the plant total into the
+    innovation would bias the estimated stage. Use the stage-scoped extractors
+    whenever a per-stage gas meter exists. Only when the physical meter sits
+    downstream of every stage (e.g. a single flow meter in front of the CHP)
+    use the whole-plant sums `extract_q_gas_total` / `extract_q_ch4_total`
+    (catalog names `q_gas_total` / `q_ch4_total` in `build_ukf`).
 
 ## Setting up and running the filter
 

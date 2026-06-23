@@ -238,6 +238,18 @@ assert set(_STATE_BLOCKS.keys()) == set(
 ), "Every ADM1 index must belong to exactly one block."
 
 
+#: Public read-only view of the per-index block assignment (index → block).
+STATE_BLOCKS: Dict[int, str] = dict(_STATE_BLOCKS)
+
+#: Public block → sorted ADM1 indices map. Use to select whole observability
+#: blocks for a reduced state vector, e.g.
+#: ``BLOCK_INDICES["methanogenesis"] + BLOCK_INDICES["charge_balance"]``
+#: for the literature's provably-observable "A+D fused" core.
+BLOCK_INDICES: Dict[str, List[int]] = {}
+for _i in range(41):
+    BLOCK_INDICES.setdefault(_STATE_BLOCKS[_i], []).append(_i)
+
+
 # ---------------------------------------------------------------------------
 # Sensor quality profile (per-block defaults)
 # ---------------------------------------------------------------------------
@@ -350,8 +362,19 @@ class KineticSpec:
 # ---------------------------------------------------------------------------
 
 
-def _adm1_channel(idx: int, quality: Quality) -> StateChannel:
-    """Build one ADM1 channel from its index and quality assignment."""
+def _adm1_channel(
+    idx: int, quality: Quality, process_noise_scale: float = 1.0
+) -> StateChannel:
+    """Build one ADM1 channel from its index and quality assignment.
+
+    ``process_noise_scale`` multiplies the per-channel process-noise std
+    (default ``1.0`` keeps the quality-derived value). Values ``> 1``
+    make the filter trust the *model* less and the *measurements* more:
+    a larger ``σ_w`` widens the predicted covariance, so the sigma-point
+    spread — and therefore the Kalman gain on every innovation — grows.
+    Use it when the model's prediction (e.g. gas production) is known to
+    be worse than the sensor.
+    """
     name, initial, lower, upper = _ADM1DA_DEFAULTS[idx]
 
     # Scale noise / std by a characteristic magnitude. We don't want
@@ -361,7 +384,7 @@ def _adm1_channel(idx: int, quality: Quality) -> StateChannel:
     # sensible reference even for near-zero initials.
     magnitude = max(abs(initial), upper / 100.0, 1e-9)
     initial_std = _QUALITY_INITIAL_STD_FACTOR[quality] * magnitude
-    process_noise_std = _QUALITY_NOISE_FACTOR[quality] * magnitude
+    process_noise_std = _QUALITY_NOISE_FACTOR[quality] * magnitude * process_noise_scale
     drift_model = _QUALITY_DRIFT_MODEL[quality]
 
     kwargs = dict(
@@ -439,6 +462,7 @@ def adm1da_full_spec(
     substrate_inputs: Sequence[InputSpec] = (),
     kinetic_overrides: Sequence[KineticSpec] = (),
     sensor_quality: Optional[SensorQualityProfile] = None,
+    process_noise_scale: float = 1.0,
 ) -> StateVectorSpec:
     """Build a complete 41-state ADM1da StateVectorSpec.
 
@@ -456,6 +480,11 @@ def adm1da_full_spec(
         sensor_quality: Per-block quality profile. If ``None``, the
             Phase-1-sensor-set defaults from
             :class:`SensorQualityProfile` apply.
+        process_noise_scale: Global multiplier on every ADM1 channel's
+            process-noise std (default ``1.0``). ``> 1`` makes the
+            filter trust the model less and the measurements more (see
+            :func:`_adm1_channel`). Only the ADM1 states are scaled; the
+            augmented input/kinetic channels keep their own tuning.
 
     Returns:
         A :class:`StateVectorSpec` with at least 41 channels
@@ -469,7 +498,7 @@ def adm1da_full_spec(
     for idx in range(41):
         block = _STATE_BLOCKS[idx]
         quality = profile.get(block)
-        channels.append(_adm1_channel(idx, quality))
+        channels.append(_adm1_channel(idx, quality, process_noise_scale))
 
     # Substrate inputs.
     for inp in substrate_inputs:
@@ -482,10 +511,72 @@ def adm1da_full_spec(
     return StateVectorSpec(digester_id=digester_id, channels=channels)
 
 
+def adm1da_reduced_spec(
+    digester_id: str,
+    adm1_indices: Sequence[int],
+    *,
+    substrate_inputs: Sequence[InputSpec] = (),
+    kinetic_overrides: Sequence[KineticSpec] = (),
+    sensor_quality: Optional[SensorQualityProfile] = None,
+    process_noise_scale: float = 1.0,
+) -> StateVectorSpec:
+    """Build a StateVectorSpec that estimates only a SUBSET of the 41 ADM1
+    states (plus the usual augmented inputs / kinetics).
+
+    ADM1 indices NOT listed are dropped from the state vector entirely:
+    the filter neither corrects them nor tracks their covariance — they
+    keep whatever value the plant model propagates. This is the
+    literature's "propagate open-loop" treatment for structurally
+    non-observable states (see ``docs/observability``); the prime use
+    case is the provably-observable "A+D fused" core (``methanogenesis``
+    + ``charge_balance``, 18 states).
+
+    The kept channels reuse the exact per-block quality, initials, bounds,
+    and drift model of :func:`adm1da_full_spec` — only the membership of
+    the state vector changes, not the per-channel tuning.
+
+    Args:
+        adm1_indices: The ADM1 state indices (0..40) to estimate.
+            Normalised to ascending + de-duplicated so the covariance
+            layout is deterministic regardless of call order. Select
+            whole observability blocks via :data:`BLOCK_INDICES`.
+        substrate_inputs, kinetic_overrides, sensor_quality,
+        process_noise_scale: identical to :func:`adm1da_full_spec`.
+
+    Raises:
+        ValueError: if ``adm1_indices`` is empty or any index is outside
+            ``[0, 40]``.
+    """
+    idx_set = sorted({int(i) for i in adm1_indices})
+    if not idx_set:
+        raise ValueError("adm1_indices must contain at least one ADM1 index.")
+    if idx_set[0] < 0 or idx_set[-1] > 40:
+        raise ValueError(
+            f"adm1_indices must lie in [0, 40]; got min={idx_set[0]}, "
+            f"max={idx_set[-1]}."
+        )
+
+    profile = sensor_quality or SensorQualityProfile()
+    channels: List[StateChannel] = []
+    for idx in idx_set:
+        channels.append(
+            _adm1_channel(idx, profile.get(_STATE_BLOCKS[idx]), process_noise_scale)
+        )
+    for inp in substrate_inputs:
+        channels.append(_input_channel(inp))
+    for kin in kinetic_overrides:
+        channels.append(_kinetic_channel(kin))
+
+    return StateVectorSpec(digester_id=digester_id, channels=channels)
+
+
 __all__ = [
     "Quality",
     "SensorQualityProfile",
     "InputSpec",
     "KineticSpec",
+    "STATE_BLOCKS",
+    "BLOCK_INDICES",
     "adm1da_full_spec",
+    "adm1da_reduced_spec",
 ]
