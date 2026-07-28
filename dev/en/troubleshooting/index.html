@@ -13,9 +13,9 @@
 <link href="../../troubleshooting/" hreflang="de" rel="alternate"/>
 <link href="./" hreflang="en" rel="alternate"/>
 <link href="../../assets/images/favicon.png" rel="icon"/>
-<meta content="mkdocs-1.6.1, mkdocs-material-9.7.6" name="generator"/>
+<meta content="mkdocs-1.6.1, mkdocs-material-9.7.7" name="generator"/>
 <title>Fehlerbehebung - PyADM1ODE Estimate</title>
-<link href="../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
+<link href="../../assets/stylesheets/main.ec1eaa64.min.css" rel="stylesheet"/>
 <link href="../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
@@ -1058,9 +1058,9 @@ factor of 2–3.</p>
 </ul>
 <h3 id="linalgerror-from-_cholupdate-downdate"><code>LinAlgError</code> from <code>_cholupdate</code> downdate<a class="headerlink" href="#linalgerror-from-_cholupdate-downdate" title="Permanent link">¶</a></h3>
 <p>The Square-Root UKF (<code>filters/sr_ukf.py</code>) propagates the Cholesky factor
-$S$ directly. During the update step a rank-1 downdate $S \to S'$ with
-$S'S'^\top = SS^\top - vv^\top$ is applied. When this downdate fails
-($S'$ would no longer be real), it means the filter is attempting to
+<span class="arithmatex">\(S\)</span> directly. During the update step a rank-1 downdate <span class="arithmatex">\(S \to S'\)</span> with
+<span class="arithmatex">\(S'S'^\top = SS^\top - vv^\top\)</span> is applied. When this downdate fails
+(<span class="arithmatex">\(S'\)</span> would no longer be real), it means the filter is attempting to
 subtract <em>more</em> information than the prior covariance contains. Likely
 causes:</p>
 <ul>
@@ -1122,6 +1122,8 @@ mkdocstrings, mermaid2) are present.</p>
 <div class="md-dialog__inner md-typeset"></div>
 </div>
 <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
-<script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+<script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+<script src="../../javascripts/mathjax.js"></script>
+<script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
 </body>
 </html>

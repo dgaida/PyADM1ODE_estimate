@@ -29,7 +29,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -37,7 +37,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1878,10 +1878,10 @@ being added), and the goal is a method that works for <strong>biogas plants in
 general</strong>, not one dataset. Therefore the noise and model-error settings are
 <strong>not fitted to the current plant data</strong>. Two consequences:</p>
 <ul>
-<li><strong>Measurement noise</strong> is attached to <em>sensor types</em> as generic
+<li><strong>Measurement noise</strong> is attached to <em>sensor types</em> as generic<br />
   instrument-accuracy specs, so adding or removing a sensor does not change the
-  others, and the conditions transfer across plants.</li>
-<li><strong>Model error</strong> — the gap between ADM1 and reality — <strong>cannot be identified
+  others, and the conditions transfer across plants.  </li>
+<li><strong>Model error</strong> — the gap between ADM1 and reality — <strong>cannot be identified<br />
   from operating data</strong> (it is confounded with input and measurement error). It
   is therefore set from the <strong>kinetic-parameter uncertainty reported in the
   ADM1 literature</strong>, applied as a multiplicative perturbation.</li>
@@ -1891,8 +1891,8 @@ by the twin's <code>--realistic</code> preset.</p>
 <h2 id="model-error-kinetic-parameter-uncertainty">Model error: kinetic-parameter uncertainty<a class="headerlink" href="#model-error-kinetic-parameter-uncertainty" title="Permanent link">&para;</a></h2>
 <p>The model error is a <strong>multiplicative lognormal</strong> perturbation of the
 filter's biological kinetics, while the truth keeps the "real" values:</p>
-<p>$$ k_\text{filter} = k_\text{nominal}\cdot e^{\mathcal N(0,\sigma)},\qquad
-   \sigma = 0.25 $$</p>
+<div class="arithmatex">\[ k_\text{filter} = k_\text{nominal}\cdot e^{\mathcal N(0,\sigma)},\qquad
+   \sigma = 0.25 \]</div>
 <p>applied to the rate/affinity prefixes <code>k_dis</code>, <code>k_hyd</code>, <code>k_m_</code>, <code>k_dec</code>,
 <code>K_S</code>. Physical equilibrium constants (<code>K_a</code>, <code>K_w</code>, <code>K_H</code>) and stoichiometry
 (<code>Y_*</code>, <code>f_*</code>) are left untouched.</p>
@@ -1980,23 +1980,23 @@ must cope with.</p>
 exposed as <code>R_INFLATION</code> (default 1.0).</p>
 <h2 id="sampling-real-plant-cadence">Sampling (real-plant cadence)<a class="headerlink" href="#sampling-real-plant-cadence" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Online (hourly in the twin, seconds on the plant):</strong> <code>q_gas</code>, pH, substrate
-  doses, levels, CHP, temperatures.</li>
-<li><strong>Daily:</strong> gas composition CH₄ / CO₂ (NDIR). O₂ and H₂S are also measured
+<li><strong>Online (hourly in the twin, seconds on the plant):</strong> <code>q_gas</code>, pH, substrate<br />
+  doses, levels, CHP, temperatures.  </li>
+<li><strong>Daily:</strong> gas composition CH₄ / CO₂ (NDIR). O₂ and H₂S are also measured<br />
   daily in practice but are <strong>not ADM1da states</strong> → monitoring only, <em>not
-  assimilated</em>.</li>
-<li><strong>Lab cadence:</strong> TS, VFA (gated, e.g. every 12 h for VFA).</li>
+  assimilated</em>.  </li>
+<li><strong>Lab cadence:</strong> TS, VFA (gated, e.g. every 12 h for VFA).  </li>
 </ul>
 <h2 id="deliberately-not-included-and-why">Deliberately <em>not</em> included (and why)<a class="headerlink" href="#deliberately-not-included-and-why" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Plant-specific gas-derivation chain.</strong> On the real plant, <code>Q_gas</code> is not a
+<li><strong>Plant-specific gas-derivation chain.</strong> On the real plant, <code>Q_gas</code> is not a<br />
   flow meter reading but is reconstructed from gas-dome level changes (ΔV,
   differentiated → noise-amplified) + CHP consumption + flare. That error
   structure is plant-specific; the foundation uses the generic flow-meter spec
   instead so the conditions stay transferable. (A plant-specific noise model can
-  be layered on top when evaluating <em>that</em> plant.)</li>
-<li><strong>O₂ / H₂S.</strong> Not ADM1da states — cannot inform the UKF.</li>
-<li><strong>Fitting σ or R to the current dataset</strong> — would bias toward the incomplete
+  be layered on top when evaluating <em>that</em> plant.)  </li>
+<li><strong>O₂ / H₂S.</strong> Not ADM1da states — cannot inform the UKF.  </li>
+<li><strong>Fitting σ or R to the current dataset</strong> — would bias toward the incomplete<br />
   sensor suite.</li>
 </ul>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
@@ -2030,13 +2030,13 @@ sensor schedule. The estimator under test is the <strong>Square-Root UKF</strong
 to <code>--state-blocks methanogenesis charge_balance</code> (18 of 41 ADM1 states).</p>
 <h2 id="sources">Sources<a class="headerlink" href="#sources" title="Permanent link">&para;</a></h2>
 <ul>
-<li>ADM1 sensitivity analysis — <a href="https://www.witpress.com/elibrary/wit-transactions-on-ecology-and-the-environment/258/38278">WIT Transactions (ADM1 local SA)</a>;
-  <a href="https://www.sciencedirect.com/science/article/abs/pii/S0301479720313815">Surrogate-based global SA of ADM1 (ScienceDirect)</a>.</li>
-<li>UKF / plant-model mismatch for AD — <a href="https://arxiv.org/html/2310.15958">Comparison of UKF designs for AD (arXiv:2310.15958)</a>;
-  Haugen et al. 2014, <em>State Estimation … Pilot AD Reactor</em> (<a href="https://doi.org/10.1155/2014/572621">DOI:10.1155/2014/572621</a>).</li>
-<li>ADM1 Monte-Carlo / lognormal uncertainty — <a href="https://iwaponline.com/wst/article/92/4/610/108810/Uncertainty-analysis-of-a-simplified-anaerobic">Uncertainty analysis of a simplified AD model (IWA WST 92(4):610)</a>;
-  <a href="https://www.sciencedirect.com/science/article/abs/pii/S1369703X23000050">Probabilistic ADM1 simulation of biogas (ScienceDirect)</a>.</li>
-<li>Sensor accuracy — NDIR biogas analysers (<a href="https://www.olythe.io/analyzers/biogas-analyzer/">Olythe</a>, <a href="https://dynament.com/application/biogas-monitoring/">Dynament</a>);
+<li>ADM1 sensitivity analysis — <a href="https://www.witpress.com/elibrary/wit-transactions-on-ecology-and-the-environment/258/38278">WIT Transactions (ADM1 local SA)</a>;<br />
+<a href="https://www.sciencedirect.com/science/article/abs/pii/S0301479720313815">Surrogate-based global SA of ADM1 (ScienceDirect)</a>.  </li>
+<li>UKF / plant-model mismatch for AD — <a href="https://arxiv.org/html/2310.15958">Comparison of UKF designs for AD (arXiv:2310.15958)</a>;<br />
+  Haugen et al. 2014, <em>State Estimation … Pilot AD Reactor</em> (<a href="https://doi.org/10.1155/2014/572621">DOI:10.1155/2014/572621</a>).  </li>
+<li>ADM1 Monte-Carlo / lognormal uncertainty — <a href="https://iwaponline.com/wst/article/92/4/610/108810/Uncertainty-analysis-of-a-simplified-anaerobic">Uncertainty analysis of a simplified AD model (IWA WST 92(4):610)</a>;<br />
+<a href="https://www.sciencedirect.com/science/article/abs/pii/S1369703X23000050">Probabilistic ADM1 simulation of biogas (ScienceDirect)</a>.  </li>
+<li>Sensor accuracy — NDIR biogas analysers (<a href="https://www.olythe.io/analyzers/biogas-analyzer/">Olythe</a>, <a href="https://dynament.com/application/biogas-monitoring/">Dynament</a>);<br />
   biogas-volume metrology (<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12693810/">PMC12693810</a>).</li>
 </ul>
 
@@ -2102,7 +2102,11 @@ to <code>--state-blocks methanogenesis charge_balance</code> (18 of 41 ADM1 stat
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

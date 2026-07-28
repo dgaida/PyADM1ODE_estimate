@@ -29,7 +29,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -37,7 +37,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2441,14 +2441,14 @@ sample-and-hold.</p>
 <ol>
 <li>
 <p><strong>Algebraic approach</strong> (Mathematica): build Lie derivatives<br />
-   $y, \dot y, \ddot y, \dots$ of the outputs, assemble an equation system
+<span class="arithmatex">\(y, \dot y, \ddot y, \dots\)</span> of the outputs, assemble an equation system
    and solve symbolically for the states. Unique solution → globally
    observable; multiple solutions → locally observable.</p>
 </li>
 <li>
 <p><strong>Geometric approach</strong> (STRIKE_GOLDD toolbox in Matlab, algorithms<br />
-   FISPO and ORC-DF): check rank of an observability matrix $\mathcal{O}(x)$
-   built from Lie derivatives. Rank $n$ → locally observable.</p>
+   FISPO and ORC-DF): check rank of an observability matrix <span class="arithmatex">\(\mathcal{O}(x)\)</span>
+   built from Lie derivatives. Rank <span class="arithmatex">\(n\)</span> → locally observable.</p>
 </li>
 </ol>
 <h3 id="main-results">Main results<a class="headerlink" href="#main-results" title="Permanent link">&para;</a></h3>
@@ -2500,7 +2500,7 @@ exceed what agricultural plant instrumentation can deliver.</p>
 </tr>
 <tr>
 <td>ADM1-R3</td>
-<td>$\mu_{m,ac}$, $K_{S,ac}$, $K_{I,nh3}$</td>
+<td><span class="arithmatex">\(\mu_{m,ac}\)</span>, <span class="arithmatex">\(K_{S,ac}\)</span>, <span class="arithmatex">\(K_{I,nh3}\)</span></td>
 </tr>
 </tbody>
 </table>
@@ -2515,21 +2515,21 @@ parameters online — given the same measurement set.</p>
 </li>
 <li>
 <p><strong>pH measurement is a structural lever</strong>: pH measurement allows direct<br />
-   computation of $S_{H^+}$ (via $\mathrm{pH} = -\log_{10} S_{H^+}$). This
-   makes the three ion states $S_{ion}$, $S_{ac^-}$, $S_{hco3^-}$
+   computation of <span class="arithmatex">\(S_{H^+}\)</span> (via <span class="arithmatex">\(\mathrm{pH} = -\log_{10} S_{H^+}\)</span>). This
+   makes the three ion states <span class="arithmatex">\(S_{ion}\)</span>, <span class="arithmatex">\(S_{ac^-}\)</span>, <span class="arithmatex">\(S_{hco3^-}\)</span>
    <strong>redundant</strong> and removable from the state vector:</p>
 </li>
 </ol>
 <blockquote>
-<p><em>„Measuring the pH allows to infer $S_{H^+}$ directly because these two
+<p><em>„Measuring the pH allows to infer <span class="arithmatex">\(S_{H^+}\)</span> directly because these two
 variables are linked via the negative common logarithm. […] However, as
-$S_{H^+}$ can be directly determined from pH measurements, the states
-$S_{ion}$, $S_{ac^-}$ and $S_{hco3^-}$ become redundant. Their respective
+<span class="arithmatex">\(S_{H^+}\)</span> can be directly determined from pH measurements, the states
+<span class="arithmatex">\(S_{ion}\)</span>, <span class="arithmatex">\(S_{ac^-}\)</span> and <span class="arithmatex">\(S_{hco3^-}\)</span> become redundant. Their respective
 differential equations can be cut out of the system of equations."</em>
 (p. 30, <em>„Neglecting model part E"</em>)</p>
 </blockquote>
 <p>A single pH probe effectively reduces the state dimension by 3 and
-   eliminates an algebraically non-trivial subsystem (the charge balance $\Phi$).</p>
+   eliminates an algebraically non-trivial subsystem (the charge balance <span class="arithmatex">\(\Phi\)</span>).</p>
 <ol>
 <li><strong>Complexity scales poorly</strong>: geometric analysis time for ADM1-R3 (17<br />
    states, FISPO): ~12,000 s; after removing individual model parts,
@@ -2602,45 +2602,45 @@ mechanistic model, and only a single online measurement. It still works.</p>
 </thead>
 <tbody>
 <tr>
-<td>$S_{bvs}$</td>
+<td><span class="arithmatex">\(S_{bvs}\)</span></td>
 <td>Biodegradable Volatile Solids (substrate reservoir)</td>
 </tr>
 <tr>
-<td>$S_{vfa}$</td>
+<td><span class="arithmatex">\(S_{vfa}\)</span></td>
 <td>Volatile Fatty Acids (acetate surrogate)</td>
 </tr>
 <tr>
-<td>$X_{acid}$</td>
+<td><span class="arithmatex">\(X_{acid}\)</span></td>
 <td>Acidogenic biomass</td>
 </tr>
 <tr>
-<td>$X_{meth}$</td>
+<td><span class="arithmatex">\(X_{meth}\)</span></td>
 <td>Methanogenic biomass</td>
 </tr>
 <tr>
-<td>$S_{vs_{in}}$</td>
+<td><span class="arithmatex">\(S_{vs_{in}}\)</span></td>
 <td>(augmented) Volatile Solids in feed — modelled as random walk</td>
 </tr>
 </tbody>
 </table>
 <ul>
 <li>
-<p><strong>Measurement:</strong> exactly one online quantity — $F_{meth}$ (methane flow).  </p>
+<p><strong>Measurement:</strong> exactly one online quantity — <span class="arithmatex">\(F_{meth}\)</span> (methane flow).  </p>
 </li>
 <li>
 <p><strong>Reactor:</strong> UASB pilot reactor (250 L), substrate cattle manure.  </p>
 </li>
 </ul>
 <h3 id="methodology_1">Methodology<a class="headerlink" href="#methodology_1" title="Permanent link">&para;</a></h3>
-<p>Standard UKF per Wan/van-der-Merwe; tuning of the diagonal elements of $Q$
-proportional to the state magnitudes (with scaling factors $m_i$ for
+<p>Standard UKF per Wan/van-der-Merwe; tuning of the diagonal elements of <span class="arithmatex">\(Q\)</span>
+proportional to the state magnitudes (with scaling factors <span class="arithmatex">\(m_i\)</span> for
 fine tuning).</p>
 <h3 id="main-result">Main result<a class="headerlink" href="#main-result" title="Permanent link">&para;</a></h3>
 <p>Despite only one measurement, the UKF successfully estimates all 5 augmented
-states. Notably, $S_{vs_{in}}$ converges from an intentional 20 % initial
+states. Notably, <span class="arithmatex">\(S_{vs_{in}}\)</span> converges from an intentional 20 % initial
 error to the true value within ~15 days.</p>
 <blockquote>
-<p><em>„The linearized reactor model, augmented with $S_{vs_{in}}$, is found
+<p><em>„The linearized reactor model, augmented with <span class="arithmatex">\(S_{vs_{in}}\)</span>, is found
 observable at a number of typical operating points using the obsv function
 of the Matlab Control System Toolbox."</em> (p. 6f)</p>
 </blockquote>
@@ -2651,9 +2651,9 @@ operating points.</p>
 <li>With drastic model reduction (5 vs 17 vs 37 states) few measurements<br />
   suffice. The price: the model misses many biological mechanisms, and model
   errors show up as drift in the estimates (Haugen observes this in the plot
-  for $S_{vfa}$, Fig. 4 — <em>„from $t=150\,d$, there is a noticeable difference
-  between the estimate and the laboratory analysis of $S_{vfa}$"</em>, p. 7f).  </li>
-<li>Augmented states like an unknown influent $S_{vs_{in}}$ can be<br />
+  for <span class="arithmatex">\(S_{vfa}\)</span>, Fig. 4 — <em>„from <span class="arithmatex">\(t=150\,d\)</span>, there is a noticeable difference
+  between the estimate and the laboratory analysis of <span class="arithmatex">\(S_{vfa}\)</span>"</em>, p. 7f).  </li>
+<li>Augmented states like an unknown influent <span class="arithmatex">\(S_{vs_{in}}\)</span> can be<br />
   co-estimated from a single indirect measurement, as long as the system is
   observable in the linearized sense.</li>
 </ul>
@@ -2664,8 +2664,8 @@ operating points.</p>
 <strong>direct</strong> = the measurement appears in the output vector and the state
 appears only there.
 <strong>indirect</strong> = the measurement couples nonlinearly with the state through
-another measured signal (e.g. CH₄ flow depends on $X_{ac}$ via kinetics).
-<strong>constructed</strong> = the measurement enables algebraic reduction (e.g. pH → $S_{H^+}$
+another measured signal (e.g. CH₄ flow depends on <span class="arithmatex">\(X_{ac}\)</span> via kinetics).
+<strong>constructed</strong> = the measurement enables algebraic reduction (e.g. pH → <span class="arithmatex">\(S_{H^+}\)</span>
 → ion states eliminated).</p>
 <table>
 <thead>
@@ -2678,57 +2678,57 @@ another measured signal (e.g. CH₄ flow depends on $X_{ac}$ via kinetics).
 </thead>
 <tbody>
 <tr>
-<td>$p_{CH_4}$ (CH₄ partial pressure)</td>
-<td>$p_{CH_4}$, $S_{ch4,gas}$</td>
-<td>$X_{ac}$, $S_{ac}$ (via methanogenesis kinetics)</td>
+<td><span class="arithmatex">\(p_{CH_4}\)</span> (CH₄ partial pressure)</td>
+<td><span class="arithmatex">\(p_{CH_4}\)</span>, <span class="arithmatex">\(S_{ch4,gas}\)</span></td>
+<td><span class="arithmatex">\(X_{ac}\)</span>, <span class="arithmatex">\(S_{ac}\)</span> (via methanogenesis kinetics)</td>
 <td>—</td>
 </tr>
 <tr>
-<td>$p_{CO_2}$ (CO₂ partial pressure)</td>
-<td>$S_{co2,gas}$</td>
-<td>$S_{IC}$, $X_{ac}$ + $X_{h2}$ (via CH₄/CO₂ ratio)</td>
+<td><span class="arithmatex">\(p_{CO_2}\)</span> (CO₂ partial pressure)</td>
+<td><span class="arithmatex">\(S_{co2,gas}\)</span></td>
+<td><span class="arithmatex">\(S_{IC}\)</span>, <span class="arithmatex">\(X_{ac}\)</span> + <span class="arithmatex">\(X_{h2}\)</span> (via CH₄/CO₂ ratio)</td>
 <td>—</td>
 </tr>
 <tr>
-<td>$\mathrm{pH}$</td>
+<td><span class="arithmatex">\(\mathrm{pH}\)</span></td>
 <td>—</td>
-<td>Inhibition $I_{ac}$ (via all biomass pools)</td>
-<td>$S_{H^+}$ → $S_{ion}$, $S_{ac^-}$, $S_{hco3^-}$ eliminable</td>
+<td>Inhibition <span class="arithmatex">\(I_{ac}\)</span> (via all biomass pools)</td>
+<td><span class="arithmatex">\(S_{H^+}\)</span> → <span class="arithmatex">\(S_{ion}\)</span>, <span class="arithmatex">\(S_{ac^-}\)</span>, <span class="arithmatex">\(S_{hco3^-}\)</span> eliminable</td>
 </tr>
 <tr>
-<td>$S_{IN}$ (NH₄-N, lab)</td>
-<td>$S_{IN}$ directly</td>
-<td>NH₃ inhibition (via $S_{nh3}$)</td>
+<td><span class="arithmatex">\(S_{IN}\)</span> (NH₄-N, lab)</td>
+<td><span class="arithmatex">\(S_{IN}\)</span> directly</td>
+<td>NH₃ inhibition (via <span class="arithmatex">\(S_{nh3}\)</span>)</td>
 <td>—</td>
 </tr>
 <tr>
 <td>TS (Total Solids, lab)</td>
-<td>$X_{ash}$ directly (via $S_{h2o}$)</td>
-<td>particulate pools $X_{ch/pr/li}$ summarily</td>
+<td><span class="arithmatex">\(X_{ash}\)</span> directly (via <span class="arithmatex">\(S_{h2o}\)</span>)</td>
+<td>particulate pools <span class="arithmatex">\(X_{ch/pr/li}\)</span> summarily</td>
 <td>—</td>
 </tr>
 <tr>
 <td>VS (Volatile Solids, lab)</td>
-<td>$X_I$ directly</td>
+<td><span class="arithmatex">\(X_I\)</span> directly</td>
 <td>summarily all particulate biological pools</td>
 <td>—</td>
 </tr>
 <tr>
-<td>$S_{ac}$ (acetate, lab or online)</td>
-<td>$S_{ac}$ directly</td>
-<td>$X_{ac}$ (via acetoclast kinetics)</td>
+<td><span class="arithmatex">\(S_{ac}\)</span> (acetate, lab or online)</td>
+<td><span class="arithmatex">\(S_{ac}\)</span> directly</td>
+<td><span class="arithmatex">\(X_{ac}\)</span> (via acetoclast kinetics)</td>
 <td>—</td>
 </tr>
 <tr>
-<td>$F_{meth}$ (methane flow)</td>
+<td><span class="arithmatex">\(F_{meth}\)</span> (methane flow)</td>
 <td>weighted sum of methanogenic contributions</td>
-<td>$X_{meth}$, $S_{bvs}$ (in Hill model coupled via kinetics)</td>
+<td><span class="arithmatex">\(X_{meth}\)</span>, <span class="arithmatex">\(S_{bvs}\)</span> (in Hill model coupled via kinetics)</td>
 <td>—</td>
 </tr>
 <tr>
-<td>$Q_{feed}$ (substrate flow)</td>
+<td><span class="arithmatex">\(Q_{feed}\)</span> (substrate flow)</td>
 <td>augmented input channels directly</td>
-<td>dilution rate $D$ as factor in <em>every</em> DE</td>
+<td>dilution rate <span class="arithmatex">\(D\)</span> as factor in <em>every</em> DE</td>
 <td>—</td>
 </tr>
 </tbody>
@@ -2746,7 +2746,7 @@ another measured signal (e.g. CH₄ flow depends on $X_{ac}$ via kinetics).
 <tr>
 <td>Modified Hill (Haugen)</td>
 <td>5</td>
-<td>$F_{meth}$ alone (linear local sense)</td>
+<td><span class="arithmatex">\(F_{meth}\)</span> alone (linear local sense)</td>
 </tr>
 <tr>
 <td>ADM1-R4 (Hellmann)</td>
@@ -2813,12 +2813,12 @@ improve observability:</p>
 <tbody>
 <tr>
 <td>Adding a <strong>pH probe</strong></td>
-<td>Eliminates 3 ion states from the filter, makes $I_{ac}$ verifiable</td>
+<td>Eliminates 3 ion states from the filter, makes <span class="arithmatex">\(I_{ac}\)</span> verifiable</td>
 <td>Hellmann (Part E redundant), Gaida (pH is one of their 5 measurements)</td>
 </tr>
 <tr>
 <td><strong>CH₄/CO₂ separation</strong> (vs. total Q_gas only)</td>
-<td>Separates acetoclastic ($X_{ac}$) from hydrogenotrophic ($X_{h2}$) methanogenesis</td>
+<td>Separates acetoclastic (<span class="arithmatex">\(X_{ac}\)</span>) from hydrogenotrophic (<span class="arithmatex">\(X_{h2}\)</span>) methanogenesis</td>
 <td>Hellmann (CH₄ and CO₂ as separate outputs), Gaida (both measurements)</td>
 </tr>
 <tr>
@@ -2828,7 +2828,7 @@ improve observability:</p>
 </tr>
 <tr>
 <td><strong>VFA lab values</strong> (FOS/TAC)</td>
-<td>Makes $S_{ac}$ directly observable, unlocks the VFA spectrum</td>
+<td>Makes <span class="arithmatex">\(S_{ac}\)</span> directly observable, unlocks the VFA spectrum</td>
 <td>Hellmann (ADM1-R3 with Sac), Haugen (implied via early-warning discussion)</td>
 </tr>
 </tbody>
@@ -2944,7 +2944,11 @@ wishful thinking.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

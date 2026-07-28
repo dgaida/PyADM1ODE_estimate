@@ -29,7 +29,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -37,7 +37,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1402,6 +1402,34 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.base.BatchEstimator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BatchEstimator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BatchEstimator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.base.BatchEstimator-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pyadm1ode_estimation.estimation.base.EstimationStep" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1437,6 +1465,17 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.base.TrajectoryEstimate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TrajectoryEstimate
+      
+    </span>
+  </a>
   
 </li>
         
@@ -2102,6 +2141,34 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.base.BatchEstimator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BatchEstimator
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BatchEstimator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.base.BatchEstimator-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pyadm1ode_estimation.estimation.base.EstimationStep" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2137,6 +2204,17 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.base.TrajectoryEstimate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TrajectoryEstimate
+      
+    </span>
+  </a>
   
 </li>
         
@@ -2454,7 +2532,7 @@ applied via <code>adm1._kinetic[name]</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="pyadm1ode_estimation.estimation.state_vector.StateChannel.adm1_index">adm1_index</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
+                  <code><span title="int">int</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2466,7 +2544,7 @@ required when <code>kind="adm1"</code>.</p>
           <tr class="doc-section-item">
             <td><code><span title="pyadm1ode_estimation.estimation.state_vector.StateChannel.input_substrate_index">input_substrate_index</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
+                  <code><span title="int">int</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2533,7 +2611,7 @@ sensor-blind intervals; <code>"constant"</code> adds zero noise
           <tr class="doc-section-item">
             <td><code><span title="pyadm1ode_estimation.estimation.state_vector.StateChannel.ou_mean">ou_mean</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="float">float</span>]</code>
+                  <code><span title="float">float</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2770,6 +2848,81 @@ term itself is applied inside the process model, not here.</p>
 
 
 
+<h5 id="pyadm1ode_estimation.estimation.base.BatchEstimator" class="doc doc-heading">
+            <code>BatchEstimator</code>
+
+
+<a href="#pyadm1ode_estimation.estimation.base.BatchEstimator" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="typing.Protocol">Protocol</span></code></p>
+
+
+
+        <p>Common interface for offline/batch estimators (e.g. a PINN smoother).</p>
+<p>Unlike :class:<code>StateEstimator</code>, which runs a recursive predict/update
+loop, a batch estimator is <em>fitted</em> to a whole window of (sparse)
+measurements at once and then queried for the full state trajectory:</p>
+<p>.. code-block:: text</p>
+<div class="language-text highlight"><pre><span></span><code>estimator.fit(...)                       # train over the window
+traj = estimator.estimate(query_times)   # (T, n_state) + std
+</code></pre></div>
+<p><code>fit</code> is estimator-specific (training schedule, collocation, priors);
+:meth:<code>estimate</code> is the shared output contract used for evaluation.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+<h6 id="pyadm1ode_estimation.estimation.base.BatchEstimator-functions">Methods:<a href="#pyadm1ode_estimation.estimation.base.BatchEstimator-functions" class="headerlink" title="Permanent link">&para;</a></h6>
+
+<div class="doc doc-object doc-function">
+
+
+<h7 id="pyadm1ode_estimation.estimation.base.BatchEstimator.estimate" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">estimate</span><span class="p">(</span><span class="n">times</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.base.BatchEstimator.estimate" class="headerlink" title="Permanent link">&para;</a></h7>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the posterior trajectory + uncertainty at <code>times</code>.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h5 id="pyadm1ode_estimation.estimation.base.EstimationStep" class="doc doc-heading">
               <code class="highlight language-python"><span class="n">EstimationStep</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x_hat</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">y_std</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">innovation</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">nis</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">),</span> <span class="n">active_channels</span><span class="o">=</span><span class="nb">list</span><span class="p">())</span></code>
 
@@ -2834,7 +2987,7 @@ or any consistent monotonic reference).</p>
           <tr class="doc-section-item">
             <td><code><span title="pyadm1ode_estimation.estimation.base.EstimationStep.y_pred">y_pred</span></code></td>
             <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="float">float</span>]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="float">float</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2847,7 +3000,7 @@ predict-only step.</p>
           <tr class="doc-section-item">
             <td><code><span title="pyadm1ode_estimation.estimation.base.EstimationStep.y_std">y_std</span></code></td>
             <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="float">float</span>]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="float">float</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2863,7 +3016,7 @@ measurement bands.</p>
           <tr class="doc-section-item">
             <td><code><span title="pyadm1ode_estimation.estimation.base.EstimationStep.innovation">innovation</span></code></td>
             <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="float">float</span>]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="float">float</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3032,6 +3185,107 @@ only the keys that are currently observable.</p>
     </div>
 
 </div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h5 id="pyadm1ode_estimation.estimation.base.TrajectoryEstimate" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">TrajectoryEstimate</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">x_hat</span><span class="p">,</span> <span class="n">std</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#pyadm1ode_estimation.estimation.base.TrajectoryEstimate" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Output of a batch/offline estimator over a whole window.</p>
+<p>The shared currency between recursive filters and batch smoothers: a
+posterior trajectory with a per-state uncertainty band, so the twin-
+experiment harness (coverage, plots, error metrics) can evaluate both
+estimator families the same way.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="pyadm1ode_estimation.estimation.base.TrajectoryEstimate.time">time</span></code></td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Query times, shape <code>(T,)</code> [days].</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="pyadm1ode_estimation.estimation.base.TrajectoryEstimate.x_hat">x_hat</span></code></td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Posterior state estimate, shape <code>(T, n_state)</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="pyadm1ode_estimation.estimation.base.TrajectoryEstimate.std">std</span></code></td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Per-state posterior standard deviation, shape <code>(T, n_state)</code>.
+Zeros when the estimator provides no uncertainty.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3269,7 +3523,7 @@ produced this artifact. Should be unique per run.</p>
           <tr class="doc-section-item">
             <td><code><span title="pyadm1ode_estimation.artifacts.calibration_artifact.CalibrationMetadata.data_window_start">data_window_start</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+                  <code><span title="str">str</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3281,7 +3535,7 @@ calibration (ISO date).</p>
           <tr class="doc-section-item">
             <td><code><span title="pyadm1ode_estimation.artifacts.calibration_artifact.CalibrationMetadata.data_window_end">data_window_end</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+                  <code><span title="str">str</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3316,7 +3570,7 @@ produced the artifact.</p>
           <tr class="doc-section-item">
             <td><code><span title="pyadm1ode_estimation.artifacts.calibration_artifact.CalibrationMetadata.fitted_against">fitted_against</span></code></td>
             <td>
-                  <code><span title="typing.List">List</span>[<span title="str">str</span>]</code>
+                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3430,7 +3684,7 @@ startup, when you want to fail fast.</p>
                 <code>plant</code>
             </td>
             <td>
-                  <code>&#39;BiogasPlant&#39;</code>
+                  <code><a class="autorefs autorefs-external" title="&lt;code&gt;pyadm1.BiogasPlant&lt;/code&gt;" href="https://dgaida.github.io/PyADM1ODE/latest/en/api/configurator/#pyadm1.configurator.plant_builder.BiogasPlant">BiogasPlant</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3473,7 +3727,7 @@ startup, when you want to fail fast.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="str">str</span>]]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="list">list</span>[<span title="str">str</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3483,7 +3737,7 @@ startup, when you want to fail fast.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="str">str</span>]]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="list">list</span>[<span title="str">str</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3533,7 +3787,7 @@ rather than silently mis-reading the file.</p>
                 <code>path</code>
             </td>
             <td>
-                  <code><span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="pathlib.Path">Path</span>]</code>
+                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3664,7 +3918,7 @@ rather than silently mis-reading the file.</p>
                 <code>path</code>
             </td>
             <td>
-                  <code><span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="pathlib.Path">Path</span>]</code>
+                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3754,7 +4008,11 @@ missing.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

@@ -29,7 +29,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -37,7 +37,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1020,7 +1020,7 @@
   <a href="#reaction-rates-rho-in-the-code-rho_" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Reaction rates $\rho$ (in the code: Rho_*)
+        Reaction rates \(\rho\) (in the code: Rho_*)
       
     </span>
   </a>
@@ -1031,7 +1031,7 @@
   <a href="#inhibition-factors-i-values-in-0-1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Inhibition factors $I$ (values in [0, 1])
+        Inhibition factors \(I\) (values in [0, 1])
       
     </span>
   </a>
@@ -1481,7 +1481,7 @@
   <a href="#results-phase-1-sensor-set-q_gas-ch4co2-ndir-ph-online-fostac" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Results (Phase-1 sensor set: $Q_{gas}$ + CH4/CO2 NDIR + pH online + FOS/TAC)
+        Results (Phase-1 sensor set: \(Q_{gas}\) + CH4/CO2 NDIR + pH online + FOS/TAC)
       
     </span>
   </a>
@@ -2285,7 +2285,7 @@
   <a href="#reaction-rates-rho-in-the-code-rho_" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Reaction rates $\rho$ (in the code: Rho_*)
+        Reaction rates \(\rho\) (in the code: Rho_*)
       
     </span>
   </a>
@@ -2296,7 +2296,7 @@
   <a href="#inhibition-factors-i-values-in-0-1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Inhibition factors $I$ (values in [0, 1])
+        Inhibition factors \(I\) (values in [0, 1])
       
     </span>
   </a>
@@ -2746,7 +2746,7 @@
   <a href="#results-phase-1-sensor-set-q_gas-ch4co2-ndir-ph-online-fostac" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Results (Phase-1 sensor set: $Q_{gas}$ + CH4/CO2 NDIR + pH online + FOS/TAC)
+        Results (Phase-1 sensor set: \(Q_{gas}\) + CH4/CO2 NDIR + pH online + FOS/TAC)
       
     </span>
   </a>
@@ -2814,14 +2814,14 @@ when only certain sensors are available.</p>
 innovation every second, lab analytics every few days, research-grade
 methods maybe once per year.</p>
 <h2 id="methodology">Methodology<a class="headerlink" href="#methodology" title="Permanent link">&para;</a></h2>
-<p>A state $x_i$ is observable from a measurement $y = h(x)$ only if either</p>
+<p>A state <span class="arithmatex">\(x_i\)</span> is observable from a measurement <span class="arithmatex">\(y = h(x)\)</span> only if either</p>
 <ol>
-<li><strong>directly</strong> $x_i$ appears explicitly in $h(x)$ (nonzero derivative in<br />
+<li><strong>directly</strong> <span class="arithmatex">\(x_i\)</span> appears explicitly in <span class="arithmatex">\(h(x)\)</span> (nonzero derivative in<br />
    the measurement model), or  </li>
-<li><strong>indirectly</strong> $x_i$ appears in the right-hand side $\dot x_j = f_j(x)$<br />
-   of some directly observed $x_j$ — then $\dot y$ carries information
-   about $x_i$. The mechanism iterates: after $k$ steps, $x_i$ appears in
-   $y^{(k)}$ if a chain of length $k$ exists through the Jacobian
+<li><strong>indirectly</strong> <span class="arithmatex">\(x_i\)</span> appears in the right-hand side <span class="arithmatex">\(\dot x_j = f_j(x)\)</span><br />
+   of some directly observed <span class="arithmatex">\(x_j\)</span> — then <span class="arithmatex">\(\dot y\)</span> carries information
+   about <span class="arithmatex">\(x_i\)</span>. The mechanism iterates: after <span class="arithmatex">\(k\)</span> steps, <span class="arithmatex">\(x_i\)</span> appears in
+   <span class="arithmatex">\(y^{(k)}\)</span> if a chain of length <span class="arithmatex">\(k\)</span> exists through the Jacobian
    (Lie derivatives, see Hellmann et al. 2023).</li>
 </ol>
 <p>In practice:</p>
@@ -2852,22 +2852,22 @@ below stay readable. The full 41-state index map is in
 </thead>
 <tbody>
 <tr>
-<td>$S_\bullet$</td>
+<td><span class="arithmatex">\(S_\bullet\)</span></td>
 <td>dissolved species (solute) in the liquid</td>
 <td>kg COD/m³ or kmol/m³</td>
 </tr>
 <tr>
-<td>$X_\bullet$</td>
+<td><span class="arithmatex">\(X_\bullet\)</span></td>
 <td>particulate species (biomass, solid pools)</td>
 <td>kg COD/m³</td>
 </tr>
 <tr>
-<td>$p_{\text{gas},\bullet}$</td>
+<td><span class="arithmatex">\(p_{\text{gas},\bullet}\)</span></td>
 <td>partial pressure of a gas-phase species</td>
 <td>bar</td>
 </tr>
 <tr>
-<td>$p_{\text{total}}$ (= pTOTAL)</td>
+<td><span class="arithmatex">\(p_{\text{total}}\)</span> (= pTOTAL)</td>
 <td>total gas pressure in the headspace, state index 40</td>
 <td>bar</td>
 </tr>
@@ -2936,7 +2936,7 @@ below stay readable. The full 41-state index map is in
 </tr>
 <tr>
 <td>_ion (suffix)</td>
-<td>dissociated ionic form of a VFA (e.g. $S_{ac_ion}$ = acetate anion)</td>
+<td>dissociated ionic form of a VFA (e.g. <span class="arithmatex">\(S_{ac\_ion}\)</span> = acetate anion)</td>
 </tr>
 <tr>
 <td>cation, anion</td>
@@ -2944,7 +2944,7 @@ below stay readable. The full 41-state index map is in
 </tr>
 <tr>
 <td>I</td>
-<td>inert (dissolved $S_I$ or particulate $X_I$)</td>
+<td>inert (dissolved <span class="arithmatex">\(S_I\)</span> or particulate <span class="arithmatex">\(X_I\)</span>)</td>
 </tr>
 <tr>
 <td>ch / pr / li</td>
@@ -2974,28 +2974,28 @@ below stay readable. The full 41-state index map is in
 </thead>
 <tbody>
 <tr>
-<td>$Q_{\text{gas}}$</td>
+<td><span class="arithmatex">\(Q_{\text{gas}}\)</span></td>
 <td>total biogas volume flow [m³/d]</td>
 </tr>
 <tr>
-<td>$Q_{\text{CH4}}$, $Q_{\text{CO2}}$</td>
+<td><span class="arithmatex">\(Q_{\text{CH4}}\)</span>, <span class="arithmatex">\(Q_{\text{CO2}}\)</span></td>
 <td>methane / CO₂ volume flow [m³/d]</td>
 </tr>
 <tr>
-<td>$P_{\text{gas}}$</td>
-<td>sum of dry partial pressures $p_{\text{gas,h2}} + p_{\text{gas,ch4}} + p_{\text{gas,co2}}$ [bar]</td>
+<td><span class="arithmatex">\(P_{\text{gas}}\)</span></td>
+<td>sum of dry partial pressures <span class="arithmatex">\(p_{\text{gas,h2}} + p_{\text{gas,ch4}} + p_{\text{gas,co2}}\)</span> [bar]</td>
 </tr>
 <tr>
-<td>$p_{\text{total}}$</td>
+<td><span class="arithmatex">\(p_{\text{total}}\)</span></td>
 <td>total gas pressure as an integrated model state (index 40)</td>
 </tr>
 <tr>
-<td>$p_{\text{gas,h2o}}$</td>
+<td><span class="arithmatex">\(p_{\text{gas,h2o}}\)</span></td>
 <td>water-vapour saturation pressure — a temperature-dependent parameter, <strong>not</strong> a state</td>
 </tr>
 <tr>
 <td>pH</td>
-<td>$-\log_{10}(S_H)$ with $S_H$ from the Newton solution of the charge balance</td>
+<td><span class="arithmatex">\(-\log_{10}(S_H)\)</span> with <span class="arithmatex">\(S_H\)</span> from the Newton solution of the charge balance</td>
 </tr>
 <tr>
 <td>VFA</td>
@@ -3010,12 +3010,12 @@ below stay readable. The full 41-state index map is in
 <td>ratio of VFA to TAC — Nordmann early-warning indicator</td>
 </tr>
 <tr>
-<td>$Q_{\text{solid}}$, $Q_{\text{liquid}}$</td>
+<td><span class="arithmatex">\(Q_{\text{solid}}\)</span>, <span class="arithmatex">\(Q_{\text{liquid}}\)</span></td>
 <td>augmented substrate feed rates [m³/d] — not ADM1 states but part of the extended state vector</td>
 </tr>
 </tbody>
 </table>
-<h3 id="reaction-rates-rho-in-the-code-rho_">Reaction rates $\rho$ (in the code: <code>Rho_*</code>)<a class="headerlink" href="#reaction-rates-rho-in-the-code-rho_" title="Permanent link">&para;</a></h3>
+<h3 id="reaction-rates-rho-in-the-code-rho_">Reaction rates <span class="arithmatex">\(\rho\)</span> (in the code: <code>Rho_*</code>)<a class="headerlink" href="#reaction-rates-rho-in-the-code-rho_" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -3025,36 +3025,36 @@ below stay readable. The full 41-state index map is in
 </thead>
 <tbody>
 <tr>
-<td>$\rho_{\text{dis,PS}}$, $\rho_{\text{dis,PF}}$</td>
-<td>disintegration rates ($X_{PS} \to X_S$, $X_{PF} \to X_S$)</td>
+<td><span class="arithmatex">\(\rho_{\text{dis,PS}}\)</span>, <span class="arithmatex">\(\rho_{\text{dis,PF}}\)</span></td>
+<td>disintegration rates (<span class="arithmatex">\(X_{PS} \to X_S\)</span>, <span class="arithmatex">\(X_{PF} \to X_S\)</span>)</td>
 </tr>
 <tr>
-<td>$\rho_{\text{hyd,ch/pr/li}}$</td>
-<td>hydrolysis rates ($X_S \to S$)</td>
+<td><span class="arithmatex">\(\rho_{\text{hyd,ch/pr/li}}\)</span></td>
+<td>hydrolysis rates (<span class="arithmatex">\(X_S \to S\)</span>)</td>
 </tr>
 <tr>
-<td>$\rho_{\text{su}}, \rho_{\text{aa}}, \rho_{\text{fa}}, \rho_{\text{c4}}, \rho_{\text{pro}}, \rho_{\text{ac}}, \rho_{\text{h2}}$</td>
+<td><span class="arithmatex">\(\rho_{\text{su}}, \rho_{\text{aa}}, \rho_{\text{fa}}, \rho_{\text{c4}}, \rho_{\text{pro}}, \rho_{\text{ac}}, \rho_{\text{h2}}\)</span></td>
 <td>substrate uptake rates (Monod kinetics × biomass × inhibition)</td>
 </tr>
 <tr>
-<td>$\rho_{\text{dec,}\bullet}$</td>
+<td><span class="arithmatex">\(\rho_{\text{dec,}\bullet}\)</span></td>
 <td>biomass decay rates</td>
 </tr>
 <tr>
-<td>$\rho_{A,\bullet}$</td>
-<td>acid-base reaction rates (very fast, $k_{AB} = 10^8$)</td>
+<td><span class="arithmatex">\(\rho_{A,\bullet}\)</span></td>
+<td>acid-base reaction rates (very fast, <span class="arithmatex">\(k_{AB} = 10^8\)</span>)</td>
 </tr>
 <tr>
-<td>$\rho_{T,\text{h2}}, \rho_{T,\text{ch4}}, \rho_{T,\text{co2}}$</td>
+<td><span class="arithmatex">\(\rho_{T,\text{h2}}, \rho_{T,\text{ch4}}, \rho_{T,\text{co2}}\)</span></td>
 <td>gas-liquid transfer rates (Henry's law)</td>
 </tr>
 <tr>
-<td>$\rho_{T,11}$</td>
+<td><span class="arithmatex">\(\rho_{T,11}\)</span></td>
 <td>bulk gas outflow from the headspace</td>
 </tr>
 </tbody>
 </table>
-<h3 id="inhibition-factors-i-values-in-0-1">Inhibition factors $I$ (values in [0, 1])<a class="headerlink" href="#inhibition-factors-i-values-in-0-1" title="Permanent link">&para;</a></h3>
+<h3 id="inhibition-factors-i-values-in-0-1">Inhibition factors <span class="arithmatex">\(I\)</span> (values in [0, 1])<a class="headerlink" href="#inhibition-factors-i-values-in-0-1" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -3064,27 +3064,27 @@ below stay readable. The full 41-state index map is in
 </thead>
 <tbody>
 <tr>
-<td>$I_{\text{pH,aa}}, I_{\text{pH,ac}}, I_{\text{pH,h2}}$</td>
+<td><span class="arithmatex">\(I_{\text{pH,aa}}, I_{\text{pH,ac}}, I_{\text{pH,h2}}\)</span></td>
 <td>pH inhibition (Hill type, exponent 1-3 per pool)</td>
 </tr>
 <tr>
-<td>$I_{\text{IN}}$</td>
-<td>N limitation: $S_{IN}/(K_{S,IN}+S_{IN})$</td>
+<td><span class="arithmatex">\(I_{\text{IN}}\)</span></td>
+<td>N limitation: <span class="arithmatex">\(S_{IN}/(K_{S,IN}+S_{IN})\)</span></td>
 </tr>
 <tr>
-<td>$I_{\text{h2,fa/c4/pro}}$</td>
+<td><span class="arithmatex">\(I_{\text{h2,fa/c4/pro}}\)</span></td>
 <td>H₂ inhibition for LCFA, C4, propionate degraders</td>
 </tr>
 <tr>
-<td>$I_{\text{nh3}}, I_{\text{nh3,pro}}$</td>
+<td><span class="arithmatex">\(I_{\text{nh3}}, I_{\text{nh3,pro}}\)</span></td>
 <td>NH₃ inhibition for acetoclasts and propionate degraders</td>
 </tr>
 <tr>
-<td>$I_{\text{HAc}}, I_{\text{HPr}}$</td>
+<td><span class="arithmatex">\(I_{\text{HAc}}, I_{\text{HPr}}\)</span></td>
 <td>inhibition by undissociated acetic / propionic acid</td>
 </tr>
 <tr>
-<td>$I_{\text{co2,h2}}$</td>
+<td><span class="arithmatex">\(I_{\text{co2,h2}}\)</span></td>
 <td>CO₂ inhibition of the H₂-producing pathways</td>
 </tr>
 </tbody>
@@ -3099,55 +3099,55 @@ below stay readable. The full 41-state index map is in
 </thead>
 <tbody>
 <tr>
-<td>$k_{m,\bullet}$, $K_{S,\bullet}$</td>
+<td><span class="arithmatex">\(k_{m,\bullet}\)</span>, <span class="arithmatex">\(K_{S,\bullet}\)</span></td>
 <td>maximum Monod rate and half-saturation constant</td>
 </tr>
 <tr>
-<td>$k_{\text{dec,}\bullet}$</td>
+<td><span class="arithmatex">\(k_{\text{dec,}\bullet}\)</span></td>
 <td>decay rate per biomass pool [d⁻¹]</td>
 </tr>
 <tr>
-<td>$k_{\text{dis,PS/PF}}$, $k_{\text{hyd,ch/pr/li}}$</td>
+<td><span class="arithmatex">\(k_{\text{dis,PS/PF}}\)</span>, <span class="arithmatex">\(k_{\text{hyd,ch/pr/li}}\)</span></td>
 <td>disintegration / hydrolysis rates [d⁻¹]</td>
 </tr>
 <tr>
-<td>$Y_\bullet$</td>
+<td><span class="arithmatex">\(Y_\bullet\)</span></td>
 <td>biomass yield per substrate COD [-]</td>
 </tr>
 <tr>
-<td>$K_{a,\bullet}$</td>
+<td><span class="arithmatex">\(K_{a,\bullet}\)</span></td>
 <td>acid dissociation constants</td>
 </tr>
 <tr>
-<td>$K_{H,\text{ch4/co2/h2}}$</td>
+<td><span class="arithmatex">\(K_{H,\text{ch4/co2/h2}}\)</span></td>
 <td>Henry constants (gas solubility)</td>
 </tr>
 <tr>
-<td>$K_w$</td>
+<td><span class="arithmatex">\(K_w\)</span></td>
 <td>ionic product of water</td>
 </tr>
 <tr>
-<td>$k_{L}a$</td>
+<td><span class="arithmatex">\(k_{L}a\)</span></td>
 <td>gas-liquid transfer coefficient [d⁻¹]</td>
 </tr>
 <tr>
-<td>$k_p$</td>
+<td><span class="arithmatex">\(k_p\)</span></td>
 <td>gas-outlet flow coefficient (pipe flow)</td>
 </tr>
 <tr>
-<td>$V_{\text{liq}}$, $V_{\text{gas}}$</td>
+<td><span class="arithmatex">\(V_{\text{liq}}\)</span>, <span class="arithmatex">\(V_{\text{gas}}\)</span></td>
 <td>liquid / gas-phase volume [m³]</td>
 </tr>
 <tr>
-<td>$T_{\text{ad}}$</td>
+<td><span class="arithmatex">\(T_{\text{ad}}\)</span></td>
 <td>operating temperature (adiabatic) [K]</td>
 </tr>
 <tr>
-<td>$R$, $RT$</td>
-<td>gas constant / product $R \cdot T_{\text{ad}}$</td>
+<td><span class="arithmatex">\(R\)</span>, <span class="arithmatex">\(RT\)</span></td>
+<td>gas constant / product <span class="arithmatex">\(R \cdot T_{\text{ad}}\)</span></td>
 </tr>
 <tr>
-<td>$M_{\text{HAc}}$</td>
+<td><span class="arithmatex">\(M_{\text{HAc}}\)</span></td>
 <td>60 g/mol (acetate molar mass) for VFA conversion</td>
 </tr>
 <tr>
@@ -3155,20 +3155,20 @@ below stay readable. The full 41-state index map is in
 <td>COD equivalents for acetate / propionate / butyrate / valerate [g COD/mol]</td>
 </tr>
 <tr>
-<td>$f_{\bullet}$</td>
-<td>stoichiometric product fractions (e.g. $f_{\text{ac,su}} = 0.41$)</td>
+<td><span class="arithmatex">\(f_{\bullet}\)</span></td>
+<td>stoichiometric product fractions (e.g. <span class="arithmatex">\(f_{\text{ac,su}} = 0.41\)</span>)</td>
 </tr>
 <tr>
-<td>$N_{\text{bac}}, N_{\text{aa}}, N_I$</td>
+<td><span class="arithmatex">\(N_{\text{bac}}, N_{\text{aa}}, N_I\)</span></td>
 <td>nitrogen contents per biomass / amino-acid / inert pool [kmol N/kg COD]</td>
 </tr>
 <tr>
-<td>$D_{\text{in}}, D_{\text{out}}$</td>
-<td>dilution rates $Q/V_{\text{liq}}$ [d⁻¹]</td>
+<td><span class="arithmatex">\(D_{\text{in}}, D_{\text{out}}\)</span></td>
+<td>dilution rates <span class="arithmatex">\(Q/V_{\text{liq}}\)</span> [d⁻¹]</td>
 </tr>
 <tr>
-<td>$S_H$</td>
-<td>$H^+$ concentration from the Newton solution of the charge balance</td>
+<td><span class="arithmatex">\(S_H\)</span></td>
+<td><span class="arithmatex">\(H^+\)</span> concentration from the Newton solution of the charge balance</td>
 </tr>
 </tbody>
 </table>
@@ -3195,23 +3195,23 @@ below stay readable. The full 41-state index map is in
 </thead>
 <tbody>
 <tr>
-<td>$Q_{\text{gas}}$</td>
+<td><span class="arithmatex">\(Q_{\text{gas}}\)</span></td>
 <td>pTOTAL</td>
 <td>40</td>
 </tr>
 <tr>
-<td>$P_{\text{gas}}$</td>
-<td>$p_{\text{gas_h2}}$, $p_{\text{gas_ch4}}$, $p_{\text{gas_co2}}$</td>
+<td><span class="arithmatex">\(P_{\text{gas}}\)</span></td>
+<td><span class="arithmatex">\(p_{\text{gas\_h2}}\)</span>, <span class="arithmatex">\(p_{\text{gas\_ch4}}\)</span>, <span class="arithmatex">\(p_{\text{gas\_co2}}\)</span></td>
 <td>37, 38, 39</td>
 </tr>
 <tr>
-<td>$Q_{\text{CH4}}$</td>
-<td>pTOTAL, $p_{\text{gas_h2}}$, $p_{\text{gas_ch4}}$, $p_{\text{gas_co2}}$</td>
+<td><span class="arithmatex">\(Q_{\text{CH4}}\)</span></td>
+<td>pTOTAL, <span class="arithmatex">\(p_{\text{gas\_h2}}\)</span>, <span class="arithmatex">\(p_{\text{gas\_ch4}}\)</span>, <span class="arithmatex">\(p_{\text{gas\_co2}}\)</span></td>
 <td>37, 38, 39, 40</td>
 </tr>
 <tr>
-<td>$Q_{\text{CO2}}$</td>
-<td>pTOTAL, $p_{\text{gas_h2}}$, $p_{\text{gas_ch4}}$, $p_{\text{gas_co2}}$</td>
+<td><span class="arithmatex">\(Q_{\text{CO2}}\)</span></td>
+<td>pTOTAL, <span class="arithmatex">\(p_{\text{gas\_h2}}\)</span>, <span class="arithmatex">\(p_{\text{gas\_ch4}}\)</span>, <span class="arithmatex">\(p_{\text{gas\_co2}}\)</span></td>
 <td>37, 38, 39, 40</td>
 </tr>
 </tbody>
@@ -3235,7 +3235,7 @@ below stay readable. The full 41-state index map is in
 <tbody>
 <tr>
 <td>pH</td>
-<td>$S_{nh4}, S_{nh3}, S_{hco3}, S_{ac_ion}, S_{pro_ion}, S_{bu_ion}, S_{va_ion}, S_{cation}, S_{anion}$</td>
+<td><span class="arithmatex">\(S_{nh4}, S_{nh3}, S_{hco3}, S_{ac\_ion}, S_{pro\_ion}, S_{bu\_ion}, S_{va\_ion}, S_{cation}, S_{anion}\)</span></td>
 <td>10, 36, 35, 34, 33, 32, 31, 29, 30</td>
 </tr>
 </tbody>
@@ -3260,7 +3260,7 @@ below stay readable. The full 41-state index map is in
 <tbody>
 <tr>
 <td>VFA sum</td>
-<td>$S_{va}, S_{bu}, S_{pro}, S_{ac}$</td>
+<td><span class="arithmatex">\(S_{va}, S_{bu}, S_{pro}, S_{ac}\)</span></td>
 <td>3, 4, 5, 6</td>
 </tr>
 <tr>
@@ -3270,7 +3270,7 @@ below stay readable. The full 41-state index map is in
 </tr>
 <tr>
 <td>TAC</td>
-<td>$S_{va}, S_{bu}, S_{pro}, S_{ac}, S_{co2}, S_{nh4}, S_{cation}, S_{anion}, S_{va_ion}, S_{bu_ion}, S_{pro_ion}, S_{ac_ion}, S_{hco3}, S_{nh3}$</td>
+<td><span class="arithmatex">\(S_{va}, S_{bu}, S_{pro}, S_{ac}, S_{co2}, S_{nh4}, S_{cation}, S_{anion}, S_{va\_ion}, S_{bu\_ion}, S_{pro\_ion}, S_{ac\_ion}, S_{hco3}, S_{nh3}\)</span></td>
 <td>3-6, 9, 10, 29-36</td>
 </tr>
 <tr>
@@ -3333,20 +3333,20 @@ optional upgrades.</p>
 </tr>
 <tr>
 <td>Substrate load cell / pump counter</td>
-<td>$-\Delta W$ → Q_feed (solid or liquid)</td>
-<td>$Q_{solid}$ / $Q_{liquid}$ (augmented)</td>
+<td><span class="arithmatex">\(-\Delta W\)</span> → Q_feed (solid or liquid)</td>
+<td><span class="arithmatex">\(Q_{solid}\)</span> / <span class="arithmatex">\(Q_{liquid}\)</span> (augmented)</td>
 <td>D</td>
 </tr>
 <tr>
 <td>CHP Q_ch4 consumption</td>
 <td>methane consumption per CHP [m³/h]</td>
-<td>pTOTAL + p_gas_ch4 (40, 38) via $\eta$</td>
+<td>pTOTAL + p_gas_ch4 (40, 38) via <span class="arithmatex">\(\eta\)</span></td>
 <td>I₁</td>
 </tr>
 <tr>
 <td>CHP P_el (electrical power)</td>
 <td>electrical output [kW]</td>
-<td>as Q_ch4, derived via $\eta_{el}$</td>
+<td>as Q_ch4, derived via <span class="arithmatex">\(\eta_{el}\)</span></td>
 <td>I₁</td>
 </tr>
 <tr>
@@ -3376,20 +3376,20 @@ optional upgrades.</p>
 <tbody>
 <tr>
 <td>CH₄ fraction in biogas (NDIR)</td>
-<td>$p_{gas,ch4}/p_{gas}$ [%]</td>
-<td>$p_{gas,ch4}$ (38)</td>
+<td><span class="arithmatex">\(p_{gas,ch4}/p_{gas}\)</span> [%]</td>
+<td><span class="arithmatex">\(p_{gas,ch4}\)</span> (38)</td>
 <td>D</td>
 </tr>
 <tr>
 <td>CO₂ fraction in biogas (NDIR)</td>
-<td>$p_{gas,co2}/p_{gas}$ [%]</td>
-<td>$p_{gas,co2}$ (39)</td>
+<td><span class="arithmatex">\(p_{gas,co2}/p_{gas}\)</span> [%]</td>
+<td><span class="arithmatex">\(p_{gas,co2}\)</span> (39)</td>
 <td>D</td>
 </tr>
 <tr>
 <td>H₂ fraction in biogas (TCD/electrochem)</td>
-<td>$p_{gas,h2}/p_{gas}$ [ppm-%]</td>
-<td>$p_{gas,h2}$ (37)</td>
+<td><span class="arithmatex">\(p_{gas,h2}/p_{gas}\)</span> [ppm-%]</td>
+<td><span class="arithmatex">\(p_{gas,h2}\)</span> (37)</td>
 <td>D</td>
 </tr>
 <tr>
@@ -3426,13 +3426,13 @@ optional upgrades.</p>
 <tr>
 <td>ORP / redox potential</td>
 <td>reduction potential [mV]</td>
-<td>$S_{h2}$ (7), methanogenic activity</td>
+<td><span class="arithmatex">\(S_{h2}\)</span> (7), methanogenic activity</td>
 <td>C</td>
 </tr>
 <tr>
 <td>Conductivity (EC)</td>
 <td>electrical conductivity [µS/cm]</td>
-<td>$S_{cation} + S_{anion}$ + all ion species</td>
+<td><span class="arithmatex">\(S_{cation} + S_{anion}\)</span> + all ion species</td>
 <td>C</td>
 </tr>
 <tr>
@@ -3444,13 +3444,13 @@ optional upgrades.</p>
 <tr>
 <td>Online VFA (HPLC online)</td>
 <td>individual acids [g/L]</td>
-<td>$S_{va}, S_{bu}, S_{pro}, S_{ac}$ individually (3-6)</td>
+<td><span class="arithmatex">\(S_{va}, S_{bu}, S_{pro}, S_{ac}\)</span> individually (3-6)</td>
 <td>D</td>
 </tr>
 <tr>
 <td>Online NH₄⁺ (ion-selective electrode)</td>
 <td>ammonium [g/L]</td>
-<td>$S_{nh4}$ (10)</td>
+<td><span class="arithmatex">\(S_{nh4}\)</span> (10)</td>
 <td>D</td>
 </tr>
 <tr>
@@ -3484,7 +3484,7 @@ UKF uses them as <strong>gated observations</strong> at sporadic times.</p>
 <tr>
 <td>VFA (FOS titration Nordmann)</td>
 <td>titrimetric</td>
-<td>VFA sum: $S_{va}, S_{bu}, S_{pro}, S_{ac}$ as sum</td>
+<td>VFA sum: <span class="arithmatex">\(S_{va}, S_{bu}, S_{pro}, S_{ac}\)</span> as sum</td>
 <td>D-sum</td>
 </tr>
 <tr>
@@ -3502,7 +3502,7 @@ UKF uses them as <strong>gated observations</strong> at sporadic times.</p>
 <tr>
 <td>TS (total solids)</td>
 <td>drying oven</td>
-<td>$X_I$ directly, particulate pools as sum</td>
+<td><span class="arithmatex">\(X_I\)</span> directly, particulate pools as sum</td>
 <td>I₁(Σ)</td>
 </tr>
 <tr>
@@ -3514,13 +3514,13 @@ UKF uses them as <strong>gated observations</strong> at sporadic times.</p>
 <tr>
 <td>NH₄-N</td>
 <td>indophenol or IC</td>
-<td>$S_{nh4}$ (10)</td>
+<td><span class="arithmatex">\(S_{nh4}\)</span> (10)</td>
 <td>D</td>
 </tr>
 <tr>
 <td>Conductivity (lab)</td>
 <td>EC meter</td>
-<td>$S_{cation} + S_{anion}$ sum</td>
+<td><span class="arithmatex">\(S_{cation} + S_{anion}\)</span> sum</td>
 <td>C</td>
 </tr>
 </tbody>
@@ -3539,13 +3539,13 @@ UKF uses them as <strong>gated observations</strong> at sporadic times.</p>
 <tr>
 <td>Individual VFA (acetate, propionate, n-/iso-butyrate, n-/iso-valerate)</td>
 <td>HPLC or GC</td>
-<td>$S_{ac}$ (6), $S_{pro}$ (5), $S_{bu}$ (4), $S_{va}$ (3) each</td>
+<td><span class="arithmatex">\(S_{ac}\)</span> (6), <span class="arithmatex">\(S_{pro}\)</span> (5), <span class="arithmatex">\(S_{bu}\)</span> (4), <span class="arithmatex">\(S_{va}\)</span> (3) each</td>
 <td>D per acid</td>
 </tr>
 <tr>
 <td>TKN (Total Kjeldahl Nitrogen)</td>
 <td>Kjeldahl digestion</td>
-<td>$S_{nh4} + S_{nh3} + N$ content of all biomass and protein pools</td>
+<td><span class="arithmatex">\(S_{nh4} + S_{nh3} + N\)</span> content of all biomass and protein pools</td>
 <td>D-sum over N</td>
 </tr>
 <tr>
@@ -3557,7 +3557,7 @@ UKF uses them as <strong>gated observations</strong> at sporadic times.</p>
 <tr>
 <td>COD dissolved (filtered 0.45 µm)</td>
 <td>as above</td>
-<td>only dissolved COD: $S_{su, aa, fa, va, bu, pro, ac, h2, ch4, I}$ sum</td>
+<td>only dissolved COD: <span class="arithmatex">\(S_{su, aa, fa, va, bu, pro, ac, h2, ch4, I}\)</span> sum</td>
 <td>I₁(Σ-dissolved)</td>
 </tr>
 <tr>
@@ -3569,13 +3569,13 @@ UKF uses them as <strong>gated observations</strong> at sporadic times.</p>
 <tr>
 <td>Cation inventory (Na⁺, K⁺, Ca²⁺, Mg²⁺)</td>
 <td>IC or ICP-OES</td>
-<td>$S_{cation}$ (29)</td>
+<td><span class="arithmatex">\(S_{cation}\)</span> (29)</td>
 <td>D</td>
 </tr>
 <tr>
 <td>Anion inventory (Cl⁻, SO₄²⁻, PO₄³⁻, NO₃⁻)</td>
 <td>IC</td>
-<td>$S_{anion}$ (30)</td>
+<td><span class="arithmatex">\(S_{anion}\)</span> (30)</td>
 <td>D</td>
 </tr>
 <tr>
@@ -3614,7 +3614,7 @@ UKF uses them as <strong>gated observations</strong> at sporadic times.</p>
 </tbody>
 </table>
 <p>Substrate analytics does not affect the filter state directly, but the
-<strong>influent vector</strong> $s_{in}$ — i.e. it shifts the initial condition of
+<strong>influent vector</strong> <span class="arithmatex">\(s_{in}\)</span> — i.e. it shifts the initial condition of
 the mass balance, not the state itself. A wrongly parametrized influent
 leads to chronic filter biases.</p>
 <h2 id="c-research-specialized-methods-for-completeness">C — Research / specialized methods (for completeness)<a class="headerlink" href="#c-research-specialized-methods-for-completeness" title="Permanent link">&para;</a></h2>
@@ -3631,25 +3631,25 @@ leads to chronic filter biases.</p>
 <tr>
 <td>qPCR / 16S rRNA sequencing</td>
 <td>biomass populations quantitatively</td>
-<td>$X_{su}, X_{aa}, X_{fa}, X_{c4}, X_{pro}, X_{ac}, X_{h2}$ (22-28) individually</td>
+<td><span class="arithmatex">\(X_{su}, X_{aa}, X_{fa}, X_{c4}, X_{pro}, X_{ac}, X_{h2}\)</span> (22-28) individually</td>
 <td>expensive (~€100/sample), weeks lead time — rare in production</td>
 </tr>
 <tr>
 <td>GC-MS for LCFA / trace VFA</td>
 <td>individual LCFA species, trace acids</td>
-<td>$S_{fa}$ (2) and finer subscale</td>
+<td><span class="arithmatex">\(S_{fa}\)</span> (2) and finer subscale</td>
 <td>research</td>
 </tr>
 <tr>
 <td>In-situ H₂ probe (headspace)</td>
-<td>online $p_{gas,h2}$</td>
-<td>$p_{gas,h2}$ (37)</td>
+<td>online <span class="arithmatex">\(p_{gas,h2}\)</span></td>
+<td><span class="arithmatex">\(p_{gas,h2}\)</span> (37)</td>
 <td>see A.2</td>
 </tr>
 <tr>
 <td>Trace-element analytics (Fe, Co, Ni, Mo, Se)</td>
 <td>important for kinetics</td>
-<td>— (no ADM1 state, affects $k_{m,*}$)</td>
+<td>— (no ADM1 state, affects <span class="arithmatex">\(k_{m,*}\)</span>)</td>
 <td>as calibration hint</td>
 </tr>
 <tr>
@@ -3661,7 +3661,7 @@ leads to chronic filter biases.</p>
 <tr>
 <td>BMP test (batch methane potential)</td>
 <td>specific methane yield per substrate</td>
-<td>$f_{*}$ fractions, k_dis per substrate</td>
+<td><span class="arithmatex">\(f_{*}\)</span> fractions, k_dis per substrate</td>
 <td>input to calibration artifact</td>
 </tr>
 </tbody>
@@ -3684,17 +3684,17 @@ states. The dependencies below are extracted from
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">Rho_T_11</span>  <span class="o">=</span> <span class="n">k_p</span> <span class="o">*</span> <span class="p">(</span><span class="n">pTOTAL</span> <span class="o">+</span> <span class="n">p_gas_h2o</span> <span class="err">−</span> <span class="n">p_ext</span><span class="p">)</span> <span class="o">*</span> <span class="n">V_liq</span><span class="o">/</span><span class="n">V_gas</span>
 </span></code></pre></div>
 <p><strong>→ A gas-flow measurement directly exposes within one time step:</strong>
-pTOTAL (D), $p_{gas,h2/ch4/co2}$ (1-step indirect via $\dot p_{TOT}$),
-$S_{h2}, S_{ch4}, S_{co2}, S_{hco3}$ (all via $\rho_T$ terms).</p>
+pTOTAL (D), <span class="arithmatex">\(p_{gas,h2/ch4/co2}\)</span> (1-step indirect via <span class="arithmatex">\(\dot p_{TOT}\)</span>),
+<span class="arithmatex">\(S_{h2}, S_{ch4}, S_{co2}, S_{hco3}\)</span> (all via <span class="arithmatex">\(\rho_T\)</span> terms).</p>
 <h3 id="methane-chain-s_ch4-ode-l-828-834">Methane chain (S_ch4 ODE, L. 828-834)<a class="headerlink" href="#methane-chain-s_ch4-ode-l-828-834" title="Permanent link">&para;</a></h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">diff_S_ch4</span> <span class="o">=</span> <span class="n">D_in·s_in</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="o">-</span> <span class="n">D_out·S_ch4</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_ac</span><span class="p">)</span><span class="err">·</span><span class="n">Rho_ac</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_h2</span><span class="p">)</span><span class="err">·</span><span class="n">Rho_h2</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>             <span class="o">-</span> <span class="n">V_gas</span><span class="o">/</span><span class="n">V_liq</span> <span class="err">·</span> <span class="n">Rho_T_ch4</span>
 </span></code></pre></div>
-<p>with $\rho_{ac} = k_{m,ac}\cdot S_{ac}/(K_{S,ac}+S_{ac})\cdot X_{ac}\cdot I_{ac}$
-and $\rho_{h2} = k_{m,h2}\cdot S_{h2}/(K_{S,h2}+S_{h2})\cdot X_{h2}\cdot I_{h2}$
+<p>with <span class="arithmatex">\(\rho_{ac} = k_{m,ac}\cdot S_{ac}/(K_{S,ac}+S_{ac})\cdot X_{ac}\cdot I_{ac}\)</span>
+and <span class="arithmatex">\(\rho_{h2} = k_{m,h2}\cdot S_{h2}/(K_{S,h2}+S_{h2})\cdot X_{h2}\cdot I_{h2}\)</span>
 (L. 686-687).</p>
-<p><strong>→ Additionally reachable from Q_CH4 after 2 steps:</strong> $X_{ac}, X_{h2},
-S_{ac}$, and all inhibition factors $I_{ac}$ (= all ions + $S_{nh3}$).</p>
+<p><strong>→ Additionally reachable from Q_CH4 after 2 steps:</strong> <span class="arithmatex">\(X_{ac}, X_{h2},
+S_{ac}\)</span>, and all inhibition factors <span class="arithmatex">\(I_{ac}\)</span> (= all ions + <span class="arithmatex">\(S_{nh3}\)</span>).</p>
 <h3 id="acetate-chain-s_ac-ode-l-805-815">Acetate chain (S_ac ODE, L. 805-815)<a class="headerlink" href="#acetate-chain-s_ac-ode-l-805-815" title="Permanent link">&para;</a></h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">diff_S_ac</span> <span class="o">=</span> <span class="n">D_in·s_in</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">-</span> <span class="n">D_out·S_ac</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>            <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_su</span><span class="p">)</span><span class="err">·</span><span class="n">f_ac_su</span>  <span class="err">·</span> <span class="n">Rho_su</span>      <span class="c1"># X_su, S_su</span>
@@ -3705,9 +3705,9 @@ S_{ac}$, and all inhibition factors $I_{ac}$ (= all ions + $S_{nh3}$).</p>
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>            <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Y_pro</span><span class="p">)</span><span class="err">·</span><span class="mf">0.57</span>    <span class="err">·</span> <span class="n">Rho_pro</span>     <span class="c1"># X_pro, S_pro</span>
 </span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>            <span class="o">-</span> <span class="n">Rho_ac</span>
 </span></code></pre></div>
-<p><strong>→ A VFA measurement (sees $S_{ac}$ directly) after one step exposes:</strong>
-$S_{su}, S_{aa}, S_{fa}, S_{va}, S_{bu}, S_{pro}$ and $X_{su}, X_{aa},
-X_{fa}, X_{c4}, X_{pro}, X_{ac}$.</p>
+<p><strong>→ A VFA measurement (sees <span class="arithmatex">\(S_{ac}\)</span> directly) after one step exposes:</strong>
+<span class="arithmatex">\(S_{su}, S_{aa}, S_{fa}, S_{va}, S_{bu}, S_{pro}\)</span> and <span class="arithmatex">\(X_{su}, X_{aa},
+X_{fa}, X_{c4}, X_{pro}, X_{ac}\)</span>.</p>
 <h3 id="nitrogen-chain-s_nh4-ode-l-840-853">Nitrogen chain (S_nh4 ODE, L. 840-853)<a class="headerlink" href="#nitrogen-chain-s_nh4-ode-l-840-853" title="Permanent link">&para;</a></h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">diff_S_nh4</span> <span class="o">=</span> <span class="n">D_in·s_in</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">-</span> <span class="n">D_out·S_nh4</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>             <span class="o">-</span> <span class="n">Y_su·N_bac·Rho_su</span> <span class="o">+</span> <span class="p">(</span><span class="n">N_aa</span> <span class="o">-</span> <span class="n">Y_aa·N_bac</span><span class="p">)</span><span class="err">·</span><span class="n">Rho_aa</span>
@@ -3716,7 +3716,7 @@ X_{fa}, X_{c4}, X_{pro}, X_{ac}$.</p>
 </span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>             <span class="o">+</span> <span class="n">Rho_A_IN</span>
 </span></code></pre></div>
 <p><strong>→ NH4-N measurement additionally exposes:</strong> all biomass decay pools,
-$S_{nh3}$ via $\rho_{A,IN}$, and via $S_H$ the entire pH algebra.</p>
+<span class="arithmatex">\(S_{nh3}\)</span> via <span class="arithmatex">\(\rho_{A,IN}\)</span>, and via <span class="arithmatex">\(S_H\)</span> the entire pH algebra.</p>
 <h3 id="particulate-pools-l-856-893">Particulate pools (L. 856-893)<a class="headerlink" href="#particulate-pools-l-856-893" title="Permanent link">&para;</a></h3>
 <p>Disintegration X_PS_<em> → X_S_</em> and hydrolysis X_S_<em> → S_su/aa/fa act on
 </em><em>sums</em><em> — the ch/pr/li split appears identically everywhere and is
@@ -4423,7 +4423,7 @@ realistic path.</p>
 </tbody>
 </table>
 <blockquote>
-<p>Note on anion/cation inventory: $S_{cation}$ and $S_{anion}$ are
+<p>Note on anion/cation inventory: <span class="arithmatex">\(S_{cation}\)</span> and <span class="arithmatex">\(S_{anion}\)</span> are
 <strong>lumped</strong> in the model as kmol/m³. A species-resolved inventory
 (Na⁺, K⁺, …) gives the pool sum directly; individual species do not
 exist in the state vector.</p>
@@ -4434,19 +4434,19 @@ exist in the state vector.</p>
 <li>
 <p><strong>Only standard SCADA (Q_gas, CHP, T, hopper, pre-pit)</strong>  </p>
 <ul>
-<li>directly estimable: pTOTAL, $Q_{solid}, Q_{liquid}$ (augmented)  </li>
-<li>1-step: $S_{h2/ch4/co2}, S_{hco3}, p_{gas,*}$  </li>
-<li>2-step: $X_{ac}, X_{h2}, S_{ac}$  </li>
-<li>Effectively 6-8 separable dimensions, $X_{ac}$/$X_{h2}$ partially<br />
+<li>directly estimable: pTOTAL, <span class="arithmatex">\(Q_{solid}, Q_{liquid}\)</span> (augmented)  </li>
+<li>1-step: <span class="arithmatex">\(S_{h2/ch4/co2}, S_{hco3}, p_{gas,*}\)</span>  </li>
+<li>2-step: <span class="arithmatex">\(X_{ac}, X_{h2}, S_{ac}\)</span>  </li>
+<li>Effectively 6-8 separable dimensions, <span class="arithmatex">\(X_{ac}\)</span>/<span class="arithmatex">\(X_{h2}\)</span> partially<br />
   degenerate.</li>
 </ul>
 </li>
 <li>
 <p><strong>+ NDIR gas analytics (CH₄/CO₂ fraction online)</strong>  </p>
 <ul>
-<li>$X_{ac}$ vs $X_{h2}$ separable (via CH₄/CO₂ ratio).  </li>
-<li>$S_{co2}$ vs $S_{hco3}$ cleaner separation.  </li>
-<li>Optional H₂ sensor: makes $p_{gas,h2}$ directly observable.  </li>
+<li><span class="arithmatex">\(X_{ac}\)</span> vs <span class="arithmatex">\(X_{h2}\)</span> separable (via CH₄/CO₂ ratio).  </li>
+<li><span class="arithmatex">\(S_{co2}\)</span> vs <span class="arithmatex">\(S_{hco3}\)</span> cleaner separation.  </li>
+<li>Optional H₂ sensor: makes <span class="arithmatex">\(p_{gas,h2}\)</span> directly observable.  </li>
 </ul>
 </li>
 <li>
@@ -4467,14 +4467,14 @@ exist in the state vector.</p>
 <li>
 <p><strong>+ Individual VFA (HPLC, monthly)</strong>  </p>
 <ul>
-<li>$S_{ac}, S_{pro}, S_{bu}, S_{va}$ individually rather than as sum.  </li>
+<li><span class="arithmatex">\(S_{ac}, S_{pro}, S_{bu}, S_{va}\)</span> individually rather than as sum.  </li>
 <li>Separates acetoclast vs propionate-driven inhibitions.  </li>
 </ul>
 </li>
 <li>
 <p><strong>+ NH4-N + TKN</strong>  </p>
 <ul>
-<li>$S_{nh4}$ directly, NH3 inhibition $I_{nh3}$ quantifiable.  </li>
+<li><span class="arithmatex">\(S_{nh4}\)</span> directly, NH3 inhibition <span class="arithmatex">\(I_{nh3}\)</span> quantifiable.  </li>
 <li>Decisive for nitrogen-rich substrates (poultry manure, abattoir<br />
   waste).</li>
 </ul>
@@ -4482,7 +4482,7 @@ exist in the state vector.</p>
 <li>
 <p><strong>+ Cation/anion inventory (monthly)</strong>  </p>
 <ul>
-<li>$S_{cation}, S_{anion}$ directly — otherwise very hard to observe.  </li>
+<li><span class="arithmatex">\(S_{cation}, S_{anion}\)</span> directly — otherwise very hard to observe.  </li>
 </ul>
 </li>
 </ol>
@@ -4491,7 +4491,7 @@ exist in the state vector.</p>
 <li><strong>Separate individual ch/pr/li fractions.</strong> Disintegration and<br />
   hydrolysis rates act on sums; the split remains prior-determined —
   solution only via qPCR or substrate profiles.  </li>
-<li><strong>$X_I$/$S_I$ accumulation in hours.</strong> Inert pools have time constants<br />
+<li><strong><span class="arithmatex">\(X_I\)</span>/<span class="arithmatex">\(S_I\)</span> accumulation in hours.</strong> Inert pools have time constants<br />
   of weeks to months — no innovation, no update.  </li>
 <li><strong>Substrate-specific disintegration online.</strong> Even with lab VFA and<br />
   pH, the split between X_PS and X_PF (slow/fast) remains weakly
@@ -4585,15 +4585,15 @@ derivatives + numerical rank check at a random sample point
 the Matlab↔Octave↔Python bridge.</p>
 <p>A direct analysis of all 41 states is not practical: Lie-derivative
 complexity grows exponentially (a polynomial fit from synthetic test
-runs with n = 4, 6, 8 gives $t \propto 4.04^{n}$ seconds and
-$m \propto 3.39^{n}$ MiB; already at n = 16 the RAM demand exceeds
+runs with n = 4, 6, 8 gives <span class="arithmatex">\(t \propto 4.04^{n}\)</span> seconds and
+<span class="arithmatex">\(m \propto 3.39^{n}\)</span> MiB; already at n = 16 the RAM demand exceeds
 256 GiB). Hellmann (2023) stops at n = 17 for the same reason.</p>
 <p><strong>Solution: divide-and-conquer over five subsystems + one
 super-subsystem.</strong> The full model is decomposed along its topological
 structure (gas / acidogenesis / hydrolysis / charge balance /
 nitrogen) into blocks; each block is analysed in isolation, couplings
 are resolved via <em>known inputs</em>.</p>
-<h3 id="results-phase-1-sensor-set-q_gas-ch4co2-ndir-ph-online-fostac">Results (Phase-1 sensor set: $Q_{gas}$ + CH4/CO2 NDIR + pH online + FOS/TAC)<a class="headerlink" href="#results-phase-1-sensor-set-q_gas-ch4co2-ndir-ph-online-fostac" title="Permanent link">&para;</a></h3>
+<h3 id="results-phase-1-sensor-set-q_gas-ch4co2-ndir-ph-online-fostac">Results (Phase-1 sensor set: <span class="arithmatex">\(Q_{gas}\)</span> + CH4/CO2 NDIR + pH online + FOS/TAC)<a class="headerlink" href="#results-phase-1-sensor-set-q_gas-ch4co2-ndir-ph-online-fostac" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4644,7 +4644,7 @@ are resolved via <em>known inputs</em>.</p>
 <td>5.6 min</td>
 </tr>
 <tr>
-<td>E — Nitrogen + $S_I$</td>
+<td>E — Nitrogen + <span class="arithmatex">\(S_I\)</span></td>
 <td>2</td>
 <td>2</td>
 <td>0</td>
@@ -4669,8 +4669,8 @@ are resolved via <em>known inputs</em>.</p>
 <li>
 <p><strong>A+D fused</strong> is the strongest composite proof: 18 of 41 states,<br />
   including the full pH algebra
-  $S_H = (-fixed + \sqrt{fixed^2 + 4 K_w})/2$ and the inhibition
-  factors $I_{ac}, I_{h2}, I_{HAc}, I_{nh3}$, are structurally
+  <span class="arithmatex">\(S_H = (-fixed + \sqrt{fixed^2 + 4 K_w})/2\)</span> and the inhibition
+  factors <span class="arithmatex">\(I_{ac}, I_{h2}, I_{HAc}, I_{nh3}\)</span>, are structurally
   observable without any "opaque" boundary inputs. So the gas phase,
   methanogenesis, and the complete acid-base chemistry are provably
   estimatable.</p>
@@ -4685,10 +4685,10 @@ are resolved via <em>known inputs</em>.</p>
   substrate characterization in the lab.</p>
 </li>
 <li>
-<p><strong>B is toolchain-limited, not physically limited</strong>: $S_{fa}, X_{fa}$<br />
-  were removed as analytically decoupled (they flow via $\rho_{fa}$
-  into $S_{ac}, S_{h2}$ and thus into A, not into the VFA sum that
-  FOS measures). The rank growth $1 \to 2 \to 3 \to 4 \to 5 \to 6$
+<p><strong>B is toolchain-limited, not physically limited</strong>: <span class="arithmatex">\(S_{fa}, X_{fa}\)</span><br />
+  were removed as analytically decoupled (they flow via <span class="arithmatex">\(\rho_{fa}\)</span>
+  into <span class="arithmatex">\(S_{ac}, S_{h2}\)</span> and thus into A, not into the VFA sum that
+  FOS measures). The rank growth <span class="arithmatex">\(1 \to 2 \to 3 \to 4 \to 5 \to 6\)</span>
   is steady at +1 per iteration; at iter 6 SymPy hits a CPython
   buffer limit (<code>bytesobject.c:3219</code>). The pattern strongly suggests
   the structural rank is 9, but only rank 6 is provable inside the
@@ -4832,7 +4832,11 @@ likely observable, unprovable inside the current toolchain).</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

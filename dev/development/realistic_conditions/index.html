@@ -29,7 +29,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -37,7 +37,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1876,10 +1876,10 @@ ergänzt), und das Ziel ist eine Methode, die <strong>allgemein für Biogasanlag
 funktioniert, nicht für einen Datensatz. Deshalb werden Rauschen und
 Modellfehler <strong>nicht an die aktuelle Datenlage angepasst</strong>:</p>
 <ul>
-<li><strong>Messrauschen</strong> hängt an <em>Sensortypen</em> als generische Instrumenten-Genauigkeit
+<li><strong>Messrauschen</strong> hängt an <em>Sensortypen</em> als generische Instrumenten-Genauigkeit<br />
   — ergänzt/entfernt man einen Sensor, ändern sich die anderen nicht, und die
-  Bedingungen übertragen sich auf andere Anlagen.</li>
-<li><strong>Modellfehler</strong> — die Lücke zwischen ADM1 und Realität — <strong>lässt sich nicht
+  Bedingungen übertragen sich auf andere Anlagen.  </li>
+<li><strong>Modellfehler</strong> — die Lücke zwischen ADM1 und Realität — <strong>lässt sich nicht<br />
   aus Betriebsdaten bestimmen</strong> (er ist mit Eingangs- und Messfehler vermengt).
   Er wird daher aus der <strong>Kinetik-Parameter-Unsicherheit der ADM1-Literatur</strong>
   gesetzt, als multiplikative Störung.</li>
@@ -1889,8 +1889,8 @@ Modellfehler <strong>nicht an die aktuelle Datenlage angepasst</strong>:</p>
 <h2 id="modellfehler-kinetik-parameter-unsicherheit">Modellfehler: Kinetik-Parameter-Unsicherheit<a class="headerlink" href="#modellfehler-kinetik-parameter-unsicherheit" title="Permanent link">&para;</a></h2>
 <p>Der Modellfehler ist eine <strong>multiplikative lognormale</strong> Störung der biologischen
 Kinetiken des Filters, während die Truth die „echten" Werte behält:</p>
-<p>$$ k_\text{Filter} = k_\text{nominal}\cdot e^{\mathcal N(0,\sigma)},\qquad
-   \sigma = 0.25 $$</p>
+<div class="arithmatex">\[ k_\text{Filter} = k_\text{nominal}\cdot e^{\mathcal N(0,\sigma)},\qquad
+   \sigma = 0.25 \]</div>
 <p>auf die Raten-/Affinitäts-Prefixe <code>k_dis</code>, <code>k_hyd</code>, <code>k_m_</code>, <code>k_dec</code>, <code>K_S</code>.
 Physikalische Gleichgewichtskonstanten (<code>K_a</code>, <code>K_w</code>, <code>K_H</code>) und Stöchiometrie
 (<code>Y_*</code>, <code>f_*</code>) bleiben unangetastet.</p>
@@ -1978,24 +1978,24 @@ realistische Verhalten, das der Schätzer aushalten muss.</p>
 ist als <code>R_INFLATION</code> verfügbar (Default 1.0).</p>
 <h2 id="abtastraten-reale-anlagen-kadenz">Abtastraten (reale Anlagen-Kadenz)<a class="headerlink" href="#abtastraten-reale-anlagen-kadenz" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Online (im Twin stündlich, an der Anlage Sekunden):</strong> <code>q_gas</code>, pH,
-  Substratdosen, Füllstände, BHKW, Temperaturen.</li>
-<li><strong>Täglich:</strong> Gaszusammensetzung CH₄ / CO₂ (NDIR). O₂ und H₂S werden praktisch
+<li><strong>Online (im Twin stündlich, an der Anlage Sekunden):</strong> <code>q_gas</code>, pH,<br />
+  Substratdosen, Füllstände, BHKW, Temperaturen.  </li>
+<li><strong>Täglich:</strong> Gaszusammensetzung CH₄ / CO₂ (NDIR). O₂ und H₂S werden praktisch<br />
   ebenfalls täglich gemessen, sind aber <strong>keine ADM1da-Zustände</strong> → nur
-  Monitoring, <em>nicht assimiliert</em>.</li>
-<li><strong>Laborkadenz:</strong> TS, VFA (gegated, z. B. VFA alle 12 h).</li>
+  Monitoring, <em>nicht assimiliert</em>.  </li>
+<li><strong>Laborkadenz:</strong> TS, VFA (gegated, z. B. VFA alle 12 h).  </li>
 </ul>
 <h2 id="bewusst-nicht-enthalten-und-warum">Bewusst <em>nicht</em> enthalten (und warum)<a class="headerlink" href="#bewusst-nicht-enthalten-und-warum" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Anlagenspezifische Gas-Ableitungskette.</strong> An der realen Anlage ist <code>Q_gas</code>
+<li><strong>Anlagenspezifische Gas-Ableitungskette.</strong> An der realen Anlage ist <code>Q_gas</code><br />
   kein Flowmeter-Wert, sondern wird aus Gasblasen-Füllstandsänderungen (ΔV,
   differenziert → rauschverstärkt) + BHKW-Verbrauch + Fackel rekonstruiert.
   Diese Fehlerstruktur ist anlagenspezifisch; das Fundament nutzt stattdessen
   die generische Flowmeter-Spezifikation, damit die Bedingungen übertragbar
   bleiben. (Ein anlagenspezifisches Rauschmodell kann beim Bewerten <em>dieser</em>
-  Anlage darübergelegt werden.)</li>
-<li><strong>O₂ / H₂S.</strong> Keine ADM1da-Zustände — können den UKF nicht informieren.</li>
-<li><strong>σ oder R an die aktuelle Datenlage fitten</strong> — würde zur unvollständigen
+  Anlage darübergelegt werden.)  </li>
+<li><strong>O₂ / H₂S.</strong> Keine ADM1da-Zustände — können den UKF nicht informieren.  </li>
+<li><strong>σ oder R an die aktuelle Datenlage fitten</strong> — würde zur unvollständigen<br />
   Sensorik hin verzerren.</li>
 </ul>
 <h2 id="verwendung">Verwendung<a class="headerlink" href="#verwendung" title="Permanent link">&para;</a></h2>
@@ -2031,13 +2031,13 @@ eingeschränkt auf <code>--state-blocks methanogenesis charge_balance</code> (18
 ADM1-Zuständen).</p>
 <h2 id="quellen">Quellen<a class="headerlink" href="#quellen" title="Permanent link">&para;</a></h2>
 <ul>
-<li>ADM1-Sensitivitätsanalyse — <a href="https://www.witpress.com/elibrary/wit-transactions-on-ecology-and-the-environment/258/38278">WIT Transactions (ADM1 local SA)</a>;
-  <a href="https://www.sciencedirect.com/science/article/abs/pii/S0301479720313815">Surrogate-based global SA of ADM1 (ScienceDirect)</a>.</li>
-<li>UKF / Plant-Model-Mismatch für AD — <a href="https://arxiv.org/html/2310.15958">Comparison of UKF designs for AD (arXiv:2310.15958)</a>;
-  Haugen et al. 2014, <em>State Estimation … Pilot AD Reactor</em> (<a href="https://doi.org/10.1155/2014/572621">DOI:10.1155/2014/572621</a>).</li>
-<li>ADM1 Monte-Carlo / lognormale Unsicherheit — <a href="https://iwaponline.com/wst/article/92/4/610/108810/Uncertainty-analysis-of-a-simplified-anaerobic">Uncertainty analysis of a simplified AD model (IWA WST 92(4):610)</a>;
-  <a href="https://www.sciencedirect.com/science/article/abs/pii/S1369703X23000050">Probabilistic ADM1 simulation of biogas (ScienceDirect)</a>.</li>
-<li>Sensor-Genauigkeit — NDIR-Biogasanalysatoren (<a href="https://www.olythe.io/analyzers/biogas-analyzer/">Olythe</a>, <a href="https://dynament.com/application/biogas-monitoring/">Dynament</a>);
+<li>ADM1-Sensitivitätsanalyse — <a href="https://www.witpress.com/elibrary/wit-transactions-on-ecology-and-the-environment/258/38278">WIT Transactions (ADM1 local SA)</a>;<br />
+<a href="https://www.sciencedirect.com/science/article/abs/pii/S0301479720313815">Surrogate-based global SA of ADM1 (ScienceDirect)</a>.  </li>
+<li>UKF / Plant-Model-Mismatch für AD — <a href="https://arxiv.org/html/2310.15958">Comparison of UKF designs for AD (arXiv:2310.15958)</a>;<br />
+  Haugen et al. 2014, <em>State Estimation … Pilot AD Reactor</em> (<a href="https://doi.org/10.1155/2014/572621">DOI:10.1155/2014/572621</a>).  </li>
+<li>ADM1 Monte-Carlo / lognormale Unsicherheit — <a href="https://iwaponline.com/wst/article/92/4/610/108810/Uncertainty-analysis-of-a-simplified-anaerobic">Uncertainty analysis of a simplified AD model (IWA WST 92(4):610)</a>;<br />
+<a href="https://www.sciencedirect.com/science/article/abs/pii/S1369703X23000050">Probabilistic ADM1 simulation of biogas (ScienceDirect)</a>.  </li>
+<li>Sensor-Genauigkeit — NDIR-Biogasanalysatoren (<a href="https://www.olythe.io/analyzers/biogas-analyzer/">Olythe</a>, <a href="https://dynament.com/application/biogas-monitoring/">Dynament</a>);<br />
   Biogas-Volumen-Metrologie (<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12693810/">PMC12693810</a>).</li>
 </ul>
 
@@ -2103,7 +2103,11 @@ ADM1-Zuständen).</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>
