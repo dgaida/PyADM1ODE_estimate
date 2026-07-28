@@ -291,8 +291,8 @@ nicht kalibriert, ein Fit von Grund auf kostet Sekunden bis Minuten pro Fenster.
 **Einordnung.** Der UKF (siehe [UKF im Einsatz](../usage/ukf.md) und
 [SR-UKF-Performance](../development/ukf_performance.md)) ist rekursiv, günstig pro
 Schritt und besser kalibriert, vor allem beim pH. Das PINN ist stärker auf den
-Biogaskanälen und bei der Prognose. Ein **Hybrid** per Kovarianzschnitt
-(`fusion/hybrid.py`) kann beide fusionieren und die Stärken jedes Schätzers
+Biogaskanälen und bei der Prognose. Ein **[Hybrid per Kovarianzschnitt](fusion.md)**
+kann beide fusionieren und die Stärken jedes Schätzers
 bewahren.
 
 ---

@@ -279,8 +279,8 @@ calibrated, and a from-scratch fit costs seconds to minutes per window.
 **Where it sits.** The UKF (see [UKF in practice](../usage/ukf.md) and
 [SR-UKF performance](../development/ukf_performance.md)) is recursive, cheap per
 step, and better calibrated — especially on pH. The PINN is stronger on the
-biogas channels and on forecasting. A covariance-intersection **hybrid**
-(`fusion/hybrid.py`) can fuse the two, keeping each estimator's strengths.
+biogas channels and on forecasting. A covariance-intersection
+**[hybrid](fusion.md)** can fuse the two, keeping each estimator's strengths.
 
 ---
 

@@ -127,6 +127,8 @@ nav:
       - Übersicht: theory/index.md
       - ADM1da-Modell: theory/adm1.md
       - PINN: theory/pinn.md
+      - Vortrainierter Observer: theory/observer.md
+      - UKF↔PINN-Fusion: theory/fusion.md
   - Beispiele:
       - Übersicht: examples/index.md
   - API-Referenz:
