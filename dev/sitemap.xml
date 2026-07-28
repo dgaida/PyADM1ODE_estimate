@@ -113,6 +113,20 @@
         <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/PyADM1ODE_estimate/latesten/theory/adm1/"/>
     </url>
     <url>
+        <loc>https://dgaida.github.io/PyADM1ODE_estimate/latest/theory/fusion/</loc>
+        <lastmod>2026-07-28</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/theory/fusion/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/PyADM1ODE_estimate/latesten/theory/fusion/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/PyADM1ODE_estimate/latest/theory/observer/</loc>
+        <lastmod>2026-07-28</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/theory/observer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/PyADM1ODE_estimate/latesten/theory/observer/"/>
+    </url>
+    <url>
         <loc>https://dgaida.github.io/PyADM1ODE_estimate/latest/theory/pinn/</loc>
         <lastmod>2026-07-28</lastmod>
         <changefreq>daily</changefreq>
@@ -258,6 +272,20 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/en/theory/adm1/"/>
         <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/PyADM1ODE_estimate/latesttheory/adm1/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/PyADM1ODE_estimate/latest/en/theory/fusion/</loc>
+        <lastmod>2026-07-28</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/en/theory/fusion/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/PyADM1ODE_estimate/latesttheory/fusion/"/>
+    </url>
+    <url>
+        <loc>https://dgaida.github.io/PyADM1ODE_estimate/latest/en/theory/observer/</loc>
+        <lastmod>2026-07-28</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/en/theory/observer/"/>
+        <xhtml:link rel="alternate" hreflang="de" href="https://dgaida.github.io/PyADM1ODE_estimate/latesttheory/observer/"/>
     </url>
     <url>
         <loc>https://dgaida.github.io/PyADM1ODE_estimate/latest/en/theory/pinn/</loc>

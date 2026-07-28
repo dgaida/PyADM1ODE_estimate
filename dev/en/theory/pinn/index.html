@@ -18,7 +18,7 @@
         <link rel="prev" href="../adm1/">
       
       
-        <link rel="next" href="../../examples/">
+        <link rel="next" href="../observer/">
       
       
         
@@ -1442,6 +1442,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vortrainierter Observer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fusion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UKF↔PINN-Fusion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2370,11 +2426,11 @@ pH, and a few more. <strong>State estimation</strong> is the task of reconstruct
 states over time from those few noisy signals.</p>
 <p>There are two classic routes, each with a weakness:</p>
 <ul>
-<li><strong>Pure mechanistic model (ADM1).</strong> Trustworthy structure, but it needs the
+<li><strong>Pure mechanistic model (ADM1).</strong> Trustworthy structure, but it needs the<br />
   exact initial state and exact kinetic parameters. Small errors accumulate and
-  the simulation drifts away from the real plant.</li>
-<li><strong>Pure machine learning.</strong> Flexible, but it needs a large labelled dataset of
-  <em>true</em> states to learn from, which on a real plant we never have, because the
+  the simulation drifts away from the real plant.  </li>
+<li><strong>Pure machine learning.</strong> Flexible, but it needs a large labelled dataset of<br />
+<em>true</em> states to learn from, which on a real plant we never have, because the
   true states are exactly what we cannot measure.</li>
 </ul>
 <p>A PINN combines the two: a neural network flexible enough to fit the sparse data,
@@ -2383,11 +2439,11 @@ wander into physically impossible trajectories.</p>
 <hr />
 <h2 id="2-a-neural-network">2. A neural network<a class="headerlink" href="#2-a-neural-network" title="Permanent link">&para;</a></h2>
 <ul>
-<li>A neural network is a flexible mathematical function <span class="arithmatex">\(y = \text{NN}_\theta(x)\)</span>
-  with many tunable numbers <span class="arithmatex">\(\theta\)</span> (its <em>weights</em>).</li>
-<li><strong>Training</strong> means adjusting <span class="arithmatex">\(\theta\)</span> so that a <em>loss</em> is minimised by gradient
-  descent.</li>
-<li>The <strong>input is time <span class="arithmatex">\(t\)</span></strong> and the <strong>output is the state vector <span class="arithmatex">\(\hat{x}(t)\)</span></strong>.
+<li>A neural network is a flexible mathematical function <span class="arithmatex">\(y = \text{NN}_\theta(x)\)</span><br />
+  with many tunable numbers <span class="arithmatex">\(\theta\)</span> (its <em>weights</em>).  </li>
+<li><strong>Training</strong> means adjusting <span class="arithmatex">\(\theta\)</span> so that a <em>loss</em> is minimised by gradient<br />
+  descent.  </li>
+<li>The <strong>input is time <span class="arithmatex">\(t\)</span></strong> and the <strong>output is the state vector <span class="arithmatex">\(\hat{x}(t)\)</span></strong>.<br />
   So the network <em>is</em> the estimated trajectory itself: ask it at any time <span class="arithmatex">\(t\)</span> and
   it returns the estimated plant state at that instant.</li>
 </ul>
@@ -2452,8 +2508,8 @@ fast ones would dominate the loss, so the residual is divided per state by a
 typical scale <span class="arithmatex">\(s\)</span> so that all count equally (details in section 5):</p>
 <div class="arithmatex">\[
 L_\text{phys} \;=\; \frac{1}{N_c}\sum_{j}
-  \left\lVert \frac{\tfrac{d\hat{x}_\theta}{dt}(\tau_j)
-    - f(\hat{x}_\theta(\tau_j), u)}{s} \right\rVert^2 .
+  \left\lVert \frac{\tfrac{d\hat{x}_\theta}{dt}(\tau_j)  
+    - f(\hat{x}_\theta(\tau_j), u)}{s} \right\rVert^2 .  
 \]</div>
 <p><strong>Prior loss:</strong> anchor the start. A weak boundary condition tying the trajectory
 to a physical prior state <span class="arithmatex">\(x_\text{prior}\)</span> at <span class="arithmatex">\(t_0\)</span>:</p>
@@ -2582,9 +2638,9 @@ state into the data-free tail — a physics-driven forecast from the same fit.</
 <p><code>update(...)</code> warm-starts from the current weights <strong>and</strong> optimiser state for
 cheap incremental re-fits as new samples arrive:</p>
 <ul>
-<li><strong>growing window:</strong> keep the whole history, anchor stays at the original
-  <code>t0</code>; or</li>
-<li><strong>sliding window:</strong> a fixed horizon <code>t0 = t1 − window</code>, self-anchored at the
+<li><strong>growing window:</strong> keep the whole history, anchor stays at the original<br />
+<code>t0</code>; or  </li>
+<li><strong>sliding window:</strong> a fixed horizon <code>t0 = t1 − window</code>, self-anchored at the<br />
   network's own current estimate at the window start (bounds compute on long
   runs).</li>
 </ul>
@@ -2601,20 +2657,20 @@ calibrated, and a from-scratch fit costs seconds to minutes per window.</p>
 <p><strong>Where it sits.</strong> The UKF (see <a href="../../usage/ukf/">UKF in practice</a> and
 <a href="../../development/ukf_performance/">SR-UKF performance</a>) is recursive, cheap per
 step, and better calibrated — especially on pH. The PINN is stronger on the
-biogas channels and on forecasting. A covariance-intersection <strong>hybrid</strong>
-(<code>fusion/hybrid.py</code>) can fuse the two, keeping each estimator's strengths.</p>
+biogas channels and on forecasting. A covariance-intersection
+<strong><a href="../fusion/">hybrid</a></strong> can fuse the two, keeping each estimator's strengths.</p>
 <hr />
 <h2 id="source-files">Source files<a class="headerlink" href="#source-files" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn.py</code> — <code>ADM1PINN</code>, <code>PINNLoss</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py</code> — <code>PinnSmoother</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observation_torch.py</code> — <code>TorchObservationModel</code></li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn.py</code> — <code>ADM1PINN</code>, <code>PINNLoss</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py</code> — <code>PinnSmoother</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/observation_torch.py</code> — <code>TorchObservationModel</code>  </li>
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Raissi, M., Perdikaris, P. &amp; Karniadakis, G. E. (2019). <em>Physics-informed
-  neural networks.</em> Journal of Computational Physics 378:686–707.</li>
-<li>ADM1da model and state indices: <a href="../adm1/">ADM1da model</a>.</li>
+<li>Raissi, M., Perdikaris, P. &amp; Karniadakis, G. E. (2019). <em>Physics-informed<br />
+  neural networks.</em> Journal of Computational Physics 378:686–707.  </li>
+<li>ADM1da model and state indices: <a href="../adm1/">ADM1da model</a>.  </li>
 </ul>
 <h2 id="api-reference">API reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h2>
 

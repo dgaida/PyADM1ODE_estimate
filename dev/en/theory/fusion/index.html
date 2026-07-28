@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="de" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -12,33 +12,35 @@
         <meta name="author" content="Daniel Gaida">
       
       
-        <link rel="canonical" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/">
+        <link rel="canonical" href="https://dgaida.github.io/PyADM1ODE_estimate/latest/en/theory/fusion/">
       
       
+        <link rel="prev" href="../observer/">
       
-        <link rel="next" href="getting-started/">
+      
+        <link rel="next" href="../../examples/">
       
       
         
-          <link rel="alternate" href="/PyADM1ODE_estimate/latest/" hreflang="de">
+          <link rel="alternate" href="../../../theory/fusion/" hreflang="de">
         
-          <link rel="alternate" href="/PyADM1ODE_estimate/latest/en/" hreflang="en">
+          <link rel="alternate" href="./" hreflang="en">
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>PyADM1ODE Estimate</title>
+        <title>UKF↔PINN-Fusion - PyADM1ODE Estimate</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -57,9 +59,11 @@
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,8 +88,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#pyadm1ode-estimate" class="md-skip">
-          Zum Inhalt
+        <a href="#ukf-pinn-fusion-covariance-intersection" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -101,8 +105,8 @@
       
 
 <header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Kopfzeile">
-    <a href="." title="PyADM1ODE Estimate" class="md-header__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="PyADM1ODE Estimate" class="md-header__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -122,7 +126,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              UKF↔PINN-Fusion
             
           </span>
         </div>
@@ -162,20 +166,20 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="Sprache wechseln">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="/PyADM1ODE_estimate/latest/" hreflang="de" class="md-select__link">
+            <a href="../../../theory/fusion/" hreflang="de" class="md-select__link">
               Deutsch
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="/PyADM1ODE_estimate/latest/en/" hreflang="en" class="md-select__link">
+            <a href="./" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
@@ -196,21 +200,21 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Suche" placeholder="Suche" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="Suche">
+      <nav class="md-search__options" aria-label="Search">
         
-          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Teilen" aria-label="Teilen" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
             
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
           </a>
         
-        <button type="reset" class="md-search__icon md-icon" title="Zurücksetzen" aria-label="Zurücksetzen" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -223,7 +227,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            Suche wird initialisiert
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -235,7 +239,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Zum Repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -256,7 +260,7 @@
         
           
             
-<nav class="md-tabs" aria-label="Hauptnavigation" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -264,11 +268,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="." class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../../" class="md-tabs__link">
         
   
   
@@ -287,7 +289,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="getting-started/" class="md-tabs__link">
+      <a href="../../getting-started/" class="md-tabs__link">
         
   
   
@@ -306,7 +308,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="installation/" class="md-tabs__link">
+      <a href="../../installation/" class="md-tabs__link">
         
   
   
@@ -327,7 +329,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="usage/" class="md-tabs__link">
+        <a href="../../usage/" class="md-tabs__link">
           
   
   
@@ -347,7 +349,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="observability/" class="md-tabs__link">
+        <a href="../../observability/" class="md-tabs__link">
           
   
   
@@ -363,11 +365,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="theory/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -387,7 +391,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="examples/" class="md-tabs__link">
+        <a href="../../examples/" class="md-tabs__link">
           
   
   
@@ -407,7 +411,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="api/" class="md-tabs__link">
+        <a href="../../api/" class="md-tabs__link">
           
   
   
@@ -427,7 +431,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="development/" class="md-tabs__link">
+        <a href="../../development/" class="md-tabs__link">
           
   
   
@@ -445,7 +449,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="troubleshooting/" class="md-tabs__link">
+      <a href="../../troubleshooting/" class="md-tabs__link">
         
   
   
@@ -466,7 +470,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="ecosystem/" class="md-tabs__link">
+        <a href="../../ecosystem/" class="md-tabs__link">
           
   
   
@@ -500,7 +504,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="PyADM1ODE Estimate" class="md-nav__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
+    <a href="../../" title="PyADM1ODE Estimate" class="md-nav__button md-logo" aria-label="PyADM1ODE Estimate" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -510,7 +514,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Zum Repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/dgaida/PyADM1ODE_estimate" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -527,37 +531,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
         
   
   
@@ -573,92 +550,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Inhaltsverzeichnis">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Inhaltsverzeichnis
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#was-dieses-repo-macht" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Was dieses Repo macht
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hauptmerkmale" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hauptmerkmale
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#drei-schatzansatze" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Drei Schätzansätze
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inhaltsverzeichnis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Inhaltsverzeichnis
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quickstart" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quickstart
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#verwandte-projekte" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Verwandte Projekte
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -670,7 +561,7 @@
   
   
     <li class="md-nav__item">
-      <a href="getting-started/" class="md-nav__link">
+      <a href="../../getting-started/" class="md-nav__link">
         
   
   
@@ -697,7 +588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="installation/" class="md-nav__link">
+      <a href="../../installation/" class="md-nav__link">
         
   
   
@@ -778,7 +669,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/" class="md-nav__link">
+      <a href="../../usage/" class="md-nav__link">
         
   
   
@@ -806,7 +697,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/ukf/" class="md-nav__link">
+      <a href="../../usage/ukf/" class="md-nav__link">
         
   
   
@@ -834,7 +725,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/twin_experiments/" class="md-nav__link">
+      <a href="../../usage/twin_experiments/" class="md-nav__link">
         
   
   
@@ -862,7 +753,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/calibration_artifact/" class="md-nav__link">
+      <a href="../../usage/calibration_artifact/" class="md-nav__link">
         
   
   
@@ -951,7 +842,7 @@
   
   
     <li class="md-nav__item">
-      <a href="observability/" class="md-nav__link">
+      <a href="../../observability/" class="md-nav__link">
         
   
   
@@ -979,7 +870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="observability/literature_review/" class="md-nav__link">
+      <a href="../../observability/literature_review/" class="md-nav__link">
         
   
   
@@ -1007,7 +898,7 @@
   
   
     <li class="md-nav__item">
-      <a href="observability/sensor_state_dependencies/" class="md-nav__link">
+      <a href="../../observability/sensor_state_dependencies/" class="md-nav__link">
         
   
   
@@ -1039,28 +930,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   
@@ -1078,7 +972,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1096,7 +990,7 @@
   
   
     <li class="md-nav__item">
-      <a href="theory/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -1124,7 +1018,7 @@
   
   
     <li class="md-nav__item">
-      <a href="theory/adm1/" class="md-nav__link">
+      <a href="../adm1/" class="md-nav__link">
         
   
   
@@ -1152,7 +1046,7 @@
   
   
     <li class="md-nav__item">
-      <a href="theory/pinn/" class="md-nav__link">
+      <a href="../pinn/" class="md-nav__link">
         
   
   
@@ -1180,7 +1074,7 @@
   
   
     <li class="md-nav__item">
-      <a href="theory/observer/" class="md-nav__link">
+      <a href="../observer/" class="md-nav__link">
         
   
   
@@ -1205,10 +1099,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="theory/fusion/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UKF↔PINN-Fusion
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1224,6 +1145,120 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-the-idea-covariance-intersection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. The idea: Covariance Intersection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-the-mathematics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. The mathematics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Implementation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-caveat-calibration-is-a-prerequisite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Caveat: calibration is a prerequisite
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.fusion.hybrid.HybridEstimator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HybridEstimator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.fusion.hybrid.fuse_ci_diagonal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fuse_ci_diagonal
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1297,7 +1332,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/" class="md-nav__link">
+      <a href="../../examples/" class="md-nav__link">
         
   
   
@@ -1386,7 +1421,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/" class="md-nav__link">
+      <a href="../../api/" class="md-nav__link">
         
   
   
@@ -1475,7 +1510,7 @@
   
   
     <li class="md-nav__item">
-      <a href="development/" class="md-nav__link">
+      <a href="../../development/" class="md-nav__link">
         
   
   
@@ -1503,7 +1538,7 @@
   
   
     <li class="md-nav__item">
-      <a href="development/ecosystem-integration/" class="md-nav__link">
+      <a href="../../development/ecosystem-integration/" class="md-nav__link">
         
   
   
@@ -1531,7 +1566,7 @@
   
   
     <li class="md-nav__item">
-      <a href="development/ukf_performance/" class="md-nav__link">
+      <a href="../../development/ukf_performance/" class="md-nav__link">
         
   
   
@@ -1559,7 +1594,7 @@
   
   
     <li class="md-nav__item">
-      <a href="development/realistic_conditions/" class="md-nav__link">
+      <a href="../../development/realistic_conditions/" class="md-nav__link">
         
   
   
@@ -1594,7 +1629,7 @@
   
   
     <li class="md-nav__item">
-      <a href="troubleshooting/" class="md-nav__link">
+      <a href="../../troubleshooting/" class="md-nav__link">
         
   
   
@@ -1675,7 +1710,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ecosystem/" class="md-nav__link">
+      <a href="../../ecosystem/" class="md-nav__link">
         
   
   
@@ -1772,7 +1807,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="Inhaltsverzeichnis">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -1781,15 +1816,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Inhaltsverzeichnis
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#was-dieses-repo-macht" class="md-nav__link">
+  <a href="#1-the-idea-covariance-intersection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Was dieses Repo macht
+        1. The idea: Covariance Intersection
       
     </span>
   </a>
@@ -1797,10 +1832,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#hauptmerkmale" class="md-nav__link">
+  <a href="#2-the-mathematics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Hauptmerkmale
+        2. The mathematics
       
     </span>
   </a>
@@ -1808,10 +1843,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#drei-schatzansatze" class="md-nav__link">
+  <a href="#3-implementation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Drei Schätzansätze
+        3. Implementation
       
     </span>
   </a>
@@ -1819,10 +1854,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#inhaltsverzeichnis" class="md-nav__link">
+  <a href="#4-caveat-calibration-is-a-prerequisite" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Inhaltsverzeichnis
+        4. Caveat: calibration is a prerequisite
       
     </span>
   </a>
@@ -1830,10 +1865,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quickstart" class="md-nav__link">
+  <a href="#source-files" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quickstart
+        Source files
       
     </span>
   </a>
@@ -1841,13 +1876,41 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#verwandte-projekte" class="md-nav__link">
+  <a href="#api-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Verwandte Projekte
+        API reference
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="API reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.fusion.hybrid.HybridEstimator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HybridEstimator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.fusion.hybrid.fuse_ci_diagonal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fuse_ci_diagonal
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1871,125 +1934,247 @@
   
 
 
-<h1 id="pyadm1ode-estimate">PyADM1ODE Estimate<a class="headerlink" href="#pyadm1ode-estimate" title="Permanent link">&para;</a></h1>
-<p><a href="https://www.python.org/downloads/"><img alt="Python" src="https://img.shields.io/badge/python-3.10+-blue.svg" /></a>
-<a href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
-<a href="https://github.com/dgaida/PyADM1ODE_estimate/actions/workflows/tests.yml"><img alt="Tests" src="https://github.com/dgaida/PyADM1ODE_estimate/actions/workflows/tests.yml/badge.svg" /></a></p>
-<p><strong>Zustandsschätzung für landwirtschaftliche Biogasanlagen</strong> auf Basis des
-mechanistischen Modells <strong>ADM1da</strong> (Schlattmann 2011, agrar-erweitertes ADM1),
-implementiert in <a href="https://github.com/dgaida/PyADM1ODE"><code>PyADM1ODE</code></a>.</p>
-<h2 id="was-dieses-repo-macht">Was dieses Repo macht<a class="headerlink" href="#was-dieses-repo-macht" title="Permanent link">&para;</a></h2>
-<p>Im Live-Betrieb wird der Zustand einer realen Anlage aus laufenden
-Sensordaten und einem kalibrierten Simulationsmodell geschätzt. Die
-geschätzten Zustände sind die Eingabe für Regler, die Fütterempfehlungen
-an den Anlagenbetreiber geben.</p>
-<p>Datenfluss:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Historische Messdaten ──► PyADM1ODE_calibration ──► kalibriertes Modell
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                                                            │
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Live-Sensoren ────────────────────────────────────► PyADM1ODE_estimate
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                                                            │
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                                                            ▼
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                                                 Zustandsschätzung x_hat
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                                                            │
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                                                            ▼
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>                                                       Regler / UI
+<h1 id="ukf-pinn-fusion-covariance-intersection">UKF ↔ PINN fusion (covariance intersection)<a class="headerlink" href="#ukf-pinn-fusion-covariance-intersection" title="Permanent link">&para;</a></h1>
+<p>The <a href="../../usage/ukf/">UKF</a> and the PINN family have <strong>complementary</strong> strengths:
+the UKF is well-posed and well-calibrated on the pH / charge-balance states, the
+PINN (<a href="../pinn/">smoother</a> or <a href="../observer/">amortised observer</a>) is strong on the
+biogas-driving states and forecasts naturally. The fusion combines their two
+state trajectories so the result keeps the best of each.</p>
+<hr />
+<h2 id="1-the-idea-covariance-intersection">1. The idea: Covariance Intersection<a class="headerlink" href="#1-the-idea-covariance-intersection" title="Permanent link">&para;</a></h2>
+<p>We have two estimates of the same state, but we do <strong>not</strong> know how correlated
+their errors are (they see the same plant and the same noise). Covariance
+Intersection (CI) fuses them <em>conservatively</em> without assuming independence, so
+the fused estimate stays consistent (never over-confident) and is at least as
+informative as either input.</p>
+<p>Per state, CI weights by <strong>information</strong> (inverse variance): the more confident
+estimate contributes more. A single weight <span class="arithmatex">\(\omega \in [0,1]\)</span> per time step trades
+the two off.</p>
+<hr />
+<h2 id="2-the-mathematics">2. The mathematics<a class="headerlink" href="#2-the-mathematics" title="Permanent link">&para;</a></h2>
+<p>Take two diagonal-covariance estimates with means <span class="arithmatex">\(m_a, m_b\)</span> and per-state
+variances <span class="arithmatex">\(v_a = \sigma_a^2,\ v_b = \sigma_b^2\)</span>, and write the information
+(inverse variance) as <span class="arithmatex">\(I = 1/v\)</span>. CI fuses them as</p>
+<div class="arithmatex">\[
+I_f = \omega\, I_a + (1-\omega)\, I_b, \qquad
+m_f = I_f^{-1}\big(\omega\, I_a\, m_a + (1-\omega)\, I_b\, m_b\big),
+\]</div>
+<p>with fused variance <span class="arithmatex">\(v_f = 1/I_f\)</span>. The weight <span class="arithmatex">\(\omega\)</span> is either fixed or, per
+time step, <strong>optimised</strong> by a grid search that minimises the fused covariance
+determinant. Equivalently, it maximises <span class="arithmatex">\(\sum_\text{states}\log I_f\)</span>.</p>
+<p>Because <span class="arithmatex">\(\omega\)</span> is chosen per step and the covariances are diagonal (built from
+the per-state standard deviations), the fusion is cheap and applies to a whole
+trajectory at once.</p>
+<hr />
+<h2 id="3-implementation">3. Implementation<a class="headerlink" href="#3-implementation" title="Permanent link">&para;</a></h2>
+<p><code>fuse_ci_diagonal(mean_a, std_a, mean_b, std_b, omega=None)</code> is the core: a
+per-time-step CI of two <code>(T, n)</code> estimates, returning the fused mean, fused std,
+and the chosen <span class="arithmatex">\(\omega\)</span> per step.</p>
+<p><code>HybridEstimator</code> wraps it in the <a href="../pinn/"><code>BatchEstimator</code></a> contract. Build it
+from the two sub-estimates, and <code>estimate()</code> returns their CI fusion as a
+<code>TrajectoryEstimate</code>:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.fusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">HybridEstimator</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">hybrid</span> <span class="o">=</span> <span class="n">HybridEstimator</span><span class="p">(</span><span class="n">traj_ukf</span><span class="p">,</span> <span class="n">traj_pinn</span><span class="p">)</span>   <span class="c1"># two TrajectoryEstimates</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">fused</span> <span class="o">=</span> <span class="n">hybrid</span><span class="o">.</span><span class="n">estimate</span><span class="p">()</span>                        <span class="c1"># CI fusion on the shared grid</span>
 </span></code></pre></div>
-<h2 id="hauptmerkmale">Hauptmerkmale<a class="headerlink" href="#hauptmerkmale" title="Permanent link">&para;</a></h2>
+<p>Both inputs must live on the same time grid, <code>fuse_trajectories_ci</code> enforces
+matching shapes.</p>
+<hr />
+<h2 id="4-caveat-calibration-is-a-prerequisite">4. Caveat: calibration is a prerequisite<a class="headerlink" href="#4-caveat-calibration-is-a-prerequisite" title="Permanent link">&para;</a></h2>
+<p>CI weights purely by covariance, so <strong>it is only as good as the inputs'
+calibration</strong>. An over-confident estimator, e.g. MC-Dropout bands that are too
+narrow, is over-trusted and drags the fusion toward it. In the twin comparison
+the fusion <em>never hurts</em>, but it cannot yet blend the UKF's pH strength into the
+state estimate, because the PINN's uncertainty is not yet calibrated.
+Calibrating the PINN band (and fixing the pH conditioning) is the open item that
+unlocks the fusion.</p>
+<hr />
+<h2 id="source-files">Source files<a class="headerlink" href="#source-files" title="Permanent link">&para;</a></h2>
 <ul>
-<li>🎯 <strong>Mechanistisch und datengetrieben</strong> — UKF auf dem vollen 41-State ADM1da<br />
-  plus geplante Deep-Learning- und Fusion-Schichten.  </li>
-<li>🔌 <strong>Sensor-tolerant</strong> — Channel-Gating für sparsame Lab-Messungen,<br />
-  OU-Drift für augmentierte Eingangsschätzung.  </li>
-<li>📊 <strong>Diagnostisch</strong> — NIS-Monitoring je Schritt, Innovation pro Channel,<br />
-  Joseph-Form Kovarianz-Update für lange Läufe.</li>
+<li><code>pyadm1ode_estimation/estimation/fusion/hybrid.py</code> — <code>HybridEstimator</code>, <code>fuse_ci_diagonal</code>, <code>fuse_trajectories_ci</code></li>
 </ul>
-<h2 id="drei-schatzansatze">Drei Schätzansätze<a class="headerlink" href="#drei-schatzansatze" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Ansatz</th>
-<th>Status</th>
-<th>Arbeitspaket</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>UKF</strong> — mechanistisch</td>
-<td>produktiv</td>
-<td>AP 4.2</td>
-</tr>
-<tr>
-<td><strong>Deep Learning Ensemble</strong></td>
-<td>Skelett</td>
-<td>AP 4.3</td>
-</tr>
-<tr>
-<td><strong>Fusion</strong> (Covariance Intersection)</td>
-<td>Platzhalter</td>
-<td>AP 4.4</td>
-</tr>
-</tbody>
-</table>
-<h2 id="inhaltsverzeichnis">Inhaltsverzeichnis<a class="headerlink" href="#inhaltsverzeichnis" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="getting-started/">Erste Schritte</a> — Schneller Einstieg.  </li>
-<li><a href="installation/">Installation</a> — Setup für verschiedene Umgebungen.  </li>
-<li><a href="usage/">Nutzung</a> — UKF konfigurieren, Kalibrierungs-Artefakt einlesen.  </li>
-<li><a href="observability/">Observability</a> — Welche Zustände sind aus welchen Sensoren schätzbar?  </li>
-<li><a href="theory/">Theorie</a> — ADM1da-Modell, PINN-Konzept.  </li>
-<li><a href="examples/">Beispiele</a> — End-to-End-Beispiele (Twin, echte Anlage).  </li>
-<li><a href="api/">API-Referenz</a> — Auto-generiert via mkdocstrings.  </li>
-</ul>
-<h2 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">ADM1ProcessModel</span><span class="p">,</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">InputSpec</span><span class="p">,</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">ObservationChannel</span><span class="p">,</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">ObservationModel</span><span class="p">,</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">adm1da_full_spec</span><span class="p">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">)</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnscentedKalmanFilter</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.observation_model</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">extract_q_gas_total</span><span class="p">,</span> <span class="n">extract_q_ch4_total</span><span class="p">,</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="p">)</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.example_plants</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_multi_stage_plant</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># 1. Anlage bauen (Beispiel oder eigener PyADM1ODE-Builder)</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">plant</span> <span class="o">=</span> <span class="n">build_multi_stage_plant</span><span class="p">()</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># 2. Voller 41-State-Spec mit Substrat-Augmentation</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="n">spec</span> <span class="o">=</span> <span class="n">adm1da_full_spec</span><span class="p">(</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">digester_id</span><span class="o">=</span><span class="s2">&quot;primary&quot;</span><span class="p">,</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="n">substrate_inputs</span><span class="o">=</span><span class="p">[</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        <span class="n">InputSpec</span><span class="p">(</span><span class="s2">&quot;maize_silage&quot;</span><span class="p">,</span>   <span class="n">substrate_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">initial_flow</span><span class="o">=</span><span class="mf">4.74</span><span class="p">),</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>        <span class="n">InputSpec</span><span class="p">(</span><span class="s2">&quot;solid_manure&quot;</span><span class="p">,</span>   <span class="n">substrate_index</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial_flow</span><span class="o">=</span><span class="mf">13.70</span><span class="p">),</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>        <span class="n">InputSpec</span><span class="p">(</span><span class="s2">&quot;chicken_litter&quot;</span><span class="p">,</span> <span class="n">substrate_index</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">initial_flow</span><span class="o">=</span><span class="mf">1.09</span><span class="p">),</span>
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>        <span class="n">InputSpec</span><span class="p">(</span><span class="s2">&quot;slurry&quot;</span><span class="p">,</span>         <span class="n">substrate_index</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">initial_flow</span><span class="o">=</span><span class="mf">3.68</span><span class="p">),</span>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>        <span class="n">InputSpec</span><span class="p">(</span><span class="s2">&quot;cereal_grain&quot;</span><span class="p">,</span>   <span class="n">substrate_index</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">initial_flow</span><span class="o">=</span><span class="mf">0.20</span><span class="p">),</span>
-</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="p">],</span>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="p">)</span>
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>
-</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="c1"># 3. Process- und Observation-Model</span>
-</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="n">process</span> <span class="o">=</span> <span class="n">ADM1ProcessModel</span><span class="p">(</span><span class="n">plant</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
-</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="n">obs</span> <span class="o">=</span> <span class="n">ObservationModel</span><span class="p">(</span><span class="n">channels</span><span class="o">=</span><span class="p">[</span>
-</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>    <span class="n">ObservationChannel</span><span class="p">(</span><span class="s2">&quot;Q_gas&quot;</span><span class="p">,</span> <span class="n">extract_q_gas_total</span><span class="p">,</span> <span class="n">noise_std</span><span class="o">=</span><span class="mf">10.0</span><span class="p">),</span>
-</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>    <span class="n">ObservationChannel</span><span class="p">(</span><span class="s2">&quot;Q_ch4&quot;</span><span class="p">,</span> <span class="n">extract_q_ch4_total</span><span class="p">,</span> <span class="n">noise_std</span><span class="o">=</span><span class="mf">5.0</span><span class="p">),</span>
-</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="p">])</span>
-</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>
-</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="c1"># 4. SR-UKF aufsetzen und laufen lassen</span>
-</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="n">ukf</span> <span class="o">=</span> <span class="n">UnscentedKalmanFilter</span><span class="p">(</span><span class="n">process</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
-</span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a><span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">measurements</span><span class="p">:</span>
-</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>    <span class="n">ukf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="mi">24</span><span class="p">)</span>
-</span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>    <span class="n">step</span> <span class="o">=</span> <span class="n">ukf</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
-</span></code></pre></div>
-<p>Mehr Details: <a href="usage/ukf/">UKF im Einsatz</a> und
-<a href="usage/twin_experiments/">Twin-Experimente</a>.</p>
-<h2 id="verwandte-projekte">Verwandte Projekte<a class="headerlink" href="#verwandte-projekte" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="https://github.com/dgaida/PyADM1ODE">PyADM1ODE</a> — Basis-Paket mit ADM1da-Modell.  </li>
-<li><a href="https://github.com/dgaida/PyADM1ODE_calibration">PyADM1ODE_calibration</a> —<br />
-  Parameter-Kalibrierung gegen historische Daten, schreibt das Calibration-Artefakt.</li>
-</ul>
+<h2 id="api-reference">API reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pyadm1ode_estimation.estimation.fusion.hybrid.HybridEstimator" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">fusion</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">HybridEstimator</span><span class="p">(</span><span class="n">traj_a</span><span class="p">,</span> <span class="n">traj_b</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_floor</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.fusion.hybrid.HybridEstimator" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Variant C: fuses two trajectory estimates (e.g. UKF + PINN) via CI.</p>
+<p>Conforms to the :class:<code>~pyadm1ode_estimation.estimation.base.BatchEstimator</code>
+output contract. Build it with the two sub-estimates already computed over
+the same window; :meth:<code>estimate</code> returns their CI fusion.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pyadm1ode_estimation.estimation.fusion.hybrid.fuse_ci_diagonal" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">fusion</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">fuse_ci_diagonal</span><span class="p">(</span><span class="n">mean_a</span><span class="p">,</span> <span class="n">std_a</span><span class="p">,</span> <span class="n">mean_b</span><span class="p">,</span> <span class="n">std_b</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_grid</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">var_floor</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.fusion.hybrid.fuse_ci_diagonal" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Per-time-step Covariance Intersection of two diagonal-covariance estimates.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>mean_a, std_a, mean_b, std_b</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>(T, n)</code> estimate means and per-state
+standard deviations.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>omega</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>fixed fusion weight in <code>[0, 1]</code>; if <code>None</code> it is optimised per
+time step (grid search minimising the fused covariance determinant).</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>n_grid</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>grid resolution for the ω search.</p>
+              </div>
+            </td>
+            <td>
+                  <code>21</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>var_floor</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>added to variances for numerical safety (zero-std inputs).</p>
+              </div>
+            </td>
+            <td>
+                  <code>1e-12</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>(mean_fused, std_fused, omega_per_step)</code> — the first two shaped</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>(T, n)</code>, the last <code>(T,)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
 
 
 
@@ -2013,7 +2198,7 @@ an den Anlagenbetreiber geben.</p>
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  Zurück zum Seitenanfang
+  Back to top
 </button>
         
       </main>
@@ -2050,12 +2235,12 @@ an den Anlagenbetreiber geben.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
-        <script src="javascripts/mathjax.js"></script>
+        <script src="../../../javascripts/mathjax.js"></script>
       
         <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       

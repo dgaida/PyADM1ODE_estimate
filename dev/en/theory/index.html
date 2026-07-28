@@ -1136,6 +1136,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="observer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vortrainierter Observer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="fusion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UKF↔PINN-Fusion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1741,9 +1797,14 @@
 <li><a href="adm1/">ADM1da model</a> — description of the 41-state model used here<br />
   (Schlattmann 2011, agricultural extension of ADM1) and its key state
   indices.  </li>
-<li><a href="pinn/">PINN</a> — Physics-Informed Neural Network: from the intuition for a
-  newcomer through the loss maths and the ADM1-specific engineering to the
-  implementation (<code>pinn.py</code>, <code>pinn_smoother.py</code>).</li>
+<li><a href="pinn/">PINN</a> — the per-window Physics-Informed Neural Network smoother: from
+  the intuition for a newcomer through the loss maths and the ADM1-specific
+  engineering to the implementation (<code>pinn.py</code>, <code>pinn_smoother.py</code>).</li>
+<li><a href="observer/">Pre-trained observer</a> — the amortised GRU observer: pre-trained
+  offline on many simulated scenarios, then near-instant online inference with
+  self-supervised fine-tuning.</li>
+<li><a href="fusion/">UKF ↔ PINN fusion</a> — combining a UKF and a PINN estimate via
+  covariance intersection.</li>
 </ul>
 <h2 id="background-reading">Background reading<a class="headerlink" href="#background-reading" title="Permanent link">&para;</a></h2>
 <p>The formal observability analysis of ADM1-based models is documented in

@@ -1134,6 +1134,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="observer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vortrainierter Observer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="fusion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UKF↔PINN-Fusion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1738,9 +1794,14 @@
 <ul>
 <li><a href="adm1/">ADM1da-Modell</a> — Beschreibung des verwendeten 41-State-Modells<br />
   (Schlattmann 2011, agrar-erweitertes ADM1) und der zentralen Zustandsindizes.  </li>
-<li><a href="pinn/">PINN</a> — Physics-Informed Neural Network: von der Intuition für
+<li><a href="pinn/">PINN</a> — der per-Window-PINN-Smoother: von der Intuition für
   Einsteiger über die Loss-Mathematik und die ADM1-spezifischen Kniffe bis zur
   Implementierung (<code>pinn.py</code>, <code>pinn_smoother.py</code>).</li>
+<li><a href="observer/">Vortrainierter Observer</a> — der amortisierte GRU-Observer: offline
+  auf vielen simulierten Szenarien vortrainiert, dann nahezu sofortige
+  Online-Inferenz mit self-supervised Feinabstimmung.</li>
+<li><a href="fusion/">UKF ↔ PINN-Fusion</a> — Kombination einer UKF- und einer
+  PINN-Schätzung per Kovarianzschnitt.</li>
 </ul>
 <h2 id="hintergrund-lekture">Hintergrund-Lektüre<a class="headerlink" href="#hintergrund-lekture" title="Permanent link">&para;</a></h2>
 <p>Die formale Observability-Analyse ADM1-basierter Modelle ist in

@@ -18,7 +18,7 @@
         <link rel="prev" href="../adm1/">
       
       
-        <link rel="next" href="../../examples/">
+        <link rel="next" href="../observer/">
       
       
         
@@ -1440,6 +1440,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vortrainierter Observer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fusion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UKF↔PINN-Fusion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2370,10 +2426,10 @@ diesen wenigen verrauschten Signalen alle 41 Zustände über die Zeit zu
 rekonstruieren.</p>
 <p>Es gibt zwei klassische Wege, jeder mit einer Schwäche:</p>
 <ul>
-<li><strong>Rein mechanistisches Modell (ADM1).</strong> Vertrauenswürdige Struktur, aber es
+<li><strong>Rein mechanistisches Modell (ADM1).</strong> Vertrauenswürdige Struktur, aber es<br />
   braucht den exakten Anfangszustand und exakte kinetische Parameter. Kleine
-  Fehler summieren sich und die Simulation driftet von der realen Anlage weg.</li>
-<li><strong>Rein maschinelles Lernen.</strong> Flexibel, aber es braucht einen großen
+  Fehler summieren sich und die Simulation driftet von der realen Anlage weg.  </li>
+<li><strong>Rein maschinelles Lernen.</strong> Flexibel, aber es braucht einen großen<br />
   gelabelten Datensatz <em>echter</em> Zustände zum Lernen, den wir an einer realen
   Anlage nie haben, denn die echten Zustände sind genau das, was wir nicht messen
   können.</li>
@@ -2384,12 +2440,12 @@ Daten braucht und nicht in physikalisch unmögliche Trajektorien abdriften kann.
 <hr />
 <h2 id="2-ein-neuronales-netz">2. Ein neuronales Netz<a class="headerlink" href="#2-ein-neuronales-netz" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Ein neuronales Netz ist eine flexible mathematische Funktion
-  <span class="arithmatex">\(y = \text{NN}_\theta(x)\)</span> mit vielen einstellbaren Zahlen <span class="arithmatex">\(\theta\)</span> (den
-  <em>Gewichten</em>).</li>
-<li><strong>Training</strong> heißt, <span class="arithmatex">\(\theta\)</span> so anzupassen, dass ein <em>Loss</em> per Gradientenabstieg minimiert
-  wird.</li>
-<li>Die <strong>Eingabe ist die Zeit <span class="arithmatex">\(t\)</span></strong> und die <strong>Ausgabe ist der Zustandsvektor <span class="arithmatex">\(\hat{x}(t)\)</span></strong>.
+<li>Ein neuronales Netz ist eine flexible mathematische Funktion<br />
+<span class="arithmatex">\(y = \text{NN}_\theta(x)\)</span> mit vielen einstellbaren Zahlen <span class="arithmatex">\(\theta\)</span> (den
+  <em>Gewichten</em>).  </li>
+<li><strong>Training</strong> heißt, <span class="arithmatex">\(\theta\)</span> so anzupassen, dass ein <em>Loss</em> per Gradientenabstieg minimiert<br />
+  wird.  </li>
+<li>Die <strong>Eingabe ist die Zeit <span class="arithmatex">\(t\)</span></strong> und die <strong>Ausgabe ist der Zustandsvektor <span class="arithmatex">\(\hat{x}(t)\)</span></strong>.<br />
  Das Netz <em>ist</em> also die geschätzte Trajektorie selbst. Fragt man es zu
   einem beliebigen Zeitpunkt <span class="arithmatex">\(t\)</span>, liefert es den geschätzten Anlagenzustand in
   diesem Moment.</li>
@@ -2456,8 +2512,8 @@ Ohne Ausgleich würden die schnellen den Loss dominieren.  Daher wird das Residu
 durch eine typische Skala <span class="arithmatex">\(s\)</span> geteilt, sodass alle gleich zählen (Details in Abschnitt 5):</p>
 <div class="arithmatex">\[
 L_\text{phys} \;=\; \frac{1}{N_c}\sum_{j}
-  \left\lVert \frac{\tfrac{d\hat{x}_\theta}{dt}(\tau_j)
-    - f(\hat{x}_\theta(\tau_j), u)}{s} \right\rVert^2 .
+  \left\lVert \frac{\tfrac{d\hat{x}_\theta}{dt}(\tau_j)  
+    - f(\hat{x}_\theta(\tau_j), u)}{s} \right\rVert^2 .  
 \]</div>
 <p><strong>Prior-Loss:</strong> den Start verankern. Eine schwache Randbedingung, die die
 Trajektorie bei <span class="arithmatex">\(t_0\)</span> an einen physikalischen Prior-Zustand <span class="arithmatex">\(x_\text{prior}\)</span>
@@ -2590,9 +2646,9 @@ in den datenfreien Bereich, eine physikgetriebene Prognose aus demselben Fit.</p
 Optimierer-Zustand für günstige inkrementelle Nachfits, wenn neue Messwerte
 eintreffen:</p>
 <ul>
-<li><strong>wachsendes Fenster:</strong> die ganze Historie behalten, Anker bleibt beim
-  ursprünglichen <code>t0</code>; oder</li>
-<li><strong>gleitendes Fenster:</strong> ein fester Horizont <code>t0 = t1 − window</code>, selbst
+<li><strong>wachsendes Fenster:</strong> die ganze Historie behalten, Anker bleibt beim<br />
+  ursprünglichen <code>t0</code>; oder  </li>
+<li><strong>gleitendes Fenster:</strong> ein fester Horizont <code>t0 = t1 − window</code>, selbst<br />
   verankert am eigenen aktuellen Schätzwert des Netzes am Fensteranfang
   (begrenzt den Rechenaufwand bei langen Läufen).</li>
 </ul>
@@ -2610,21 +2666,21 @@ nicht kalibriert, ein Fit von Grund auf kostet Sekunden bis Minuten pro Fenster.
 <p><strong>Einordnung.</strong> Der UKF (siehe <a href="../../usage/ukf/">UKF im Einsatz</a> und
 <a href="../../development/ukf_performance/">SR-UKF-Performance</a>) ist rekursiv, günstig pro
 Schritt und besser kalibriert, vor allem beim pH. Das PINN ist stärker auf den
-Biogaskanälen und bei der Prognose. Ein <strong>Hybrid</strong> per Kovarianzschnitt
-(<code>fusion/hybrid.py</code>) kann beide fusionieren und die Stärken jedes Schätzers
+Biogaskanälen und bei der Prognose. Ein <strong><a href="../fusion/">Hybrid per Kovarianzschnitt</a></strong>
+kann beide fusionieren und die Stärken jedes Schätzers
 bewahren.</p>
 <hr />
 <h2 id="quelldateien">Quelldateien<a class="headerlink" href="#quelldateien" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn.py</code> — <code>ADM1PINN</code>, <code>PINNLoss</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py</code> — <code>PinnSmoother</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observation_torch.py</code> — <code>TorchObservationModel</code></li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn.py</code> — <code>ADM1PINN</code>, <code>PINNLoss</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py</code> — <code>PinnSmoother</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/observation_torch.py</code> — <code>TorchObservationModel</code>  </li>
 </ul>
 <h2 id="literatur">Literatur<a class="headerlink" href="#literatur" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Raissi, M., Perdikaris, P. &amp; Karniadakis, G. E. (2019). <em>Physics-informed
-  neural networks.</em> Journal of Computational Physics 378:686–707.</li>
-<li>ADM1da-Modell und Zustandsindizes: <a href="../adm1/">ADM1da-Modell</a>.</li>
+<li>Raissi, M., Perdikaris, P. &amp; Karniadakis, G. E. (2019). <em>Physics-informed<br />
+  neural networks.</em> Journal of Computational Physics 378:686–707.  </li>
+<li>ADM1da-Modell und Zustandsindizes: <a href="../adm1/">ADM1da-Modell</a>.  </li>
 </ul>
 <h2 id="api-referenz">API-Referenz<a class="headerlink" href="#api-referenz" title="Permanent link">&para;</a></h2>
 
