@@ -25,11 +25,11 @@ $$
 
 Two things carry over unchanged from the [smoother](pinn.md):
 
-* **Positivity / scaling** — the head predicts only the **37 liquid states** as a
+* **Positivity / scaling** — the head predicts only the **37 liquid states** as a  
   log-deviation from a reference, $\hat{x}_\text{liq} = x_\text{ref}\odot
   \exp(\text{raw})$, and the 4 gas pressures are slaved by the quasi-steady
-  equilibrium solve.
-* **Causality** — the GRU at step $t$ sees only past and present inputs, so the
+  equilibrium solve.  
+* **Causality** — the GRU at step $t$ sees only past and present inputs, so the  
   newest step is a proper **online filtered** estimate: the same network runs as
   a streaming filter (section 3).
 
@@ -87,10 +87,10 @@ It keeps a moving window of recent readings. On every new sample it returns the
 current estimate and, on a schedule, self-supervised fine-tunes on the window.
 Two operational details:
 
-* **Feed-aware physics** — off the nominal operating point the pre-trained
+* **Feed-aware physics** — off the nominal operating point the pre-trained  
   parameters' nominal feed is wrong, so the fine-tune rescales `q_ad` (the total
-  influent flow into the digester [m³/d]) to the window's actual mean feed.
-* **Missing sensors** — a gated/offline reading arrives as `NaN`. The recurrent
+  influent flow into the digester [m³/d]) to the window's actual mean feed.  
+* **Missing sensors** — a gated/offline reading arrives as `NaN`. The recurrent  
   net cannot take `NaN`, so it is mapped to the normalised mean (0) on the input
   side and masked out of the loss on the target side.
 
@@ -115,10 +115,10 @@ For where both PINNs sit relative to the UKF, and how to combine them, see the
 
 ## Source files
 
-* `pyadm1ode_estimation/estimation/deep_learning/observer.py` — `Adm1Observer`
-* `pyadm1ode_estimation/estimation/deep_learning/observer_data.py` — `generate_observer_dataset`, `ObserverDataset`, `MeasurementDataset`
-* `pyadm1ode_estimation/estimation/deep_learning/observer_train.py` — `pretrain_observer`, `pretrain_observer_selfsup`, `pretrain_observer_sim2real`, `finetune_observer`
-* `pyadm1ode_estimation/estimation/deep_learning/online_observer.py` — `SlidingWindowObserver`
+* `pyadm1ode_estimation/estimation/deep_learning/observer.py` — `Adm1Observer`  
+* `pyadm1ode_estimation/estimation/deep_learning/observer_data.py` — `generate_observer_dataset`, `ObserverDataset`, `MeasurementDataset`  
+* `pyadm1ode_estimation/estimation/deep_learning/observer_train.py` — `pretrain_observer`, `pretrain_observer_selfsup`, `pretrain_observer_sim2real`, `finetune_observer`  
+* `pyadm1ode_estimation/estimation/deep_learning/online_observer.py` — `SlidingWindowObserver`  
 
 ## API reference
 

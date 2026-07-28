@@ -26,11 +26,11 @@ $$
 
 Zwei Dinge werden unverändert vom [Smoother](pinn.md) übernommen:
 
-* **Positivität / Skalierung:** der Kopf sagt nur die **37 Flüssigzustände** als
+* **Positivität / Skalierung:** der Kopf sagt nur die **37 Flüssigzustände** als  
   Log-Abweichung von einer Referenz vorher, $\hat{x}_\text{liq} = x_\text{ref}
   \odot \exp(\text{raw})$,
-  und die 4 Gasdrücke folgen aus dem quasi-stationären Gleichgewicht.
-* **Kausalität:** das GRU sieht in Schritt $t$ nur Vergangenheit und Gegenwart,
+  und die 4 Gasdrücke folgen aus dem quasi-stationären Gleichgewicht.  
+* **Kausalität:** das GRU sieht in Schritt $t$ nur Vergangenheit und Gegenwart,  
   der neueste Schritt ist damit eine echte **online gefilterte** Schätzung: das
   Netz läuft als Streaming-Filter (Abschnitt 3).
 
@@ -90,11 +90,11 @@ Er hält ein gleitendes Fenster jüngster Messwerte. Bei jedem neuen Sample gibt
 die aktuelle Schätzung zurück und feintunt nach Zeitplan self-supervised auf dem
 Fenster. Zwei Betriebsdetails:
 
-* **Zufuhr-bewusste Physik:** abseits des nominalen Betriebspunkts stimmt die
+* **Zufuhr-bewusste Physik:** abseits des nominalen Betriebspunkts stimmt die  
   nominale Zufuhr der vortrainierten Parameter nicht, daher skaliert die
   Feinabstimmung `q_ad` (die gesamte Zulaufrate in den Fermenter [m³/d])
-  auf die tatsächliche mittlere Zufuhr des Fensters.
-* **Fehlende Sensoren:** ein geblockter/offline Messwert kommt als `NaN`. Das
+  auf die tatsächliche mittlere Zufuhr des Fensters.  
+* **Fehlende Sensoren:** ein geblockter/offline Messwert kommt als `NaN`. Das  
   rekurrente Netz kann `NaN` nicht verarbeiten, daher wird er eingabeseitig auf
   den normierten Mittelwert (0) abgebildet und zielseitig aus dem Loss maskiert.
 
@@ -120,10 +120,10 @@ Wie beide PINNs relativ zum UKF stehen und wie man sie kombiniert, siehe die
 
 ## Quelldateien
 
-* `pyadm1ode_estimation/estimation/deep_learning/observer.py` — `Adm1Observer`
-* `pyadm1ode_estimation/estimation/deep_learning/observer_data.py` — `generate_observer_dataset`, `ObserverDataset`, `MeasurementDataset`
-* `pyadm1ode_estimation/estimation/deep_learning/observer_train.py` — `pretrain_observer`, `pretrain_observer_selfsup`, `pretrain_observer_sim2real`, `finetune_observer`
-* `pyadm1ode_estimation/estimation/deep_learning/online_observer.py` — `SlidingWindowObserver`
+* `pyadm1ode_estimation/estimation/deep_learning/observer.py` — `Adm1Observer`  
+* `pyadm1ode_estimation/estimation/deep_learning/observer_data.py` — `generate_observer_dataset`, `ObserverDataset`, `MeasurementDataset`  
+* `pyadm1ode_estimation/estimation/deep_learning/observer_train.py` — `pretrain_observer`, `pretrain_observer_selfsup`, `pretrain_observer_sim2real`, `finetune_observer`  
+* `pyadm1ode_estimation/estimation/deep_learning/online_observer.py` — `SlidingWindowObserver`  
 
 ## API-Referenz
 

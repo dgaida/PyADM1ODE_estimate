@@ -81,7 +81,7 @@ Punkt, der die Fusion freischaltet.
 
 ## Quelldateien
 
-* `pyadm1ode_estimation/estimation/fusion/hybrid.py` — `HybridEstimator`, `fuse_ci_diagonal`, `fuse_trajectories_ci`
+* `pyadm1ode_estimation/estimation/fusion/hybrid.py` — `HybridEstimator`, `fuse_ci_diagonal`, `fuse_trajectories_ci`  
 
 ## API-Referenz
 
