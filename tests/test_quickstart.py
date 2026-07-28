@@ -33,7 +33,7 @@ class _StubDigester:
         self.Q_substrates = [0.0] * 10
 
         class _ADM1:
-            _kinetic = {}
+            _kinetic = {}  # noqa: RUF012
 
             def create_influent(self, q, k):
                 pass
@@ -242,7 +242,7 @@ class TestBuildUKFConstruction:
     def test_custom_observation_channel_passes_through(self):
         plant = _StubPlant()
 
-        def extractor(plant, x):  # noqa: ARG001
+        def extractor(plant, x):
             return 42.0
 
         custom = ObservationChannel(

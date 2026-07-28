@@ -12,13 +12,13 @@ from an in-memory ``pandas.DataFrame``. Database-specific adapters
 and only need to implement the protocol.
 """
 
-from .sensor_defs import SensorChannelDef, UNIT_CONVERSIONS, lookup_conversion
+from .sensor_defs import UNIT_CONVERSIONS, SensorChannelDef, lookup_conversion
 from .sensor_source import DataFrameSensorSource, SensorSource
 
 __all__ = [
-    "SensorChannelDef",
     "UNIT_CONVERSIONS",
-    "lookup_conversion",
-    "SensorSource",
     "DataFrameSensorSource",
+    "SensorChannelDef",
+    "SensorSource",
+    "lookup_conversion",
 ]

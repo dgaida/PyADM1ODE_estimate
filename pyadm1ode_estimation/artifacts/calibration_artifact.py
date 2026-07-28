@@ -57,7 +57,7 @@ from __future__ import annotations
 import warnings
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 import yaml
 
@@ -106,11 +106,11 @@ class CalibrationMetadata:
     plant_id: str
     calibration_run_id: str
     timestamp: str = ""
-    data_window_start: Optional[str] = None
-    data_window_end: Optional[str] = None
+    data_window_start: str | None = None
+    data_window_end: str | None = None
     adm1_version: str = ""
     calibration_version: str = ""
-    fitted_against: List[str] = field(default_factory=list)
+    fitted_against: list[str] = field(default_factory=list)
     notes: str = ""
 
 
@@ -142,10 +142,10 @@ class CalibrationArtifact:
     """
 
     metadata: CalibrationMetadata
-    kinetic: Dict[str, Dict[str, float]] = field(default_factory=dict)
-    substrates: Dict[str, Dict[str, float]] = field(default_factory=dict)
-    initial_state: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-    residuals: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    kinetic: dict[str, dict[str, float]] = field(default_factory=dict)
+    substrates: dict[str, dict[str, float]] = field(default_factory=dict)
+    initial_state: dict[str, dict[str, Any]] = field(default_factory=dict)
+    residuals: dict[str, dict[str, Any]] = field(default_factory=dict)
     schema_version: int = SCHEMA_VERSION
 
 
@@ -154,7 +154,7 @@ class CalibrationArtifact:
 # ---------------------------------------------------------------------------
 
 
-def save_artifact(artifact: CalibrationArtifact, path: Union[str, Path]) -> None:
+def save_artifact(artifact: CalibrationArtifact, path: str | Path) -> None:
     """Serialize an artifact to a YAML file.
 
     Schreibt das Artefakt als YAML-Datei.
@@ -177,7 +177,7 @@ def save_artifact(artifact: CalibrationArtifact, path: Union[str, Path]) -> None
         )
 
 
-def load_artifact(path: Union[str, Path]) -> CalibrationArtifact:
+def load_artifact(path: str | Path) -> CalibrationArtifact:
     """Load an artifact from a YAML file.
 
     Lädt ein Artefakt aus einer YAML-Datei.
@@ -203,7 +203,7 @@ def load_artifact(path: Union[str, Path]) -> CalibrationArtifact:
     return _from_yaml_dict(payload)
 
 
-def _to_yaml_dict(artifact: CalibrationArtifact) -> Dict[str, Any]:
+def _to_yaml_dict(artifact: CalibrationArtifact) -> dict[str, Any]:
     """Convert an artifact into a YAML-friendly nested dict."""
     return {
         "schema_version": artifact.schema_version,
@@ -222,7 +222,7 @@ def _from_yaml_dict(payload: Any) -> CalibrationArtifact:
         ValueError: For malformed payloads or unknown schema versions.
     """
     if not isinstance(payload, dict):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY004
             "Calibration artifact YAML must be a mapping at the top "
             f"level; got {type(payload).__name__}."
         )
@@ -237,7 +237,7 @@ def _from_yaml_dict(payload: Any) -> CalibrationArtifact:
 
     meta_payload = payload.get("metadata", {}) or {}
     if not isinstance(meta_payload, dict):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY004
             "'metadata' section must be a mapping; got "
             f"{type(meta_payload).__name__}."
         )
@@ -260,20 +260,20 @@ def _from_yaml_dict(payload: Any) -> CalibrationArtifact:
     )
 
 
-def _dict_section(payload: Dict[str, Any], key: str) -> Dict[str, Dict[str, Any]]:
+def _dict_section(payload: dict[str, Any], key: str) -> dict[str, dict[str, Any]]:
     val = payload.get(key)
     if val is None:
         return {}
     if not isinstance(val, dict):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY004
             f"'{key}' section must be a mapping; got {type(val).__name__}."
         )
     return {str(k): dict(v) if isinstance(v, dict) else v for k, v in val.items()}
 
 
-def _to_plain(d: Dict[str, Any]) -> Dict[str, Any]:
+def _to_plain(d: dict[str, Any]) -> dict[str, Any]:
     """Recursively cast dict values to plain Python for clean YAML output."""
-    out: Dict[str, Any] = {}
+    out: dict[str, Any] = {}
     for k, v in d.items():
         if isinstance(v, dict):
             out[str(k)] = _to_plain(v)
@@ -291,10 +291,10 @@ def _to_plain(d: Dict[str, Any]) -> Dict[str, Any]:
 
 def apply_to_plant(
     artifact: CalibrationArtifact,
-    plant: "BiogasPlant",
+    plant: BiogasPlant,
     *,
     strict: bool = False,
-) -> Dict[str, List[str]]:
+) -> dict[str, list[str]]:
     """Overlay the artifact's parameters onto a fresh :class:`BiogasPlant`.
 
     Trägt die kalibrierten Parameter auf eine bereits gebaute Anlage auf.
@@ -320,8 +320,8 @@ def apply_to_plant(
         A diagnostics dict with keys ``"applied"`` (parameters actually
         written) and ``"skipped"`` (mismatches encountered).
     """
-    applied: List[str] = []
-    skipped: List[str] = []
+    applied: list[str] = []
+    skipped: list[str] = []
 
     _apply_kinetic(artifact, plant, applied, skipped, strict)
     _apply_initial_state(artifact, plant, applied, skipped, strict)
@@ -332,9 +332,9 @@ def apply_to_plant(
 
 def _apply_kinetic(
     artifact: CalibrationArtifact,
-    plant: "BiogasPlant",
-    applied: List[str],
-    skipped: List[str],
+    plant: BiogasPlant,
+    applied: list[str],
+    skipped: list[str],
     strict: bool,
 ) -> None:
     for digester_id, overrides in artifact.kinetic.items():
@@ -365,9 +365,9 @@ def _apply_kinetic(
 
 def _apply_initial_state(
     artifact: CalibrationArtifact,
-    plant: "BiogasPlant",
-    applied: List[str],
-    skipped: List[str],
+    plant: BiogasPlant,
+    applied: list[str],
+    skipped: list[str],
     strict: bool,
 ) -> None:
     for digester_id, state in artifact.initial_state.items():
@@ -422,9 +422,9 @@ def _apply_initial_state(
 
 def _apply_substrates(
     artifact: CalibrationArtifact,
-    plant: "BiogasPlant",
-    applied: List[str],
-    skipped: List[str],
+    plant: BiogasPlant,
+    applied: list[str],
+    skipped: list[str],
     strict: bool,
 ) -> None:
     # Substrate-fraction override is plant-builder specific. Until a
@@ -440,7 +440,7 @@ def _apply_substrates(
         )
 
 
-def _miss(skipped: List[str], strict: bool, msg: str) -> None:
+def _miss(skipped: list[str], strict: bool, msg: str) -> None:
     if strict:
         raise KeyError(msg)
     warnings.warn(msg, RuntimeWarning, stacklevel=3)

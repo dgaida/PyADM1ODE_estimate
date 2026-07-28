@@ -17,8 +17,9 @@ one-off sensors.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -70,10 +71,10 @@ class ObservationChannel:
     name: str
     extractor: Extractor
     noise_std: float
-    gate_column: Optional[str] = None
+    gate_column: str | None = None
     gate_predicate: str = "truthy"
 
-    def is_active(self, gate_value: Optional[float]) -> bool:
+    def is_active(self, gate_value: float | None) -> bool:
         if self.gate_column is None:
             return True
         if gate_value is None:
@@ -98,7 +99,7 @@ class ObservationModel:
     predicted vector + measurement-noise diagonal in matching order.
     """
 
-    def __init__(self, channels: List[ObservationChannel]):
+    def __init__(self, channels: list[ObservationChannel]):
         names = [c.name for c in channels]
         if len(names) != len(set(names)):
             raise ValueError("Duplicate channel names in ObservationModel.")
@@ -107,7 +108,7 @@ class ObservationModel:
     def __len__(self) -> int:
         return len(self.channels)
 
-    def match_measurements(self, y: Dict[str, float]) -> Dict[str, float]:
+    def match_measurements(self, y: dict[str, float]) -> dict[str, float]:
         """Resolve a user measurement dict onto canonical channel names.
 
         Matching is forgiving: case- and separator-insensitive, and the
@@ -120,18 +121,18 @@ class ObservationModel:
 
         Returns a new dict keyed by the exact ``ObservationChannel.name``.
         """
-        norm_to_keys: Dict[str, List[str]] = {}
-        loose_to_keys: Dict[str, List[str]] = {}
+        norm_to_keys: dict[str, list[str]] = {}
+        loose_to_keys: dict[str, list[str]] = {}
         for k in y:
             norm_to_keys.setdefault(_normalize_key(k), []).append(k)
             loose_to_keys.setdefault(_loose_key(k), []).append(k)
 
         # A loose channel form is only usable if no other channel shares it.
-        chan_loose: Dict[str, List[str]] = {}
+        chan_loose: dict[str, list[str]] = {}
         for c in self.channels:
             chan_loose.setdefault(_loose_key(c.name), []).append(c.name)
 
-        resolved: Dict[str, float] = {}
+        resolved: dict[str, float] = {}
         for c in self.channels:
             cand = norm_to_keys.get(_normalize_key(c.name))
             if cand is None:
@@ -146,8 +147,8 @@ class ObservationModel:
         return resolved
 
     def active_channels(
-        self, gate_values: Dict[str, float]
-    ) -> List[ObservationChannel]:
+        self, gate_values: dict[str, float]
+    ) -> list[ObservationChannel]:
         return [
             c
             for c in self.channels
@@ -156,9 +157,9 @@ class ObservationModel:
 
     def predict(
         self,
-        plant: "BiogasPlant",
+        plant: BiogasPlant,
         x: np.ndarray,
-        active: Optional[List[ObservationChannel]] = None,
+        active: list[ObservationChannel] | None = None,
     ) -> np.ndarray:
         """Evaluate ``h_i(plant, x)`` for every active channel.
 
@@ -167,7 +168,7 @@ class ObservationModel:
         chans = active if active is not None else self.channels
         return np.array([float(c.extractor(plant, x)) for c in chans], dtype=float)
 
-    def R(self, active: Optional[List[ObservationChannel]] = None) -> np.ndarray:
+    def R(self, active: list[ObservationChannel] | None = None) -> np.ndarray:
         chans = active if active is not None else self.channels
         return np.diag([c.noise_std**2 for c in chans])
 
@@ -177,43 +178,43 @@ class ObservationModel:
 # --------------------------------------------------------------------------
 
 
-def _digester_iter(plant: "BiogasPlant"):
+def _digester_iter(plant: BiogasPlant):
     for comp in plant.components.values():
         if comp.component_type.value == "digester":
             yield comp
 
 
-def _chp_iter(plant: "BiogasPlant"):
+def _chp_iter(plant: BiogasPlant):
     for comp in plant.components.values():
         if comp.component_type.value == "chp":
             yield comp
 
 
-def _heating_iter(plant: "BiogasPlant"):
+def _heating_iter(plant: BiogasPlant):
     for comp in plant.components.values():
         if comp.component_type.value == "heating":
             yield comp
 
 
-def extract_q_gas_total(plant: "BiogasPlant", x: np.ndarray) -> float:
+def extract_q_gas_total(plant: BiogasPlant, x: np.ndarray) -> float:
     return float(sum(d.outputs_data.get("Q_gas", 0.0) for d in _digester_iter(plant)))
 
 
-def extract_q_ch4_total(plant: "BiogasPlant", x: np.ndarray) -> float:
+def extract_q_ch4_total(plant: BiogasPlant, x: np.ndarray) -> float:
     return float(sum(d.outputs_data.get("Q_ch4", 0.0) for d in _digester_iter(plant)))
 
 
-def extract_q_gas_consumed_total(plant: "BiogasPlant", x: np.ndarray) -> float:
+def extract_q_gas_consumed_total(plant: BiogasPlant, x: np.ndarray) -> float:
     return float(
         sum(c.outputs_data.get("Q_gas_consumed", 0.0) for c in _chp_iter(plant))
     )
 
 
-def extract_p_el_total(plant: "BiogasPlant", x: np.ndarray) -> float:
+def extract_p_el_total(plant: BiogasPlant, x: np.ndarray) -> float:
     return float(sum(c.outputs_data.get("P_el", 0.0) for c in _chp_iter(plant)))
 
 
-def extract_p_th_used_total(plant: "BiogasPlant", x: np.ndarray) -> float:
+def extract_p_th_used_total(plant: BiogasPlant, x: np.ndarray) -> float:
     return float(
         sum(h.outputs_data.get("P_th_used", 0.0) for h in _heating_iter(plant))
     )
@@ -236,7 +237,7 @@ def make_q_gas_extractor(digester_id: str) -> Extractor:
     fudged number (see :meth:`UnscentedKalmanFilter.update`).
     """
 
-    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+    def extractor(plant: BiogasPlant, x: np.ndarray) -> float:
         comp = plant.components[digester_id]
         return float(comp.outputs_data.get("Q_gas", float("nan")))
 
@@ -250,7 +251,7 @@ def make_q_ch4_extractor(digester_id: str) -> Extractor:
     :func:`make_q_gas_extractor` for the multi-stage rationale.
     """
 
-    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+    def extractor(plant: BiogasPlant, x: np.ndarray) -> float:
         comp = plant.components[digester_id]
         return float(comp.outputs_data.get("Q_ch4", float("nan")))
 
@@ -265,9 +266,24 @@ def make_q_co2_extractor(digester_id: str) -> Extractor:
     drops the channel for that step.
     """
 
-    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+    def extractor(plant: BiogasPlant, x: np.ndarray) -> float:
         comp = plant.components[digester_id]
         return float(comp.outputs_data.get("Q_co2", float("nan")))
+
+    return extractor
+
+
+def make_ts_extractor(digester_id: str) -> Extractor:
+    """Total solids [% mass] of a single named digester (``TS``).
+
+    Reads the digester's ``TS`` indicator — the online microwave total-solids
+    reading of a Proline Teqwave MW 300. Returns ``NaN`` when unavailable so the
+    UKF drops the channel for that step.
+    """
+
+    def extractor(plant: BiogasPlant, x: np.ndarray) -> float:
+        comp = plant.components[digester_id]
+        return float(comp.outputs_data.get("TS", float("nan")))
 
     return extractor
 
@@ -281,7 +297,7 @@ def make_vfa_extractor(digester_id: str) -> Extractor:
     gated rather than fed every step.
     """
 
-    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+    def extractor(plant: BiogasPlant, x: np.ndarray) -> float:
         comp = plant.components[digester_id]
         return float(comp.outputs_data.get("VFA", float("nan")))
 
@@ -295,7 +311,7 @@ def make_state_extractor(channel_index: int) -> Extractor:
     ``hopper_dose`` when the load-cell sees a negative ΔW).
     """
 
-    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+    def extractor(plant: BiogasPlant, x: np.ndarray) -> float:
         return float(x[channel_index])
 
     return extractor
@@ -304,7 +320,7 @@ def make_state_extractor(channel_index: int) -> Extractor:
 def make_stored_volume_extractor(digester_id: str) -> Extractor:
     """Return the fractional fill of the named digester's gas dome."""
 
-    def extractor(plant: "BiogasPlant", x: np.ndarray) -> float:
+    def extractor(plant: BiogasPlant, x: np.ndarray) -> float:
         comp = plant.components[digester_id]
         gs = comp.outputs_data.get("gas_storage", {}) or {}
         vol = gs.get("stored_volume_m3", float("nan"))
@@ -316,7 +332,7 @@ def make_stored_volume_extractor(digester_id: str) -> Extractor:
     return extractor
 
 
-BUILT_IN_EXTRACTORS: Dict[str, Extractor] = {
+BUILT_IN_EXTRACTORS: dict[str, Extractor] = {
     "Q_gas": extract_q_gas_total,
     "Q_ch4": extract_q_ch4_total,
     "Q_gas_consumed": extract_q_gas_consumed_total,

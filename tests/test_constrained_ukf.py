@@ -15,7 +15,6 @@ Covers three properties that together define correctness:
 
 from __future__ import annotations
 
-
 import numpy as np
 import pytest
 
@@ -40,10 +39,10 @@ class LinearProcess:
         self.F = np.asarray(F, dtype=float)
         self.plant = object()
 
-    def step(self, x, dt):  # noqa: ARG002
+    def step(self, x, dt):
         return self.F @ x
 
-    def refresh_outputs(self, x, equilibration_dt=1.0 / 24.0):  # noqa: ARG002
+    def refresh_outputs(self, x, equilibration_dt=1.0 / 24.0):
         return None
 
     def snapshot(self):
@@ -172,7 +171,7 @@ def test_cukf_respects_upper_bound_when_measurement_pulls_high():
 # tests run without pyadm1's substrate YAML catalog (which CI environments
 # typically lack). Real-plant smoke testing is the bench script's job.
 # --------------------------------------------------------------------------
-from _mock_plant import build_mock_components  # noqa: E402
+from _mock_plant import build_mock_components
 
 
 @pytest.mark.slow

@@ -85,8 +85,6 @@ Typical usage::
 
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
-
 from ..io import SensorChannelDef
 
 # ---------------------------------------------------------------------------
@@ -120,21 +118,21 @@ _RHO_CHICKEN_LITTER_KG_M3 = 750.0
 
 #: pH [-] - below 3 or above 11 means probe failure / coating, not a
 #: real fermenter state. Tighten if you trust the probe more.
-_PH_RANGE: Tuple[float, float] = (3.0, 11.0)
+_PH_RANGE: tuple[float, float] = (3.0, 11.0)
 
 #: Total biogas flow [m³/d] at full multi-stage scale. Upper bound
 #: 50 000 covers a 1 MW-class plant, lower bound 0 catches negative
 #: readings from a stalled meter.
-_Q_GAS_RANGE: Tuple[float, float] = (0.0, 50_000.0)
+_Q_GAS_RANGE: tuple[float, float] = (0.0, 50_000.0)
 
 #: Methane flow [m³/d] - bounded by Q_gas × 75 % (theoretical max
 #: CH₄ content). 30 000 is generous.
-_Q_CH4_RANGE: Tuple[float, float] = (0.0, 30_000.0)
+_Q_CH4_RANGE: tuple[float, float] = (0.0, 30_000.0)
 
 #: Substrate-dose volumetric flow [m³/d] at the primary stage.
 #: 200 covers transient pulse-feeding peaks well above the ~23 m³/d
 #: nominal total dosing of the multi-stage plant.
-_Q_SUBSTRATE_RANGE: Tuple[float, float] = (0.0, 200.0)
+_Q_SUBSTRATE_RANGE: tuple[float, float] = (0.0, 200.0)
 
 
 # ---------------------------------------------------------------------------
@@ -146,7 +144,7 @@ _Q_SUBSTRATE_RANGE: Tuple[float, float] = (0.0, 200.0)
 # common case of a NULL row in the DB export. The set is broader than
 # the dataclass default so it actually catches real plant exports.
 
-_BAD_STATUS: Tuple = (
+_BAD_STATUS: tuple = (
     # OPC-UA "Bad" / "Uncertain" enumeration strings
     "Bad",
     "Uncertain",
@@ -175,7 +173,7 @@ def build_example_sensor_defs(
     rho_cereal_kg_m3: float = _RHO_CEREAL_KG_M3,
     rho_solid_manure_kg_m3: float = _RHO_SOLID_MANURE_KG_M3,
     rho_chicken_litter_kg_m3: float = _RHO_CHICKEN_LITTER_KG_M3,
-) -> List[SensorChannelDef]:
+) -> list[SensorChannelDef]:
     """Construct the example sensor-channel mapping.
 
     The returned list mirrors a realistic SCADA tag set for the
@@ -302,7 +300,7 @@ def build_example_sensor_defs(
     ]
 
 
-def example_scada_columns() -> Dict[str, str]:
+def example_scada_columns() -> dict[str, str]:
     """Return the expected DB-column → description mapping.
 
     Useful when wiring the adapter to a live DB view - pass the dict

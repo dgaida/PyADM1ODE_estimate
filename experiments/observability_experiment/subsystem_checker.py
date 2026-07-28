@@ -22,9 +22,9 @@ from __future__ import annotations
 import argparse
 import gc
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, List
 
 import numpy as np
 import psutil
@@ -39,8 +39,8 @@ import sympy as sp
 class SubsystemSpec:
     name: str
     label: str
-    x_names: List[str]
-    u_names: List[str]
+    x_names: list[str]
+    u_names: list[str]
     f_builder: Callable
     h_builder: Callable
     boundary_note: str = ""
@@ -69,13 +69,13 @@ def _mem_mib() -> float:
 # ---------------------------------------------------------------------------
 
 
-def _lie(h: sp.Matrix, f: sp.Matrix, x: List[sp.Symbol]) -> sp.Matrix:
+def _lie(h: sp.Matrix, f: sp.Matrix, x: list[sp.Symbol]) -> sp.Matrix:
     """L_f h = (∂h/∂x) · f."""
     return h.jacobian(x) * f
 
 
 def _safe_lambdify_eval(
-    expr: sp.Matrix, vars_: List[sp.Symbol], values: List[float]
+    expr: sp.Matrix, vars_: list[sp.Symbol], values: list[float]
 ) -> np.ndarray:
     """Lambdify expr w.r.t. vars_ and evaluate at values. Returns 2D ndarray."""
     fn = sp.lambdify(vars_, expr, "numpy")
@@ -123,13 +123,13 @@ def check_observability(
     all_vars = x + u
     sample_values = [sample[v] for v in all_vars]
 
-    rows_numeric: List[np.ndarray] = []
+    rows_numeric: list[np.ndarray] = []
 
     # Iteration 0: ∂h/∂x
     try:
         J0 = h.jacobian(x)
         rows_numeric.append(_safe_lambdify_eval(J0, all_vars, sample_values))
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return ProfileResult(
             name=spec.name,
             label=spec.label,
@@ -171,7 +171,7 @@ def check_observability(
             Lkh = _lie(Lkh, f, x)
             Jk = Lkh.jacobian(x)
             rows_numeric.append(_safe_lambdify_eval(Jk, all_vars, sample_values))
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return ProfileResult(
                 name=spec.name,
                 label=spec.label,
@@ -336,7 +336,7 @@ def _B_f(x, u):
     # they form a closed 2-state subsystem that the FOS sensor cannot see.
     # We drop them from B's state vector — they are tracked open-loop via A.
     S_su, S_aa, S_va, S_bu, S_pro, X_su, X_aa, X_c4, X_pro = x
-    Q, I_su, I_aa, I_c4, I_pro, Rho_hyd_ch, Rho_hyd_pr, Rho_hyd_li, S_ac_in_B = u
+    Q, I_su, I_aa, I_c4, I_pro, Rho_hyd_ch, Rho_hyd_pr, Rho_hyd_li, _S_ac_in_B = u
 
     rho_su = K_M_SU * S_su / (K_S_SU + S_su) * X_su * I_su
     rho_aa = K_M_AA * S_aa / (K_S_AA + S_aa) * X_aa * I_aa
@@ -375,7 +375,7 @@ def _B_f(x, u):
 
 
 def _B_h(x, u):
-    S_su, S_aa, S_va, S_bu, S_pro, *_ = x
+    _S_su, _S_aa, S_va, S_bu, S_pro, *_ = x
     # VFA-sum (= FOS titration); S_ac taken as boundary input is added by the
     # operator but not differentiated. Sum gives essentially S_va + S_bu/2.x +
     # S_pro/1.x + S_ac scaled. Without S_ac the output is sum of state coords.
@@ -630,7 +630,7 @@ def _E_f(x, u):
         Rho_hyd_pr,
         Rho_hyd_li,
         sum_decay,
-        S_nh3_D,
+        _S_nh3_D,
     ) = u
 
     D = Q / V_LIQ
@@ -889,7 +889,7 @@ def main():
 
     print("Plan B -- Python/sympy subsystem checker for ADM1da", flush=True)
     print("=" * 60, flush=True)
-    results: List[ProfileResult] = []
+    results: list[ProfileResult] = []
     total_t0 = time.perf_counter()
 
     for spec in specs:
@@ -926,7 +926,7 @@ def _dummy_args(spec: SubsystemSpec):
     return x, u
 
 
-def _write_report(results: List[ProfileResult], total_wall: float, path: str):
+def _write_report(results: list[ProfileResult], total_wall: float, path: str):
     p = Path(path)
     lines = [
         "# ADM1da subsystem observability",

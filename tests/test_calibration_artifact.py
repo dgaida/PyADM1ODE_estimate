@@ -29,13 +29,13 @@ def make_artifact(**overrides) -> CalibrationArtifact:
         timestamp="2026-05-14T12:30:00Z",
         fitted_against=["Q_gas"],
     )
-    base = dict(
-        metadata=metadata,
-        kinetic={"primary": {"k_dis": 0.4, "k_hyd_ch": 10.0}},
-        substrates={"maize": {"f_ch_xc": 0.55}},
-        initial_state={"primary": {"_values": [0.1, 0.2, 0.3]}},
-        residuals={"Q_gas": {"rmse": 145.0}},
-    )
+    base = {
+        "metadata": metadata,
+        "kinetic": {"primary": {"k_dis": 0.4, "k_hyd_ch": 10.0}},
+        "substrates": {"maize": {"f_ch_xc": 0.55}},
+        "initial_state": {"primary": {"_values": [0.1, 0.2, 0.3]}},
+        "residuals": {"Q_gas": {"rmse": 145.0}},
+    }
     base.update(overrides)
     return CalibrationArtifact(**base)
 

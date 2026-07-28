@@ -8,10 +8,17 @@ and the model-error sweep. Plot-only scripts live one level up in
 ## Contents
 
 | Script | Role |
-|---|---|
-| `report_compare.py` | Main driver. One code path for every reported number; writes `reports/results/<tag>.npz` (+ `<tag>_meta.txt` provenance). |
+| --- | --- |
+| `report_compare.py` | Main driver. One code path for every reported number; writes `reports/results/<tag>.npz` (+ `<tag>_meta.txt` provenance). Candidates: `full`, `adcore`, `cukf`, `adcore_ki`, `openloop`. |
 | `run_twin_experiment.py` | Dependency of `report_compare.py` (sensor schedule, truth propagation with substrate noise, per-stage gas evaluation). |
 | `aggregate_sweep.py` | Aggregates the model-error sweep `.npz` into the σ-trend table (Table 6.1). |
+| `openloop_figure.py` | No-filter reference figures: truth-vs-model gas/methane overlay (`reports/figures/openloop.png`) plus one per-block ADM1 state-trajectory figure per feed (`openloop_states_<feed>_<block>.png`). |
+
+The `openloop` candidate is the **no-filter baseline**: the imperfect ADM1 model
+free-runs from the same perturbed prior, driven by the same known feed and the
+same time-growing kinetic model error, but never assimilates a sensor. Its gap to
+the truth is the raw model drift the filters have to correct (NIS / coverage are
+undefined for it).
 
 All scripts resolve paths relative to the repository root, so run them from
 there. Results land in `reports/results/`, figures in `reports/figures/`
@@ -37,6 +44,20 @@ for s in 0.10 0.25 0.40 0.55; do \
   python experiments/twin_experiment/report_compare.py --tag sweep_s$s --feed none --sigma $s \
       --candidates full,adcore --duration 30 --dt 6; done
 python experiments/twin_experiment/aggregate_sweep.py sweep
+
+# No-filter reference: open-loop ADM1 vs. A+D/full, plus the truth-vs-model figure
+python experiments/twin_experiment/report_compare.py --tag OL_A --feed none   --sigma 0.25 \
+    --candidates openloop,adcore,full --duration 60 --dt 6
+python experiments/twin_experiment/report_compare.py --tag OL_B --feed change --sigma 0.25 \
+    --candidates openloop,adcore,full --duration 60 --dt 6
+python experiments/twin_experiment/openloop_figure.py   # -> reports/figures/openloop.png
+
+# Truth vs. A+D-UKF vs. open-loop trajectory comparison (report figs 7.2 / 7.3)
+python experiments/twin_experiment/report_compare.py --tag CMP_A --feed none   --sigma 0.25 \
+    --candidates adcore,openloop --duration 60 --dt 6 --save-traj
+python experiments/twin_experiment/report_compare.py --tag CMP_B --feed change --sigma 0.25 \
+    --candidates adcore,openloop --duration 60 --dt 6 --save-traj
+python reports/obs_plots.py CMP_A CMP_B
 ```
 
 ## Figures (not in this folder)

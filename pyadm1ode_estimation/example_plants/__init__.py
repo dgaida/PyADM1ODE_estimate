@@ -27,8 +27,8 @@ from .sensor_defs import build_example_sensor_defs, example_scada_columns
 from .simple import build_simple_plant
 
 __all__ = [
-    "build_simple_plant",
-    "build_multi_stage_plant",
     "build_example_sensor_defs",
+    "build_multi_stage_plant",
+    "build_simple_plant",
     "example_scada_columns",
 ]

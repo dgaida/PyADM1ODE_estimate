@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Protocol
+from typing import Protocol
 
 import numpy as np
 
@@ -37,11 +37,52 @@ class EstimationStep:
     t: float
     x_hat: np.ndarray
     P: np.ndarray
-    y_pred: Dict[str, float] = field(default_factory=dict)
-    y_std: Dict[str, float] = field(default_factory=dict)
-    innovation: Dict[str, float] = field(default_factory=dict)
+    y_pred: dict[str, float] = field(default_factory=dict)
+    y_std: dict[str, float] = field(default_factory=dict)
+    innovation: dict[str, float] = field(default_factory=dict)
     nis: float = float("nan")
     active_channels: list = field(default_factory=list)
+
+
+@dataclass
+class TrajectoryEstimate:
+    """Output of a batch/offline estimator over a whole window.
+
+    The shared currency between recursive filters and batch smoothers: a
+    posterior trajectory with a per-state uncertainty band, so the twin-
+    experiment harness (coverage, plots, error metrics) can evaluate both
+    estimator families the same way.
+
+    Attributes:
+        time: Query times, shape ``(T,)`` [days].
+        x_hat: Posterior state estimate, shape ``(T, n_state)``.
+        std: Per-state posterior standard deviation, shape ``(T, n_state)``.
+            Zeros when the estimator provides no uncertainty.
+    """
+
+    time: np.ndarray
+    x_hat: np.ndarray
+    std: np.ndarray
+
+
+class BatchEstimator(Protocol):
+    """Common interface for offline/batch estimators (e.g. a PINN smoother).
+
+    Unlike :class:`StateEstimator`, which runs a recursive predict/update
+    loop, a batch estimator is *fitted* to a whole window of (sparse)
+    measurements at once and then queried for the full state trajectory:
+
+    .. code-block:: text
+
+        estimator.fit(...)                       # train over the window
+        traj = estimator.estimate(query_times)   # (T, n_state) + std
+
+    ``fit`` is estimator-specific (training schedule, collocation, priors);
+    :meth:`estimate` is the shared output contract used for evaluation.
+    """
+
+    def estimate(self, times: np.ndarray) -> TrajectoryEstimate:
+        """Return the posterior trajectory + uncertainty at ``times``."""
 
 
 class StateEstimator(Protocol):
@@ -65,7 +106,7 @@ class StateEstimator(Protocol):
     def predict(self, dt: float) -> None:
         """Propagate the state distribution forward by ``dt`` days."""
 
-    def update(self, y: Dict[str, float], t: float) -> EstimationStep:
+    def update(self, y: dict[str, float], t: float) -> EstimationStep:
         """Fuse observations ``y`` at time ``t`` into the estimate."""
 
     def reset(self, x0: np.ndarray, P0: np.ndarray) -> None:

@@ -41,7 +41,7 @@ class LinearProcess:
     def step(self, x, dt):
         return self.F @ x
 
-    def refresh_outputs(self, x, equilibration_dt=1.0 / 24.0):  # noqa: ARG002
+    def refresh_outputs(self, x, equilibration_dt=1.0 / 24.0):
         return None
 
     def snapshot(self):
@@ -215,7 +215,7 @@ class TestUKFLinear:
         # silently skipped when the gate is off.
         ukf, spec, _F, _H, noise_std, _y_seq = setup
 
-        def ex(plant, x):  # noqa: ARG001
+        def ex(plant, x):
             return float(x[0])
 
         obs = ObservationModel(

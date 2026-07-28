@@ -32,14 +32,10 @@ Typical filter loop::
 
 from __future__ import annotations
 
+from collections.abc import Iterator, Sequence
 from typing import (
     TYPE_CHECKING,
-    Dict,
-    Iterator,
-    Optional,
     Protocol,
-    Sequence,
-    Tuple,
     runtime_checkable,
 )
 
@@ -76,9 +72,9 @@ class SensorSource(Protocol):
 
     def stream(
         self,
-        start_t: Optional[float] = None,
-        end_t: Optional[float] = None,
-    ) -> Iterator[Tuple[float, Dict[str, float]]]:
+        start_t: float | None = None,
+        end_t: float | None = None,
+    ) -> Iterator[tuple[float, dict[str, float]]]:
         """Yield ``(t, y)`` pairs in chronological order.
 
         Args:
@@ -132,7 +128,7 @@ class DataFrameSensorSource:
 
     def __init__(
         self,
-        df: "pd.DataFrame",
+        df: pd.DataFrame,
         sensor_defs: Sequence[SensorChannelDef],
     ):
         self._df = df
@@ -161,9 +157,9 @@ class DataFrameSensorSource:
 
     def stream(
         self,
-        start_t: Optional[float] = None,
-        end_t: Optional[float] = None,
-    ) -> Iterator[Tuple[float, Dict[str, float]]]:
+        start_t: float | None = None,
+        end_t: float | None = None,
+    ) -> Iterator[tuple[float, dict[str, float]]]:
         df = self._df
         if start_t is not None:
             df = df.loc[df.index >= start_t]
@@ -171,7 +167,7 @@ class DataFrameSensorSource:
             df = df.loc[df.index < end_t]
 
         for t, row in df.iterrows():
-            y: Dict[str, float] = {}
+            y: dict[str, float] = {}
             for d in self._defs:
                 raw = row.get(d.db_column)
                 # pandas returns NaN for missing scalar entries; let
@@ -186,6 +182,6 @@ class DataFrameSensorSource:
 
 
 __all__ = [
-    "SensorSource",
     "DataFrameSensorSource",
+    "SensorSource",
 ]

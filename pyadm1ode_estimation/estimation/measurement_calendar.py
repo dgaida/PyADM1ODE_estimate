@@ -30,8 +30,8 @@ explicit ``gate_column`` if one is configured.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Dict, Mapping, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -64,7 +64,7 @@ class SampleRate:
             )
 
     @classmethod
-    def online(cls, period_min: float = 5.0) -> "SampleRate":
+    def online(cls, period_min: float = 5.0) -> SampleRate:
         """Online sensor sampled every ``period_min`` minutes.
 
         Validity window is ``2 × period`` to tolerate clock skew and
@@ -76,7 +76,7 @@ class SampleRate:
         return cls(validity_window_d=2.0 * period_min / 1440.0)
 
     @classmethod
-    def periodic(cls, period_h: float) -> "SampleRate":
+    def periodic(cls, period_h: float) -> SampleRate:
         """Periodic sampling every ``period_h`` hours, one period of
         validity after each measurement."""
         if period_h <= 0:
@@ -84,17 +84,17 @@ class SampleRate:
         return cls(validity_window_d=period_h / 24.0)
 
     @classmethod
-    def daily(cls) -> "SampleRate":
+    def daily(cls) -> SampleRate:
         """Daily measurement, valid for 24 h."""
         return cls.periodic(period_h=24.0)
 
     @classmethod
-    def weekly(cls) -> "SampleRate":
+    def weekly(cls) -> SampleRate:
         """Weekly measurement, valid for 7 d."""
         return cls.periodic(period_h=24.0 * 7.0)
 
     @classmethod
-    def sporadic(cls, tolerance_min: float = 5.0) -> "SampleRate":
+    def sporadic(cls, tolerance_min: float = 5.0) -> SampleRate:
         """One-off lab measurement, valid only in a ``tolerance_min``
         window around the actual sample timestamp.
 
@@ -137,15 +137,15 @@ class MeasurementCalendar:
     def __init__(self, rates: Mapping[str, SampleRate]):
         if not rates:
             raise ValueError("MeasurementCalendar needs at least one channel rate.")
-        self.rates: Dict[str, SampleRate] = dict(rates)
+        self.rates: dict[str, SampleRate] = dict(rates)
 
     @classmethod
     def from_obs_model(
         cls,
         obs_model: ObservationModel,
-        default_rates: Optional[Mapping[str, SampleRate]] = None,
-        fallback: Optional[SampleRate] = None,
-    ) -> "MeasurementCalendar":
+        default_rates: Mapping[str, SampleRate] | None = None,
+        fallback: SampleRate | None = None,
+    ) -> MeasurementCalendar:
         """Build a calendar covering every channel of ``obs_model``.
 
         For each channel:
@@ -157,7 +157,7 @@ class MeasurementCalendar:
         """
         defaults = dict(default_rates or {})
         fb = fallback if fallback is not None else SampleRate.sporadic()
-        rates: Dict[str, SampleRate] = {}
+        rates: dict[str, SampleRate] = {}
         for c in obs_model.channels:
             gate_key = c.gate_column if c.gate_column else c.name
             rates[gate_key] = defaults.get(gate_key, fb)
@@ -166,7 +166,7 @@ class MeasurementCalendar:
     # ------------------------------------------------------------------
     # Per-step API
     # ------------------------------------------------------------------
-    def gate_values_at(self, t: float, df: pd.DataFrame) -> Dict[str, float]:
+    def gate_values_at(self, t: float, df: pd.DataFrame) -> dict[str, float]:
         """Return ``{name: 1.0 if active else 0.0}`` at time ``t``.
 
         A channel is *active* if its column in ``df`` has at least one
@@ -175,14 +175,14 @@ class MeasurementCalendar:
         upper side. Measurements exactly at ``t`` are included, future
         measurements are not.
         """
-        gates: Dict[str, float] = {}
+        gates: dict[str, float] = {}
         for name, rate in self.rates.items():
             gates[name] = (
                 1.0 if self._latest_valid(name, rate, t, df) is not None else 0.0
             )
         return gates
 
-    def measurements_at(self, t: float, df: pd.DataFrame) -> Dict[str, float]:
+    def measurements_at(self, t: float, df: pd.DataFrame) -> dict[str, float]:
         """Return ``{name: most_recent_value_in_window or NaN}``.
 
         The value is the **most recent finite** entry in the channel's
@@ -190,7 +190,7 @@ class MeasurementCalendar:
         exists. The UKF skips channels with non-finite ``y`` values, so
         the NaN sentinel is safe to pass through to ``update()``.
         """
-        out: Dict[str, float] = {}
+        out: dict[str, float] = {}
         for name, rate in self.rates.items():
             val = self._latest_valid(name, rate, t, df)
             out[name] = float(val) if val is not None else float("nan")
@@ -198,7 +198,7 @@ class MeasurementCalendar:
 
     def values_for_filter(
         self, t: float, df: pd.DataFrame
-    ) -> Tuple[Dict[str, float], Dict[str, float]]:
+    ) -> tuple[dict[str, float], dict[str, float]]:
         """Convenience: returns ``(y_dict, gate_values_dict)`` together.
 
         Equivalent to::
@@ -207,8 +207,8 @@ class MeasurementCalendar:
 
         but iterates the DataFrame only once.
         """
-        y: Dict[str, float] = {}
-        gates: Dict[str, float] = {}
+        y: dict[str, float] = {}
+        gates: dict[str, float] = {}
         for name, rate in self.rates.items():
             val = self._latest_valid(name, rate, t, df)
             if val is None:
@@ -225,7 +225,7 @@ class MeasurementCalendar:
     @staticmethod
     def _latest_valid(
         name: str, rate: SampleRate, t: float, df: pd.DataFrame
-    ) -> Optional[float]:
+    ) -> float | None:
         """Return the most recent finite value of column ``name`` in the
         validity window ending at ``t``, or ``None`` if none exists."""
         if name not in df.columns:
@@ -245,4 +245,4 @@ class MeasurementCalendar:
         return finite.iloc[-1]
 
 
-__all__ = ["SampleRate", "MeasurementCalendar"]
+__all__ = ["MeasurementCalendar", "SampleRate"]

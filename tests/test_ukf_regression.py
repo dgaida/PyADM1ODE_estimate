@@ -57,13 +57,13 @@ class NonlinearMockProcess:
         self.A = np.asarray(A, dtype=float)
         self.plant = object()  # ducked
 
-    def step(self, x: np.ndarray, dt: float) -> np.ndarray:  # noqa: ARG002
+    def step(self, x: np.ndarray, dt: float) -> np.ndarray:
         x = np.asarray(x, dtype=float)
         return self.A @ x + 0.1 * x * x
 
     def refresh_outputs(
         self, x: np.ndarray, equilibration_dt: float = 1.0 / 24.0
-    ) -> None:  # noqa: ARG002
+    ) -> None:
         return None
 
     def snapshot(self) -> None:

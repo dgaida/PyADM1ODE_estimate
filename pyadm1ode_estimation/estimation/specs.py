@@ -38,9 +38,9 @@ Typical call::
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Sequence
 
 from .state_vector import StateChannel, StateVectorSpec
 
@@ -85,7 +85,7 @@ class Quality(str, Enum):
 # noise σ_w per √dt. The second scales the initial std. The third
 # selects the drift model. The fourth gives an OU reversion rate
 # (in 1/d) when drift is "ou".
-_QUALITY_NOISE_FACTOR: Dict[Quality, float] = {
+_QUALITY_NOISE_FACTOR: dict[Quality, float] = {
     Quality.STRONG: 0.05,
     Quality.MEDIUM: 0.15,
     Quality.WEAK: 0.30,
@@ -93,7 +93,7 @@ _QUALITY_NOISE_FACTOR: Dict[Quality, float] = {
     Quality.OPEN_LOOP: 0.40,
 }
 
-_QUALITY_INITIAL_STD_FACTOR: Dict[Quality, float] = {
+_QUALITY_INITIAL_STD_FACTOR: dict[Quality, float] = {
     Quality.STRONG: 0.20,
     Quality.MEDIUM: 0.30,
     Quality.WEAK: 0.50,
@@ -101,7 +101,7 @@ _QUALITY_INITIAL_STD_FACTOR: Dict[Quality, float] = {
     Quality.OPEN_LOOP: 0.80,
 }
 
-_QUALITY_DRIFT_MODEL: Dict[Quality, str] = {
+_QUALITY_DRIFT_MODEL: dict[Quality, str] = {
     Quality.STRONG: "random_walk",
     Quality.MEDIUM: "random_walk",
     Quality.WEAK: "random_walk",
@@ -109,7 +109,7 @@ _QUALITY_DRIFT_MODEL: Dict[Quality, str] = {
     Quality.OPEN_LOOP: "ou",
 }
 
-_QUALITY_OU_THETA: Dict[Quality, float] = {
+_QUALITY_OU_THETA: dict[Quality, float] = {
     Quality.PSPF: 0.05,  # ~20-day reversion to substrate-prior mean
     Quality.OPEN_LOOP: 0.10,  # ~10-day reversion to literature mean
 }
@@ -124,15 +124,19 @@ _QUALITY_OU_THETA: Dict[Quality, float] = {
 # initial values are Schlattmann-2011-style mesophilic agricultural-AD
 # steady-state; per-channel initial_std and process_noise_std are
 # derived from these times the Quality factors above.
-_ADM1DA_DEFAULTS: Dict[int, tuple] = {
+_ADM1DA_DEFAULTS: dict[int, tuple] = {
     # ---- dissolved (kg COD/m³ for organics; kmol/m³ for S_co2, S_nh4)
     0: ("S_su", 0.012, 0.0, 10.0),
     1: ("S_aa", 0.005, 0.0, 10.0),
     2: ("S_fa", 0.10, 0.0, 10.0),
+    # VFA upper bounds widened to cover severe overload / acidification: the
+    # reachable-set ensemble (sigma_truth 0.30, dose up to 1.8x) reaches
+    # S_bu≈8.5, S_pro≈20, S_ac≈38 kg COD/m³. The estimator must represent
+    # extreme overload, not exclude it.
     3: ("S_va", 0.012, 0.0, 5.0),
-    4: ("S_bu", 0.013, 0.0, 5.0),
-    5: ("S_pro", 0.016, 0.0, 5.0),
-    6: ("S_ac", 0.20, 0.0, 10.0),
+    4: ("S_bu", 0.013, 0.0, 10.0),
+    5: ("S_pro", 0.016, 0.0, 20.0),
+    6: ("S_ac", 0.20, 0.0, 40.0),
     7: ("S_h2", 2.4e-7, 0.0, 1e-2),
     8: ("S_ch4", 0.055, 0.0, 2.0),
     9: ("S_co2", 0.0099, 0.0, 1.0),
@@ -157,13 +161,18 @@ _ADM1DA_DEFAULTS: Dict[int, tuple] = {
     26: ("X_pro", 0.14, 0.0, 5.0),
     27: ("X_ac", 0.76, 0.0, 5.0),
     28: ("X_h2", 0.32, 0.0, 5.0),
-    # ---- charge balance (kmol/m³ for the cation/anion/_ion species)
+    # ---- charge balance: S_cation/S_anion/S_hco3/S_nh3 in kmol/m³, but the VFA
+    # ions S_va/bu/pro/ac_ion are in kg COD/m³ (same units as the total VFAs in
+    # pyadm1 core/adm1.py) with 0 ≤ S_xx_ion ≤ S_xx. Their bounds therefore equal
+    # the corresponding total-VFA bounds; initials track the (near-fully ionized)
+    # totals. (Earlier kmol-style ~0.1 bounds/1e-5 initials were a units bug that
+    # clipped the acetate ion ~40× even at steady state.)
     29: ("S_cation", 0.04, 0.0, 1.0),
     30: ("S_anion", 0.02, 0.0, 1.0),
-    31: ("S_va_ion", 1.0e-5, 0.0, 0.1),
-    32: ("S_bu_ion", 1.0e-5, 0.0, 0.1),
-    33: ("S_pro_ion", 1.5e-5, 0.0, 0.1),
-    34: ("S_ac_ion", 9.0e-5, 0.0, 0.1),
+    31: ("S_va_ion", 0.012, 0.0, 5.0),
+    32: ("S_bu_ion", 0.013, 0.0, 10.0),
+    33: ("S_pro_ion", 0.016, 0.0, 20.0),
+    34: ("S_ac_ion", 0.20, 0.0, 40.0),
     35: ("S_hco3", 0.014, 0.0, 0.5),
     36: ("S_nh3", 4.1e-3, 0.0, 0.1),
     # ---- gas-phase partial pressures (bar)
@@ -180,7 +189,7 @@ assert len(_ADM1DA_DEFAULTS) == 41, "ADM1da has exactly 41 states."
 # Block assignment per state index - from the subsystem analysis.
 # ---------------------------------------------------------------------------
 
-_STATE_BLOCKS: Dict[int, str] = {
+_STATE_BLOCKS: dict[int, str] = {
     # methanogenesis (A subsystem core + gas-phase pressures)
     6: "methanogenesis",
     7: "methanogenesis",
@@ -239,13 +248,13 @@ assert set(_STATE_BLOCKS.keys()) == set(
 
 
 #: Public read-only view of the per-index block assignment (index → block).
-STATE_BLOCKS: Dict[int, str] = dict(_STATE_BLOCKS)
+STATE_BLOCKS: dict[int, str] = dict(_STATE_BLOCKS)
 
 #: Public block → sorted ADM1 indices map. Use to select whole observability
 #: blocks for a reduced state vector, e.g.
 #: ``BLOCK_INDICES["methanogenesis"] + BLOCK_INDICES["charge_balance"]``
 #: for the literature's provably-observable "A+D fused" core.
-BLOCK_INDICES: Dict[str, List[int]] = {}
+BLOCK_INDICES: dict[str, list[int]] = {}
 for _i in range(41):
     BLOCK_INDICES.setdefault(_STATE_BLOCKS[_i], []).append(_i)
 
@@ -316,12 +325,12 @@ class InputSpec:
     name: str
     substrate_index: int
     initial_flow: float
-    initial_std: Optional[float] = None
-    process_noise_std: Optional[float] = None
+    initial_std: float | None = None
+    process_noise_std: float | None = None
     lower: float = 0.0
     upper: float = 100.0
     drift_model: str = "random_walk"
-    ou_mean: Optional[float] = None
+    ou_mean: float | None = None
     ou_theta: float = 0.1
 
 
@@ -353,7 +362,7 @@ class KineticSpec:
     lower: float = 0.0
     upper: float = 1.0e6
     drift_model: str = "ou"
-    ou_mean: Optional[float] = None
+    ou_mean: float | None = None
     ou_theta: float = 0.01
 
 
@@ -387,17 +396,17 @@ def _adm1_channel(
     process_noise_std = _QUALITY_NOISE_FACTOR[quality] * magnitude * process_noise_scale
     drift_model = _QUALITY_DRIFT_MODEL[quality]
 
-    kwargs = dict(
-        name=name,
-        kind="adm1",
-        adm1_index=idx,
-        initial=initial,
-        initial_std=initial_std,
-        process_noise_std=process_noise_std,
-        lower=lower,
-        upper=upper,
-        drift_model=drift_model,
-    )
+    kwargs = {
+        "name": name,
+        "kind": "adm1",
+        "adm1_index": idx,
+        "initial": initial,
+        "initial_std": initial_std,
+        "process_noise_std": process_noise_std,
+        "lower": lower,
+        "upper": upper,
+        "drift_model": drift_model,
+    }
     if drift_model == "ou":
         kwargs["ou_mean"] = initial
         kwargs["ou_theta"] = _QUALITY_OU_THETA[quality]
@@ -415,17 +424,17 @@ def _input_channel(spec: InputSpec) -> StateChannel:
         if spec.process_noise_std is not None
         else max(0.2 * abs(spec.initial_flow), 0.05)
     )
-    kwargs = dict(
-        name=spec.name,
-        kind="input_flow",
-        input_substrate_index=spec.substrate_index,
-        initial=spec.initial_flow,
-        initial_std=initial_std,
-        process_noise_std=process_noise_std,
-        lower=spec.lower,
-        upper=spec.upper,
-        drift_model=spec.drift_model,
-    )
+    kwargs = {
+        "name": spec.name,
+        "kind": "input_flow",
+        "input_substrate_index": spec.substrate_index,
+        "initial": spec.initial_flow,
+        "initial_std": initial_std,
+        "process_noise_std": process_noise_std,
+        "lower": spec.lower,
+        "upper": spec.upper,
+        "drift_model": spec.drift_model,
+    }
     if spec.drift_model == "ou":
         kwargs["ou_mean"] = (
             spec.ou_mean if spec.ou_mean is not None else spec.initial_flow
@@ -435,16 +444,16 @@ def _input_channel(spec: InputSpec) -> StateChannel:
 
 
 def _kinetic_channel(spec: KineticSpec) -> StateChannel:
-    kwargs = dict(
-        name=spec.name,
-        kind="kinetic_param",
-        initial=spec.initial,
-        initial_std=spec.initial_std,
-        process_noise_std=spec.process_noise_std,
-        lower=spec.lower,
-        upper=spec.upper,
-        drift_model=spec.drift_model,
-    )
+    kwargs = {
+        "name": spec.name,
+        "kind": "kinetic_param",
+        "initial": spec.initial,
+        "initial_std": spec.initial_std,
+        "process_noise_std": spec.process_noise_std,
+        "lower": spec.lower,
+        "upper": spec.upper,
+        "drift_model": spec.drift_model,
+    }
     if spec.drift_model == "ou":
         kwargs["ou_mean"] = spec.ou_mean if spec.ou_mean is not None else spec.initial
         kwargs["ou_theta"] = spec.ou_theta
@@ -461,7 +470,7 @@ def adm1da_full_spec(
     *,
     substrate_inputs: Sequence[InputSpec] = (),
     kinetic_overrides: Sequence[KineticSpec] = (),
-    sensor_quality: Optional[SensorQualityProfile] = None,
+    sensor_quality: SensorQualityProfile | None = None,
     process_noise_scale: float = 1.0,
 ) -> StateVectorSpec:
     """Build a complete 41-state ADM1da StateVectorSpec.
@@ -492,7 +501,7 @@ def adm1da_full_spec(
         :class:`UnscentedKalmanFilter`.
     """
     profile = sensor_quality or SensorQualityProfile()
-    channels: List[StateChannel] = []
+    channels: list[StateChannel] = []
 
     # 41 ADM1 channels, in index order.
     for idx in range(41):
@@ -517,7 +526,7 @@ def adm1da_reduced_spec(
     *,
     substrate_inputs: Sequence[InputSpec] = (),
     kinetic_overrides: Sequence[KineticSpec] = (),
-    sensor_quality: Optional[SensorQualityProfile] = None,
+    sensor_quality: SensorQualityProfile | None = None,
     process_noise_scale: float = 1.0,
 ) -> StateVectorSpec:
     """Build a StateVectorSpec that estimates only a SUBSET of the 41 ADM1
@@ -557,7 +566,7 @@ def adm1da_reduced_spec(
         )
 
     profile = sensor_quality or SensorQualityProfile()
-    channels: List[StateChannel] = []
+    channels: list[StateChannel] = []
     for idx in idx_set:
         channels.append(
             _adm1_channel(idx, profile.get(_STATE_BLOCKS[idx]), process_noise_scale)
@@ -571,12 +580,12 @@ def adm1da_reduced_spec(
 
 
 __all__ = [
-    "Quality",
-    "SensorQualityProfile",
+    "BLOCK_INDICES",
+    "STATE_BLOCKS",
     "InputSpec",
     "KineticSpec",
-    "STATE_BLOCKS",
-    "BLOCK_INDICES",
+    "Quality",
+    "SensorQualityProfile",
     "adm1da_full_spec",
     "adm1da_reduced_spec",
 ]

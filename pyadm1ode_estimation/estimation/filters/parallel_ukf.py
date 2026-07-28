@@ -45,7 +45,8 @@ makes the explicit form safer.
 from __future__ import annotations
 
 import multiprocessing as mp
-from typing import Any, Callable, Optional, Tuple
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 
@@ -57,7 +58,7 @@ _WORKER_PROCESS: Any = None
 _WORKER_OBS: Any = None
 
 
-def _worker_init(components_builder: Callable[[], Tuple[Any, Any, Any]]) -> None:
+def _worker_init(components_builder: Callable[[], tuple[Any, Any, Any]]) -> None:
     """Pool initialiser: build the worker's local ``(process, obs, spec)``.
 
     Runs once per worker process. ``components_builder`` must be a
@@ -137,13 +138,13 @@ class ParallelUKF(UnscentedKalmanFilter):
         spec,
         *,
         n_workers: int = 1,
-        components_builder: Optional[Callable[[], Tuple[Any, Any, Any]]] = None,
+        components_builder: Callable[[], tuple[Any, Any, Any]] | None = None,
         **ukf_kwargs,
     ):
         super().__init__(process, obs, spec, **ukf_kwargs)
         self.n_workers = int(n_workers)
         self.components_builder = components_builder
-        self._pool: Optional[Any] = None
+        self._pool: Any | None = None
         if self.n_workers > 1:
             if components_builder is None:
                 raise ValueError(
@@ -182,7 +183,7 @@ class ParallelUKF(UnscentedKalmanFilter):
     def __del__(self):
         try:
             self.shutdown()
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass
 
     # ------------------------------------------------------------------
@@ -190,7 +191,7 @@ class ParallelUKF(UnscentedKalmanFilter):
     # ------------------------------------------------------------------
     def _propagate_sigma_points(
         self, sigma: np.ndarray, dt: float
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         if self._pool is None:
             return super()._propagate_sigma_points(sigma, dt)
 

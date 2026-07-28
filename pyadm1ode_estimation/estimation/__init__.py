@@ -47,8 +47,9 @@ from .specs import (
 from .state_vector import StateChannel, StateVectorSpec
 
 __all__ = [
-    "ADM1ProcessModel",
     "BLOCK_INDICES",
+    "STATE_BLOCKS",
+    "ADM1ProcessModel",
     "EstimationStep",
     "InputSpec",
     "KineticSpec",
@@ -56,7 +57,6 @@ __all__ = [
     "ObservationChannel",
     "ObservationModel",
     "Quality",
-    "STATE_BLOCKS",
     "SampleRate",
     "SensorQualityProfile",
     "StateChannel",

@@ -52,7 +52,8 @@ instances directly in the ``sensors`` list instead of name strings.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -65,6 +66,7 @@ from .observation_model import (
     make_q_co2_extractor,
     make_q_gas_extractor,
     make_state_extractor,
+    make_ts_extractor,
     make_vfa_extractor,
 )
 from .process_model import ADM1ProcessModel
@@ -91,8 +93,10 @@ _DEFAULT_NOISE_STD = {
     "q_co2": 5.0,  # m³/d CO2 (single estimated digester)
     "q_gas_total": 10.0,  # m³/d biogas (whole-plant sum)
     "q_ch4_total": 5.0,  # m³/d methane (whole-plant sum)
-    "ph": 0.05,  # pH units
+    "ph": 0.02,  # pH units — Memosens CPS16E combined pH/ORP glass electrode
+    #             (sensor accuracy; digester fouling can widen it toward ~0.05).
     "vfa": 0.2,  # g HAc-eq/L (FOS titration)
+    "ts": 0.2,  # % TS (Proline Teqwave MW 300 microwave total-solids sensor)
     "substrate_dose": 0.05,  # 5 % relative on the augmented channel
 }
 
@@ -113,14 +117,14 @@ def _make_ph_extractor(digester_id: str):
 
 def _build_substrate_channels(
     spec: StateVectorSpec, substrate_dose_noise_relative: float
-) -> List[ObservationChannel]:
+) -> list[ObservationChannel]:
     """One ``ObservationChannel`` per augmented input-flow channel in ``spec``.
 
     Each channel observes the augmented channel directly (``x[idx]``)
     and uses ``substrate_dose_noise_relative * initial_flow`` as the
     measurement std.
     """
-    channels: List[ObservationChannel] = []
+    channels: list[ObservationChannel] = []
     for i, ch in enumerate(spec.channels):
         if ch.kind != "input_flow":
             continue
@@ -137,11 +141,11 @@ def _build_substrate_channels(
 
 
 def _resolve_sensors(
-    sensors: Sequence[Union[str, ObservationChannel]],
+    sensors: Sequence[str | ObservationChannel],
     digester_id: str,
     spec: StateVectorSpec,
-    noise_overrides: Optional[dict] = None,
-) -> List[ObservationChannel]:
+    noise_overrides: dict | None = None,
+) -> list[ObservationChannel]:
     """Translate sensor name strings into ``ObservationChannel`` instances.
 
     Items that are already ``ObservationChannel`` instances pass through
@@ -149,7 +153,7 @@ def _resolve_sensors(
     channels for non-standard signals.
     """
     overrides = noise_overrides or {}
-    out: List[ObservationChannel] = []
+    out: list[ObservationChannel] = []
     for item in sensors:
         if isinstance(item, ObservationChannel):
             out.append(item)
@@ -195,6 +199,14 @@ def _resolve_sensors(
                     noise_std=float(noise),
                 )
             )
+        elif key == "ts":
+            out.append(
+                ObservationChannel(
+                    name="TS",
+                    extractor=make_ts_extractor(digester_id),
+                    noise_std=float(noise),
+                )
+            )
         elif key == "q_gas_total":
             # Whole-plant sum — only consistent when the meter physically
             # sits downstream of every stage (see module docstring).
@@ -233,10 +245,10 @@ def _resolve_sensors(
 
 
 def build_ukf(
-    plant: "BiogasPlant",
+    plant: BiogasPlant,
     digester_id: str,
     substrates: Sequence[InputSpec] = (),
-    sensors: Sequence[Union[str, ObservationChannel]] = (
+    sensors: Sequence[str | ObservationChannel] = (
         "q_gas",
         "q_ch4",
         "ph",
@@ -244,16 +256,16 @@ def build_ukf(
     ),
     *,
     kinetic_overrides: Sequence[KineticSpec] = (),
-    sensor_quality: Optional[SensorQualityProfile] = None,
-    sensor_noise: Optional[dict] = None,
+    sensor_quality: SensorQualityProfile | None = None,
+    sensor_noise: dict | None = None,
     initial_uncertainty_relative: float = 0.05,
     alpha: float = 1.0,
     beta: float = 2.0,
     kappa: float = 0.0,
-    gamma_override: Optional[float] = None,
-    adm1_indices: Optional[Sequence[int]] = None,
+    gamma_override: float | None = None,
+    adm1_indices: Sequence[int] | None = None,
     process_noise_scale: float = 1.0,
-) -> "UnscentedKalmanFilter":
+) -> UnscentedKalmanFilter:
     """Bundle the full 41-state SR-UKF setup into a single call.
 
     The factory does, in order:
@@ -397,10 +409,10 @@ def build_ukf(
 
 
 def build_filter_components(
-    plant: "BiogasPlant",
+    plant: BiogasPlant,
     digester_id: str,
     substrates: Sequence[InputSpec] = (),
-    sensors: Sequence[Union[str, ObservationChannel]] = (
+    sensors: Sequence[str | ObservationChannel] = (
         "q_gas",
         "q_ch4",
         "ph",
@@ -408,9 +420,9 @@ def build_filter_components(
     ),
     *,
     kinetic_overrides: Sequence[KineticSpec] = (),
-    sensor_quality: Optional[SensorQualityProfile] = None,
-    sensor_noise: Optional[dict] = None,
-    adm1_indices: Optional[Sequence[int]] = None,
+    sensor_quality: SensorQualityProfile | None = None,
+    sensor_noise: dict | None = None,
+    adm1_indices: Sequence[int] | None = None,
     process_noise_scale: float = 1.0,
 ):
     """Build ``(process, obs, spec)`` without constructing a UKF.
@@ -468,4 +480,4 @@ def build_filter_components(
     return process, obs, spec
 
 
-__all__ = ["build_ukf", "build_filter_components"]
+__all__ = ["build_filter_components", "build_ukf"]

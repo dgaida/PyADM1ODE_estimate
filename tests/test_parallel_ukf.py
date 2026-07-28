@@ -23,12 +23,12 @@ import pytest
 # ParallelUKF itself is stdlib + numpy, importable without pyadm1.
 # The mock plant builder we use below also avoids pyadm1's substrate
 # library, so this test module runs cleanly in CI.
-from _mock_plant import (  # noqa: E402
+from _mock_plant import (
     build_mock_components,
     build_multistage_mock_components,
 )
 
-from pyadm1ode_estimation.estimation.filters import (  # noqa: E402
+from pyadm1ode_estimation.estimation.filters import (
     ParallelUKF,
     UnscentedKalmanFilter,
 )

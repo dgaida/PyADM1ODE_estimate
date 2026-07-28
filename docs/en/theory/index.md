@@ -7,8 +7,9 @@ Background on the models and methods used.
 * [ADM1da model](adm1.md) — description of the 41-state model used here  
   (Schlattmann 2011, agricultural extension of ADM1) and its key state
   indices.  
-* [PINN](pinn.md) — Physics-Informed Neural Network as a data-driven  
-  estimation approach (AP 4.3).
+* [PINN](pinn.md) — Physics-Informed Neural Network: from the intuition for a
+  newcomer through the loss maths and the ADM1-specific engineering to the
+  implementation (`pinn.py`, `pinn_smoother.py`).
 
 ## Background reading
 

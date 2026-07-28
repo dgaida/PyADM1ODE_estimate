@@ -24,13 +24,15 @@ the actual sensor noise.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
 
 if TYPE_CHECKING:
-    from pyadm1.components.sensors._base import AbstractSensor  # type: ignore[import-not-found]
+    from pyadm1.components.sensors._base import (
+        AbstractSensor,  # type: ignore[import-not-found]
+    )
 
 
 class SensorAdapter:
@@ -50,10 +52,10 @@ class SensorAdapter:
             with an explicit ``signal_key``, use that same value here.
     """
 
-    def __init__(self, sensor: "AbstractSensor", signal_key: str):
+    def __init__(self, sensor: AbstractSensor, signal_key: str):
         self._sensor = sensor
         self._signal_key = signal_key
-        self._t_last: Optional[float] = None
+        self._t_last: float | None = None
         # Make sure the sensor is in a clean state before its first read.
         self._sensor.initialize()
 
@@ -104,7 +106,7 @@ class SensorAdapter:
 
 def measure_truth_with_sensors(
     obs_clean: pd.DataFrame,
-    sensors: Dict[str, SensorAdapter],
+    sensors: dict[str, SensorAdapter],
 ) -> pd.DataFrame:
     """Step each sensor through the clean truth trajectory.
 

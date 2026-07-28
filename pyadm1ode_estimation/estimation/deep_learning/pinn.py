@@ -1,35 +1,41 @@
+from collections.abc import Callable, Sequence
+
 import torch
-import torch.nn as nn
-from typing import List, Optional, Callable
+from torch import nn
 
 
 class ADM1PINN(nn.Module):
-    """
-    Physics-Informed Neural Network (PINN) für den ADM1 (AP 4.3).
-    Physics-Informed Neural Network (PINN) for the ADM1 (AP 4.3).
+    """Physics-Informed Neural Network (PINN) for the ADM1 (AP 4.3).
 
-    Das Netzwerk schätzt den Zustandsvektor x(t) basierend auf der Zeit t
-    und dem zeitabhängigen Input u(t) (Substratzufuhr).
-    The network estimates the state vector x(t) based on time t
-    and time-dependent input u(t) (substrate feed).
+    Estimates the state vector x(t) from time t and the time-dependent input
+    u(t) (substrate feed).
+
+    The output covers the full extended ADM1da state (41 slots: 12 soluble, 10
+    particulate PS/PF fractions, 7 biomass, 8 charge/ion states, 4 gas-phase
+    slots). The 4 gas-phase states (p_gas_*, p_total) are not optional: they
+    couple back into diff_S_h2/ch4/co2 via the Rho_T_* transfer rates, so the
+    ADM_ODE physics residual cannot be closed without them.
     """
 
     def __init__(
         self,
         input_dim: int = 2,
-        output_dim: int = 37,
-        hidden_layers: List[int] = [64, 64, 64],
+        output_dim: int = 41,
+        hidden_layers: Sequence[int] = (64, 64, 64),
+        dropout: float = 0.0,
     ):
-        """
-        Initialisiert das PINN.
-        Initialize the PINN.
+        """Initialize the PINN.
 
         Args:
-            input_dim: Dimension der Eingabe (meist Zeit t + u_dim) / Input dimension (usually time t + u_dim)
-            output_dim: Dimension des Zustandsvektors (ADM1: 37) / State vector dimension
-            hidden_layers: Liste mit der Anzahl der Neuronen pro Layer / List of neurons per layer
+            input_dim: Input dimension (time t + u_dim), where u_dim is the
+                number of substrate feed channels, i.e. input_dim = 1 + u_dim.
+            output_dim: Dimension of the extended ADM1da state vector (41).
+            hidden_layers: Number of neurons per hidden layer.
+            dropout: Dropout probability after each hidden layer; ``> 0`` enables
+                MC-Dropout (evaluate the net repeatedly in train() mode for an
+                uncertainty estimate).
         """
-        super(ADM1PINN, self).__init__()
+        super().__init__()
 
         layers = []
         prev_dim = input_dim
@@ -38,21 +44,19 @@ class ADM1PINN(nn.Module):
             layers.append(
                 nn.Tanh()
             )  # Tanh is preferred in PINNs for smooth derivatives
+            if dropout > 0.0:
+                layers.append(nn.Dropout(p=dropout))
             prev_dim = hidden_dim
 
         layers.append(nn.Linear(prev_dim, output_dim))
         self.net = nn.Sequential(*layers)
 
-    def forward(
-        self, t: torch.Tensor, u: Optional[torch.Tensor] = None
-    ) -> torch.Tensor:
-        """
-        Vorwärtspass des Netzwerks.
-        Forward pass of the network.
+    def forward(self, t: torch.Tensor, u: torch.Tensor | None = None) -> torch.Tensor:
+        """Forward pass of the network.
 
         Args:
-            t: Zeitpunkte / Time points (shape: [batch, 1])
-            u: Zusätzliche Eingangsgrößen (Substratzufuhr) / Additional inputs (substrate feed) (shape: [batch, u_dim])
+            t: Time points (shape: [batch, 1]).
+            u: Additional inputs / substrate feed (shape: [batch, u_dim]).
         """
         if u is not None:
             x = torch.cat([t, u], dim=-1)
@@ -62,10 +66,7 @@ class ADM1PINN(nn.Module):
 
 
 class PINNLoss(nn.Module):
-    """
-    Verlustfunktion für das PINN, kombiniert Daten- und Physik-Loss.
-    Loss function for the PINN, combining data and physics loss.
-    """
+    """Loss function for the PINN, combining data and physics loss."""
 
     def __init__(
         self,
@@ -75,13 +76,15 @@ class PINNLoss(nn.Module):
     ):
         """
         Args:
-            measurement_map: Funktion, die den Zustandsvektor x auf die Messgrößen y abbildet (pH, Biogas, etc.)
-                             Function mapping state vector x to measurements y.
-            ode_residual_func: Funktion, die das Residuum der ADM1-ODE berechnet.
-                               Function calculating the ADM1 ODE residual.
-            lambda_phys: Gewichtung des Physik-Loss / Weighting of the physics loss
+            measurement_map: Function mapping the state vector x to the
+                measurements y (pH, biogas, etc.).
+            ode_residual_func: Function f(x, u) returning the ADM1da derivatives
+                dx/dt (differentiable, 41-dim, incl. gas-phase coupling). Must be
+                autograd-compatible so the physics gradient flows back into the
+                net weights.
+            lambda_phys: Weighting of the physics loss.
         """
-        super(PINNLoss, self).__init__()
+        super().__init__()
         self.measurement_map = measurement_map
         self.ode_residual_func = ode_residual_func
         self.lambda_phys = lambda_phys
@@ -90,31 +93,24 @@ class PINNLoss(nn.Module):
     def forward(
         self, t: torch.Tensor, u: torch.Tensor, y_meas: torch.Tensor, model: ADM1PINN
     ) -> torch.Tensor:
-        """
-        Berechnet den kombinierten Loss. / Calculates the combined loss.
-
-        L = L_data + lambda_phys * L_phys
+        """Compute the combined loss  L = L_data + lambda_phys * L_phys.
 
         Args:
-            t: Zeit / Time (requires_grad=True)
-            u: Input (Substrat) / Input (substrate)
-            y_meas: Messwerte (Biogas, CH4, pH) / Measurements
-            model: Das ADM1PINN Modell / The ADM1PINN model
+            t: Time (requires_grad=True).
+            u: Input (substrate).
+            y_meas: Measurements (biogas, CH4, pH).
+            model: The ADM1PINN model.
         """
-        # Sicherstellen, dass t Gradienten trackt für die Ableitung nach der Zeit
         if not t.requires_grad:
             t = t.clone().detach().requires_grad_(True)
 
         x_hat = model(t, u)
 
-        # 1. Data Loss
-        # y_hat = [Biogasproduktion, Methankonzentration, pH]
+        # 1. Data loss
         y_hat = self.measurement_map(x_hat)
         l_data = self.mse(y_hat, y_meas)
 
-        # 2. Physics Loss (ODE Residuum)
-        # d x_hat / dt
-        # Wir berechnen die Ableitung jeder Zustandsvariable nach der Zeit t
+        # 2. Physics loss: derivative of each state variable w.r.t. time t
         dxdt_hat = []
         for i in range(x_hat.shape[1]):
             grad = torch.autograd.grad(
@@ -127,8 +123,7 @@ class PINNLoss(nn.Module):
             dxdt_hat.append(grad)
         dxdt_hat = torch.cat(dxdt_hat, dim=-1)
 
-        # Residuum: dx/dt - f(x, u)
-        # ode_residual_func sollte f(x, u) in PyTorch implementieren
+        # residual: dx/dt - f(x, u)
         f_x_u = self.ode_residual_func(x_hat, u)
         l_phys = self.mse(dxdt_hat, f_x_u)
 

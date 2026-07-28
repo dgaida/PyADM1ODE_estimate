@@ -43,7 +43,7 @@ Measurement noise (1-sigma, per sensor type):
 
 from __future__ import annotations
 
-from typing import Dict, Literal, Tuple
+from typing import Literal
 
 # ---------------------------------------------------------------------------
 # Measurement noise (1-sigma) per sensor *type* — plant-agnostic.
@@ -52,7 +52,7 @@ from typing import Dict, Literal, Tuple
 # ---------------------------------------------------------------------------
 NoiseKind = Literal["relative", "absolute"]
 
-SENSOR_NOISE_MODEL: Dict[str, Tuple[NoiseKind, float]] = {
+SENSOR_NOISE_MODEL: dict[str, tuple[NoiseKind, float]] = {
     "q_gas": ("relative", 0.03),  # biogas flow meter ~3 % expanded uncertainty
     "q_gas_total": ("relative", 0.03),
     "q_ch4": ("relative", 0.04),  # Q_gas x NDIR CH4 (~3 % x ~1 %) combined
@@ -77,7 +77,7 @@ R_INFLATION: float = 1.0
 #: Kinetic-parameter name prefixes perturbed (rates + Monod affinities). The
 #: physical equilibrium constants (K_a, K_w, K_H) and stoichiometry (Y_*, f_*)
 #: are NOT perturbed.
-MODEL_ERROR_PREFIXES: Tuple[str, ...] = ("k_dis", "k_hyd", "k_m_", "k_dec", "K_S")
+MODEL_ERROR_PREFIXES: tuple[str, ...] = ("k_dis", "k_hyd", "k_m_", "k_dec", "K_S")
 
 #: sigma of exp(N(0, sigma)). 0.20 ~ CoV 20 % (sensitivity range);
 #: 0.30 ~ plant-model mismatch (upper realistic end). 0.25 is the default.
@@ -105,8 +105,8 @@ def absolute_sensor_std(catalog_name: str, nominal_value: float) -> float:
 
 
 def build_sensor_noise(
-    nominal_magnitudes: Dict[str, float],
-) -> Dict[str, float]:
+    nominal_magnitudes: dict[str, float],
+) -> dict[str, float]:
     """Build a ``build_ukf(sensor_noise=...)`` dict from the realism profile.
 
     Args:
@@ -120,7 +120,7 @@ def build_sensor_noise(
         ``{catalog_name: noise_std}`` ready for ``build_ukf``. For
         ``substrate_dose`` the value is the *relative* factor (not absolute).
     """
-    out: Dict[str, float] = {}
+    out: dict[str, float] = {}
     for name, (kind, value) in SENSOR_NOISE_MODEL.items():
         if name == "substrate_dose":
             out[name] = float(value * R_INFLATION)  # relative factor
@@ -132,10 +132,10 @@ def build_sensor_noise(
 
 
 __all__ = [
-    "SENSOR_NOISE_MODEL",
-    "R_INFLATION",
-    "MODEL_ERROR_PREFIXES",
     "MODEL_ERROR_KINETIC_SIGMA",
+    "MODEL_ERROR_PREFIXES",
+    "R_INFLATION",
+    "SENSOR_NOISE_MODEL",
     "absolute_sensor_std",
     "build_sensor_noise",
 ]

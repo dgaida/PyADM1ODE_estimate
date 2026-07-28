@@ -7,10 +7,10 @@ import pandas as pd
 import pytest
 
 from pyadm1ode_estimation.io import (
+    UNIT_CONVERSIONS,
     DataFrameSensorSource,
     SensorChannelDef,
     SensorSource,
-    UNIT_CONVERSIONS,
     lookup_conversion,
 )
 
@@ -32,7 +32,7 @@ class TestUnitConversionTable:
 
     def test_lmin_to_m3d(self):
         # 1 L/min = 0.001 m3/min = 1.44 m3/d
-        scale, off = lookup_conversion("L/min", "m3/d")
+        scale, _off = lookup_conversion("L/min", "m3/d")
         assert scale == pytest.approx(1.44)
 
     def test_mgL_to_kgm3(self):

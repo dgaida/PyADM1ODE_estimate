@@ -32,7 +32,7 @@ This builder is intended as a realistic but generic example.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pyadm1 import BiogasPlant  # type: ignore[import-not-found]
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 
 #: Three-stage liquid cascade.
 #: (component_id, name, V_liq [m³], V_gas [m³], T_ad [K])
-_STAGES: List[Tuple[str, str, float, float, float]] = [
+_STAGES: list[tuple[str, str, float, float, float]] = [
     ("primary", "Primary Fermenter", 1200.0, 216.0, 315.15),  # 42 °C
     ("secondary", "Secondary Fermenter", 1200.0, 216.0, 315.15),  # 42 °C
     ("storage", "Digestate Storage", 3500.0, 476.0, 308.15),  # 35 °C
@@ -52,7 +52,7 @@ _STAGES: List[Tuple[str, str, float, float, float]] = [
 
 #: Two identical CHP units, both fed from all three gas headspaces.
 #: (chp_id, name)
-_CHPS: List[Tuple[str, str]] = [
+_CHPS: list[tuple[str, str]] = [
     ("chp1", "CHP 1 (250 kW)"),
     ("chp2", "CHP 2 (250 kW)"),
 ]
@@ -84,7 +84,7 @@ def build_multi_stage_plant(
     total_simtime: int = 365,
     nominal_daily_dosing_m3: float = _NOMINAL_DAILY_DOSING_M3,
     plant_name: str = "Multi-Stage Cascade Plant",
-) -> "BiogasPlant":
+) -> BiogasPlant:
     """Construct the three-stage cascade example plant.
 
     Each fermenter is seeded with a pre-inoculated ADM1 state computed
@@ -109,7 +109,9 @@ def build_multi_stage_plant(
         ImportError: If the ``pyadm1`` base package is not installed.
     """
     from pyadm1 import BiogasPlant, Feedstock  # type: ignore[import-not-found]
-    from pyadm1.components.biological.digester import Digester  # type: ignore[import-not-found]
+    from pyadm1.components.biological.digester import (
+        Digester,  # type: ignore[import-not-found]
+    )
     from pyadm1.configurator.plant_configurator import (  # type: ignore[import-not-found]
         PlantConfigurator,
     )

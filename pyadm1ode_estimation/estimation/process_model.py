@@ -20,7 +20,7 @@ Responsibilities
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -48,7 +48,7 @@ class ADM1ProcessModel:
             indices, ``Q_substrates`` positions and kinetic params.
     """
 
-    def __init__(self, plant: "BiogasPlant", spec: StateVectorSpec):
+    def __init__(self, plant: BiogasPlant, spec: StateVectorSpec):
         if spec.digester_id not in plant.components:
             raise KeyError(
                 f"StateVectorSpec.digester_id='{spec.digester_id}' is not a "
@@ -56,7 +56,19 @@ class ADM1ProcessModel:
             )
         self.plant = plant
         self.spec = spec
-        self._baseline: Dict[str, Any] = {}
+        self._baseline: dict[str, Any] = {}
+        #: Optional {substrate_index: flow} known external feed. When set, it
+        #: OVERRIDES the estimated ``input_flow`` channels in :meth:`_apply_input_flows`
+        #: for those substrates — the "known-input" filtering variant, where the feed
+        #: is a known control input rather than an estimated (and observed) state.
+        self.known_input: dict[int, float] | None = None
+
+    def set_known_input(self, q_by_substrate: dict[int, float] | None) -> None:
+        """Set (or clear with ``None``) the known external feed applied every step.
+
+        In the UKF this makes *every* sigma point use the same known feed during
+        prediction, so the substrate dose need not be estimated or observed."""
+        self.known_input = None if q_by_substrate is None else dict(q_by_substrate)
 
     # ------------------------------------------------------------------
     # Baseline snapshot / restore
@@ -88,13 +100,13 @@ class ADM1ProcessModel:
         The dict produced here is the per-task payload shipped to
         worker processes — keep it picklable and small.
         """
-        snap: Dict[str, Any] = {
+        snap: dict[str, Any] = {
             "sim_time": float(self.plant.simulation_time),
             "components": {},  # per-component adm1_state + Q_substrates
             "gas_storage": {},  # per-component gas_storage state
         }
         for cid, comp in self.plant.components.items():
-            comp_snap: Dict[str, Any] = {}
+            comp_snap: dict[str, Any] = {}
             if hasattr(comp, "adm1_state"):
                 comp_snap["adm1_state"] = list(comp.adm1_state)
             q_subs = getattr(comp, "Q_substrates", None)
@@ -129,7 +141,7 @@ class ADM1ProcessModel:
                 continue
             if "adm1_state" in comp_snap:
                 comp.adm1_state = list(comp_snap["adm1_state"])
-            if "Q_substrates" in comp_snap and comp_snap["Q_substrates"]:
+            if comp_snap.get("Q_substrates"):
                 comp.Q_substrates = list(comp_snap["Q_substrates"])
 
         # Gas-storage state restoration: same layout as before, the storage
@@ -147,13 +159,13 @@ class ADM1ProcessModel:
             }
             try:
                 gs.outputs_data = dict(outputs_part)
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001, S110
                 pass
             for key, val in attr_updates.items():
                 attr_name = key.removeprefix("__attr__")
                 try:
                     setattr(gs, attr_name, val)
-                except Exception:  # noqa: BLE001
+                except Exception:  # noqa: BLE001, S110
                     pass
 
     # ------------------------------------------------------------------
@@ -166,12 +178,24 @@ class ADM1ProcessModel:
         self._apply_kinetic_params(x)
 
     def _apply_input_flows(self, x: np.ndarray) -> None:
-        """Push the ``"input_flow"`` channels into the digester's ``Q_substrates``."""
+        """Push the substrate feed into the digester's ``Q_substrates``.
+
+        A :attr:`known_input` entry (known-input variant) overrides the estimated
+        ``input_flow`` channel for that substrate; substrates without a known value
+        fall back to their estimated ``x`` channel."""
         digester = self.plant.components[self.spec.digester_id]
         q_vec = list(getattr(digester, "Q_substrates", []) or [])
+        known = self.known_input
+        if known:
+            for idx, flow in known.items():
+                while len(q_vec) <= int(idx):
+                    q_vec.append(0.0)
+                q_vec[int(idx)] = float(max(0.0, flow))
         for i in self.spec.kind_indices("input_flow"):
             ch = self.spec.channels[i]
             idx = int(ch.input_substrate_index)
+            if known and idx in known:
+                continue  # known input overrides the estimate
             while len(q_vec) <= idx:
                 q_vec.append(0.0)
             q_vec[idx] = float(max(0.0, x[i]))
@@ -182,7 +206,7 @@ class ADM1ProcessModel:
             # current per-step flows.
             try:
                 digester.adm1.create_influent(q_vec, 0)
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001, S110
                 pass
 
     def _apply_kinetic_params(self, x: np.ndarray) -> None:

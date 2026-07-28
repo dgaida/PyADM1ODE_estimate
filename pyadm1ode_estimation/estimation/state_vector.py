@@ -17,7 +17,7 @@ Three kinds of channels are supported:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, List, Literal, Optional, Tuple
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 
@@ -66,13 +66,13 @@ class StateChannel:
 
     name: str
     kind: ChannelKind = "adm1"
-    adm1_index: Optional[int] = None
-    input_substrate_index: Optional[int] = None
+    adm1_index: int | None = None
+    input_substrate_index: int | None = None
     initial: float = 0.0
     initial_std: float = 0.1
     process_noise_std: float = 0.01
     drift_model: DriftModel = "random_walk"
-    ou_mean: Optional[float] = None
+    ou_mean: float | None = None
     ou_theta: float = 1.0
     lower: float = 0.0
     upper: float = float("inf")
@@ -111,17 +111,17 @@ class StateVectorSpec:
     """
 
     digester_id: str
-    channels: List[StateChannel] = field(default_factory=list)
+    channels: list[StateChannel] = field(default_factory=list)
 
     # ---------------------------------------------------------------- meta
     def __len__(self) -> int:
         return len(self.channels)
 
     @property
-    def names(self) -> List[str]:
+    def names(self) -> list[str]:
         return [c.name for c in self.channels]
 
-    def kind_indices(self, kind: ChannelKind) -> List[int]:
+    def kind_indices(self, kind: ChannelKind) -> list[int]:
         return [i for i, c in enumerate(self.channels) if c.kind == kind]
 
     # ---------------------------------------------------------------- vectors
@@ -155,7 +155,7 @@ class StateVectorSpec:
                 q_diag[i] = (c.process_noise_std**2) * dt
         return np.diag(q_diag)
 
-    def bounds(self) -> Tuple[np.ndarray, np.ndarray]:
+    def bounds(self) -> tuple[np.ndarray, np.ndarray]:
         lower = np.array([c.lower for c in self.channels], dtype=float)
         upper = np.array([c.upper for c in self.channels], dtype=float)
         return lower, upper
@@ -166,7 +166,7 @@ class StateVectorSpec:
         return np.minimum(np.maximum(x, lower), upper)
 
     # ---------------------------------------------------------------- plant I/O
-    def push_adm1_state(self, x: np.ndarray, plant: "BiogasPlant") -> None:
+    def push_adm1_state(self, x: np.ndarray, plant: BiogasPlant) -> None:
         """Write the ``"adm1"`` channels of ``x`` into the digester."""
         digester = plant.components[self.digester_id]
         state = list(digester.adm1_state)
@@ -175,7 +175,7 @@ class StateVectorSpec:
             state[ch.adm1_index] = float(x[i])
         digester.adm1_state = state
 
-    def read_adm1_state(self, plant: "BiogasPlant") -> np.ndarray:
+    def read_adm1_state(self, plant: BiogasPlant) -> np.ndarray:
         """Read the ``"adm1"`` channels back from the digester state."""
         digester = plant.components[self.digester_id]
         out = np.zeros(len(self.channels))

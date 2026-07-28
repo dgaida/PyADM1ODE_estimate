@@ -22,8 +22,8 @@ twin script.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -48,7 +48,7 @@ class TwinTrajectory:
     nis: np.ndarray  # (T,)
 
     @property
-    def channel_names(self) -> List[str]:
+    def channel_names(self) -> list[str]:
         return list(self.x_hat.shape[1] * [""])  # filled in by caller
 
 
@@ -74,7 +74,7 @@ def propagate_truth(
     n_state = len(spec)
     states = np.zeros((n_steps + 1, n_state))
     states[0] = x0
-    obs_rows: List[List[float]] = []
+    obs_rows: list[list[float]] = []
 
     process.refresh_outputs(x0, equilibration_dt=equilibration_dt)
     obs_rows.append([float(c.extractor(process.plant, x0)) for c in obs.channels])
@@ -112,7 +112,7 @@ def add_measurement_noise(
 def apply_gate_masks(
     obs_noisy: pd.DataFrame,
     obs_model: ObservationModel,
-    gate_frame: Optional[pd.DataFrame] = None,
+    gate_frame: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """Set non-observable cells to NaN according to the gates.
 
@@ -134,10 +134,17 @@ def run_filter(
     spec: StateVectorSpec,
     obs: ObservationModel,
     obs_noisy: pd.DataFrame,
-    gate_frame: Optional[pd.DataFrame],
+    gate_frame: pd.DataFrame | None,
     dt_hours: float,
-) -> tuple[np.ndarray, np.ndarray, List[EstimationStep]]:
+    pre_step: Callable[[int, float], None] | None = None,
+) -> tuple[np.ndarray, np.ndarray, list[EstimationStep]]:
     """Step the filter through the measurement frame.
+
+    Args:
+        pre_step: optional callback ``f(k, t)`` invoked at the top of each
+            iteration (before ``predict``). Lets the caller mutate the
+            estimator's process model as a function of step/time, e.g. to
+            inject a time-growing model error. Default ``None`` is a no-op.
 
     Returns:
         x_hat (T, n_state), std (T, n_state), steps list.
@@ -147,20 +154,22 @@ def run_filter(
     T = len(obs_noisy)
     x_hat = np.zeros((T, n_state))
     std = np.zeros((T, n_state))
-    steps: List[EstimationStep] = []
+    steps: list[EstimationStep] = []
 
     for k, t in enumerate(obs_noisy.index):
+        if pre_step is not None:
+            pre_step(k, float(t))
         if k > 0:
             estimator.predict(dt)
 
-        y_dict: Dict[str, float] = {}
+        y_dict: dict[str, float] = {}
         for c in obs.channels:
             if c.name in obs_noisy.columns:
                 val = float(obs_noisy.iloc[k][c.name])
                 if np.isfinite(val):
                     y_dict[c.name] = val
 
-        gate_dict: Dict[str, float] = {}
+        gate_dict: dict[str, float] = {}
         if gate_frame is not None:
             for col in gate_frame.columns:
                 gate_dict[col] = float(gate_frame.iloc[k][col])

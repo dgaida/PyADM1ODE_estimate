@@ -26,7 +26,7 @@ builder to :class:`ParallelUKF` workers.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -36,9 +36,9 @@ class _MockADM1:
     implementation is enough. ``_kinetic`` is consulted via ``getattr`` with
     a ``None`` default, so ``None`` here means "no kinetic params"."""
 
-    _kinetic: Optional[dict] = None
+    _kinetic: dict | None = None
 
-    def create_influent(self, q_vec, idx):  # noqa: ARG002
+    def create_influent(self, q_vec, idx):
         return None
 
 
@@ -53,8 +53,8 @@ class _MockDigester:
     ``input_substrate_index``.
     """
 
-    adm1_state: List[float] = field(default_factory=lambda: [0.5] * 41)
-    Q_substrates: List[float] = field(default_factory=lambda: [10.0, 5.0])
+    adm1_state: list[float] = field(default_factory=lambda: [0.5] * 41)
+    Q_substrates: list[float] = field(default_factory=lambda: [10.0, 5.0])
     adm1: _MockADM1 = field(default_factory=_MockADM1)
 
 
@@ -74,7 +74,7 @@ class _MockPlant:
     """
 
     simulation_time: float = 0.0
-    components: Dict[str, Any] = field(
+    components: dict[str, Any] = field(
         default_factory=lambda: {"fermenter": _MockDigester()}
     )
 
@@ -97,7 +97,7 @@ class _MockGasStorage:
     so the multi-component snapshot path is exercised end to end.
     """
 
-    outputs_data: Dict[str, Any] = field(default_factory=lambda: {"Q_gas_stored": 0.0})
+    outputs_data: dict[str, Any] = field(default_factory=lambda: {"Q_gas_stored": 0.0})
     stored_volume_m3: float = 100.0
 
 
@@ -114,8 +114,8 @@ class _MockDigesterWithStorage:
     diverge.
     """
 
-    adm1_state: List[float] = field(default_factory=lambda: [0.5] * 41)
-    Q_substrates: List[float] = field(default_factory=lambda: [10.0, 5.0])
+    adm1_state: list[float] = field(default_factory=lambda: [0.5] * 41)
+    Q_substrates: list[float] = field(default_factory=lambda: [10.0, 5.0])
     adm1: _MockADM1 = field(default_factory=_MockADM1)
     gas_storage: _MockGasStorage = field(default_factory=_MockGasStorage)
     V_gas: float = 200.0
@@ -136,7 +136,7 @@ class _MockMultiStagePlant:
     """
 
     simulation_time: float = 0.0
-    components: Dict[str, Any] = field(
+    components: dict[str, Any] = field(
         default_factory=lambda: {"fermenter": _MockDigesterWithStorage()}
     )
 

@@ -43,8 +43,6 @@ is documented and pinned by the test suite.
 
 from __future__ import annotations
 
-from typing import Dict, Optional
-
 import numpy as np
 from scipy.linalg import solve_triangular
 from scipy.optimize import minimize
@@ -97,9 +95,9 @@ class ConstrainedUKF(UnscentedKalmanFilter):
     # ------------------------------------------------------------------
     def update(
         self,
-        y: Dict[str, float],
+        y: dict[str, float],
         t: float,
-        gate_values: Optional[Dict[str, float]] = None,
+        gate_values: dict[str, float] | None = None,
         equilibration_dt: float = 1.0 / 24.0,
     ) -> EstimationStep:
         if self._cached_h_all is None:
@@ -321,7 +319,7 @@ class ConstrainedUKF(UnscentedKalmanFilter):
                     chi - _chi_prior
                 )
 
-            def hess(_chi):  # noqa: ARG001
+            def hess(_chi):
                 return H_quad
 
             result = minimize(

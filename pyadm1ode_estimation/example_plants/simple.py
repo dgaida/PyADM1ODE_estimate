@@ -56,7 +56,7 @@ def build_simple_plant(
     feeding_freq: int = 24,
     total_simtime: int = 365,
     plant_name: str = "Simple Single-Fermenter Plant",
-) -> "BiogasPlant":
+) -> BiogasPlant:
     """Construct the simple single-fermenter example plant.
 
     Args:

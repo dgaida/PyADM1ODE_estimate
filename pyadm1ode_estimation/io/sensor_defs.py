@@ -47,8 +47,8 @@ Typical usage::
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, Optional, Tuple
 
 # ---------------------------------------------------------------------------
 # Built-in unit conversion table
@@ -66,7 +66,7 @@ from typing import Callable, Optional, Tuple
 # SCADA. Easy to extend.
 
 
-UNIT_CONVERSIONS: dict[Tuple[str, str], Tuple[float, float]] = {
+UNIT_CONVERSIONS: dict[tuple[str, str], tuple[float, float]] = {
     # ---- Volumetric flow ----------------------------------------
     ("m3/d", "m3/d"): (1.0, 0.0),
     ("m3/h", "m3/d"): (24.0, 0.0),
@@ -106,7 +106,7 @@ UNIT_CONVERSIONS: dict[Tuple[str, str], Tuple[float, float]] = {
 }
 
 
-def lookup_conversion(unit_in: str, unit_out: str) -> Optional[Tuple[float, float]]:
+def lookup_conversion(unit_in: str, unit_out: str) -> tuple[float, float] | None:
     """Return ``(scale, offset)`` for ``unit_in → unit_out`` or ``None``.
 
     A return of ``None`` means the conversion needs context (density,
@@ -181,23 +181,23 @@ class SensorChannelDef:
     unit_in: str = "-"
     unit_out: str = "-"
 
-    converter: Optional[Callable[[float], float]] = None
+    converter: Callable[[float], float] | None = None
 
-    valid_range: Optional[Tuple[float, float]] = None
+    valid_range: tuple[float, float] | None = None
 
     scale: float = 1.0
     offset: float = 0.0
 
-    quality_column: Optional[str] = None
-    bad_status_values: Tuple = field(default_factory=lambda: (False, 0, None))
+    quality_column: str | None = None
+    bad_status_values: tuple = field(default_factory=lambda: (False, 0, None))
 
     # ------------------------------------------------------------------
     # Transformation
     # ------------------------------------------------------------------
 
     def transform(
-        self, raw: Optional[float], quality: Optional[object] = None
-    ) -> Optional[float]:
+        self, raw: float | None, quality: object | None = None
+    ) -> float | None:
         """Apply the full transformation pipeline. Returns ``None`` if
         the value should be dropped (NULL, bad quality, out of range).
 
@@ -208,9 +208,8 @@ class SensorChannelDef:
             return None
 
         # ---- quality flag -----------------------------------------
-        if self.quality_column is not None:
-            if quality in self.bad_status_values:
-                return None
+        if self.quality_column is not None and quality in self.bad_status_values:
+            return None
 
         # ---- conversion -------------------------------------------
         try:
@@ -250,11 +249,13 @@ class SensorChannelDef:
 
 def _is_finite(x: float) -> bool:
     """Local equivalent of math.isfinite without importing math at module top."""
-    return x == x and x != float("inf") and x != float("-inf")
+    import math
+
+    return math.isfinite(x)
 
 
 __all__ = [
-    "SensorChannelDef",
     "UNIT_CONVERSIONS",
+    "SensorChannelDef",
     "lookup_conversion",
 ]

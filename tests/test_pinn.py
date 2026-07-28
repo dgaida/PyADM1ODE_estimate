@@ -1,22 +1,23 @@
 import torch
+
 from pyadm1ode_estimation.estimation.deep_learning.pinn import ADM1PINN, PINNLoss
 
 
 def test_pinn_forward():
     input_dim = 2
-    output_dim = 37
+    output_dim = 41
     model = ADM1PINN(input_dim=input_dim, output_dim=output_dim)
 
     t = torch.randn(10, 1)
     u = torch.randn(10, 1)
 
     x_hat = model(t, u)
-    assert x_hat.shape == (10, 37)
+    assert x_hat.shape == (10, 41)
 
 
 def test_pinn_loss():
     input_dim = 2
-    output_dim = 37
+    output_dim = 41
     model = ADM1PINN(input_dim=input_dim, output_dim=output_dim)
 
     # Mock measurement map: just take the first 3 states

@@ -44,8 +44,6 @@ Internal state:
 
 from __future__ import annotations
 
-from typing import Dict, Optional, Tuple
-
 import numpy as np
 from scipy.linalg import solve_triangular
 
@@ -152,7 +150,7 @@ class UnscentedKalmanFilter:
         alpha: float = 1.0,
         beta: float = 2.0,
         kappa: float = 0.0,
-        gamma_override: Optional[float] = None,
+        gamma_override: float | None = None,
     ):
         if process.spec is not spec:
             raise ValueError("process.spec and spec must be the same object.")
@@ -191,8 +189,8 @@ class UnscentedKalmanFilter:
         # Single-slot cache for sqrt(Q): Q depends only on dt and on the
         # channel parameters (fixed at spec construction), so a constant-dt
         # run hits this cache on every predict after the first.
-        self._sqrt_Q_cache_dt: Optional[float] = None
-        self._sqrt_Q_cache: Optional[np.ndarray] = None
+        self._sqrt_Q_cache_dt: float | None = None
+        self._sqrt_Q_cache: np.ndarray | None = None
 
         # Single-slot cache for sqrt(R): R depends only on the noise_std
         # of the active channels (channel parameters are fixed at construct
@@ -200,16 +198,16 @@ class UnscentedKalmanFilter:
         # with the same active set hits the cache. Mutating
         # ``ObservationChannel.noise_std`` after the fact invalidates this
         # cache and is not supported.
-        self._sqrt_R_cache_key: Optional[Tuple[str, ...]] = None
-        self._sqrt_R_cache: Optional[np.ndarray] = None
+        self._sqrt_R_cache_key: tuple[str, ...] | None = None
+        self._sqrt_R_cache: np.ndarray | None = None
 
         # Sigma-reuse cache: populated by predict(), consumed by the next
         # update(). Cleared by reset(). When None, update() falls back to
         # the t=0 path (evaluate h at sigma points around the current
         # prior via process.refresh_outputs).
-        self._cached_propagated: Optional[np.ndarray] = None
-        self._cached_h_all: Optional[np.ndarray] = None
-        self._cached_x_pred: Optional[np.ndarray] = None
+        self._cached_propagated: np.ndarray | None = None
+        self._cached_h_all: np.ndarray | None = None
+        self._cached_x_pred: np.ndarray | None = None
 
     # ------------------------------------------------------------------
     # Public covariance as a property (computed on demand)
@@ -368,9 +366,9 @@ class UnscentedKalmanFilter:
     # ------------------------------------------------------------------
     def update(
         self,
-        y: Dict[str, float],
+        y: dict[str, float],
         t: float,
-        gate_values: Optional[Dict[str, float]] = None,
+        gate_values: dict[str, float] | None = None,
         equilibration_dt: float = 1.0 / 24.0,
     ) -> EstimationStep:
         gate_values = gate_values or {}

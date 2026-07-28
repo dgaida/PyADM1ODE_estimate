@@ -80,8 +80,15 @@ extra:
   version:
     provider: mike
 
+# MathJax (renders the $...$ / $$...$$ math via pymdownx.arithmatex generic mode)
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+
 markdown_extensions:
   - admonition
+  - pymdownx.arithmatex:
+      generic: true
   - pymdownx.details
   - pymdownx.superfences:
       custom_fences:

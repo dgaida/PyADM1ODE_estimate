@@ -22,7 +22,6 @@ import argparse
 import copy
 import sys
 from pathlib import Path
-from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -31,7 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from pyadm1ode_estimation.estimation import (  # noqa: E402
+from pyadm1ode_estimation.estimation import (
     BLOCK_INDICES,
     STATE_BLOCKS,
     ADM1ProcessModel,
@@ -41,20 +40,22 @@ from pyadm1ode_estimation.estimation import (  # noqa: E402
     build_filter_components,
     build_ukf,
 )
-from pyadm1ode_estimation.estimation.realism import (  # noqa: E402
+from pyadm1ode_estimation.estimation.realism import (
     MODEL_ERROR_KINETIC_SIGMA,
-    MODEL_ERROR_PREFIXES as _MODEL_ERROR_PREFIXES,
     build_sensor_noise,
 )
-from pyadm1ode_estimation.estimation.sensors import (  # noqa: E402
+from pyadm1ode_estimation.estimation.realism import (
+    MODEL_ERROR_PREFIXES as _MODEL_ERROR_PREFIXES,
+)
+from pyadm1ode_estimation.estimation.sensors import (
     SensorAdapter,
     measure_truth_with_sensors,
 )
-from pyadm1ode_estimation.estimation.twin import (  # noqa: E402
+from pyadm1ode_estimation.estimation.twin import (
     coverage_within_2sigma,
     run_filter,
 )
-from pyadm1ode_estimation.example_plants import build_multi_stage_plant  # noqa: E402
+from pyadm1ode_estimation.example_plants import build_multi_stage_plant
 
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "output" / "twin_experiment"
 DIGESTER_ID = "primary"
@@ -95,7 +96,7 @@ _FEED_PHASES = [
 ]
 # Set by main() when --feed-change is active; read by the plot helpers to draw
 # vertical markers at the change times.
-_FEED_CHANGE_DAYS: List[float] = []
+_FEED_CHANGE_DAYS: list[float] = []
 
 # Cascade stages for the per-stage gas diagnostic (truth vs. corrected model).
 # Only "primary" is estimated by the UKF; "secondary" (Nachgärer) and
@@ -112,7 +113,7 @@ STAGE_LABELS = {
 # Quality-class index lists for the 41 ADM1 channels (mirrors
 # specs.py::_STATE_BLOCKS so plotting can group channels without
 # importing private constants).
-QUALITY_BLOCKS: Dict[str, List[int]] = {
+QUALITY_BLOCKS: dict[str, list[int]] = {
     "methanogenesis": [6, 7, 8, 9, 27, 28, 37, 38, 39, 40],
     "charge_balance": [29, 30, 31, 32, 33, 34, 35, 36],
     "acidogenesis_substrates": [0, 1, 3, 4, 5],
@@ -125,7 +126,7 @@ QUALITY_BLOCKS: Dict[str, List[int]] = {
 }
 
 
-def spec_block_positions(spec) -> Dict[str, List[int]]:
+def spec_block_positions(spec) -> dict[str, list[int]]:
     """Map each observability block to the STATE-VECTOR POSITIONS of its
     estimated ADM1 channels.
 
@@ -134,7 +135,7 @@ def spec_block_positions(spec) -> Dict[str, List[int]]:
     channel's ``adm1_index`` up in :data:`STATE_BLOCKS`. Only blocks with at
     least one estimated channel appear.
     """
-    out: Dict[str, List[int]] = {}
+    out: dict[str, list[int]] = {}
     for pos, ch in enumerate(spec.channels):
         if ch.kind == "adm1":
             out.setdefault(STATE_BLOCKS[ch.adm1_index], []).append(pos)
@@ -308,7 +309,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def build_truth_sensors(obs, seed: int) -> Dict[str, SensorAdapter]:
+def build_truth_sensors(obs, seed: int) -> dict[str, SensorAdapter]:
     """One realistic ``PhysicalSensor`` per observation channel.
 
     Each sensor's ``measurement_noise`` is taken from the channel's
@@ -321,7 +322,7 @@ def build_truth_sensors(obs, seed: int) -> Dict[str, SensorAdapter]:
         PhysicalSensor,
     )
 
-    sensors: Dict[str, SensorAdapter] = {}
+    sensors: dict[str, SensorAdapter] = {}
     for off, ch in enumerate(obs.channels):
         is_ph = ch.name == "pH"
         sensor = PhysicalSensor(
@@ -350,7 +351,7 @@ def _apply_sensor_schedule(obs_noisy, obs, dt_hours, interval_h):
         H = interval_h.get(c.name)
         if not H or H <= dt_hours or c.name not in out.columns:
             continue
-        every = max(1, int(round(H / dt_hours)))
+        every = max(1, round(H / dt_hours))
         mask = (np.arange(n) % every) != 0
         out.loc[out.index[mask], c.name] = np.nan
     return out
@@ -663,9 +664,12 @@ def plot_production_estimate(
                 f"sensor cum.: {err_sensor:+.1f} %",
                 transform=ax_cum.transAxes,
                 fontsize=9,
-                bbox=dict(
-                    boxstyle="round", facecolor="white", edgecolor="C3", alpha=0.8
-                ),
+                bbox={
+                    "boxstyle": "round",
+                    "facecolor": "white",
+                    "edgecolor": "C3",
+                    "alpha": 0.8,
+                },
             )
             ax_cum.annotate(
                 f"model cum.: {err_model:+.1f} %",
@@ -673,9 +677,12 @@ def plot_production_estimate(
                 xytext=(0.55, 0.05),
                 textcoords="axes fraction",
                 fontsize=10,
-                bbox=dict(
-                    boxstyle="round", facecolor="white", edgecolor="C2", alpha=0.8
-                ),
+                bbox={
+                    "boxstyle": "round",
+                    "facecolor": "white",
+                    "edgecolor": "C2",
+                    "alpha": 0.8,
+                },
             )
         ax_cum.set_xlabel("time [d]")
         ax_cum.set_ylabel(f"cumulative {name} [m³]")
@@ -694,7 +701,12 @@ def plot_production_estimate(
 
 
 def evaluate_per_stage_gas(
-    warmed_up_plant, spec, primary_state_history, stage_ids, dt_hours: float = 1.0
+    warmed_up_plant,
+    spec,
+    primary_state_history,
+    stage_ids,
+    dt_hours: float = 1.0,
+    pre_step=None,
 ):
     """Replay a primary-state trajectory through a *freely-evolving* cascade,
     recording per-stage ``Q_gas`` / ``Q_ch4``.
@@ -727,6 +739,8 @@ def evaluate_per_stage_gas(
     q_ch4 = {sid: np.full(T, np.nan) for sid in stage_ids}
     primary_adm1 = np.full((T, 41), np.nan)
     for k in range(T):
+        if pre_step is not None:
+            pre_step(plant_copy, k)  # e.g. re-apply a time-varying model error
         process.step(primary_state_history[k], dt)
         process.snapshot()  # accumulate: the next step continues from here
         for sid in stage_ids:
@@ -773,7 +787,7 @@ def plot_per_stage_gas(
                 f"cum. err: {rel:+.1f} %",
                 transform=ax.transAxes,
                 fontsize=8,
-                bbox=dict(boxstyle="round", facecolor="white", alpha=0.7),
+                bbox={"boxstyle": "round", "facecolor": "white", "alpha": 0.7},
             )
             ax.set_ylabel(f"{label} [m³/d]")
             ax.grid(alpha=0.3)
@@ -1006,7 +1020,7 @@ def _propagate_truth_with_substrate_noise(
 def main() -> int:
     args = parse_args()
     rng = np.random.default_rng(args.seed)
-    n_steps = int(round(args.duration_days * 24.0 / args.dt_hours))
+    n_steps = round(args.duration_days * 24.0 / args.dt_hours)
 
     # --realistic preset: literature-grounded model error + real-plant daily
     # gas analytics (individual flags still override).
@@ -1015,7 +1029,7 @@ def main() -> int:
 
     # Sensor set + multi-rate sampling schedule (channel name -> period [h]).
     sensors = list(SENSORS)  # q_gas, q_ch4, ph, substrate_dose (hourly base)
-    schedule: Dict[str, float] = {}
+    schedule: dict[str, float] = {}
     if args.daily_gas_analytics or args.irregular_sensors or args.realistic:
         if "q_co2" not in sensors:
             sensors.insert(sensors.index("q_ch4") + 1, "q_co2")

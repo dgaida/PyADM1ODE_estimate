@@ -147,7 +147,7 @@ class TestObservationModel:
 class TestMatchMeasurements:
     @pytest.fixture
     def model(self):
-        ex = lambda p, x: 0.0  # noqa: E731
+        ex = lambda p, x: 0.0
         names = ["Q_gas", "Q_ch4", "pH", "Q_maize_silage", "Q_slurry"]
         return ObservationModel(
             channels=[ObservationChannel(n, ex, 1.0) for n in names]

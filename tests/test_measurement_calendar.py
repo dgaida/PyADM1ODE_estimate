@@ -171,7 +171,7 @@ class TestValuesForFilter:
 
 class TestFromObsModel:
     def _obs(self):
-        def ex(plant, x):  # noqa: ARG001
+        def ex(plant, x):
             return 0.0
 
         return ObservationModel(
@@ -209,7 +209,7 @@ class TestFromObsModel:
 
     def test_factory_uses_channel_name_when_gate_column_missing(self):
         # Channel without gate_column → keyed by .name
-        def ex(plant, x):  # noqa: ARG001
+        def ex(plant, x):
             return 0.0
 
         obs = ObservationModel(
