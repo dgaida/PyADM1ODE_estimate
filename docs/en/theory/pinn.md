@@ -27,10 +27,10 @@ states over time from those few noisy signals.
 
 There are two classic routes, each with a weakness:
 
-* **Pure mechanistic model (ADM1).** Trustworthy structure, but it needs the
+* **Pure mechanistic model (ADM1).** Trustworthy structure, but it needs the  
   exact initial state and exact kinetic parameters. Small errors accumulate and
-  the simulation drifts away from the real plant.
-* **Pure machine learning.** Flexible, but it needs a large labelled dataset of
+  the simulation drifts away from the real plant.  
+* **Pure machine learning.** Flexible, but it needs a large labelled dataset of  
   *true* states to learn from, which on a real plant we never have, because the
   true states are exactly what we cannot measure.
 
@@ -42,11 +42,11 @@ wander into physically impossible trajectories.
 
 ## 2. A neural network
 
-* A neural network is a flexible mathematical function $y = \text{NN}_\theta(x)$
-  with many tunable numbers $\theta$ (its *weights*).
-* **Training** means adjusting $\theta$ so that a *loss* is minimised by gradient
-  descent.
-* The **input is time $t$** and the **output is the state vector $\hat{x}(t)$**.
+* A neural network is a flexible mathematical function $y = \text{NN}_\theta(x)$  
+  with many tunable numbers $\theta$ (its *weights*).  
+* **Training** means adjusting $\theta$ so that a *loss* is minimised by gradient  
+  descent.  
+* The **input is time $t$** and the **output is the state vector $\hat{x}(t)$**.  
   So the network *is* the estimated trajectory itself: ask it at any time $t$ and
   it returns the estimated plant state at that instant.
 
@@ -132,8 +132,8 @@ typical scale $s$ so that all count equally (details in section 5):
 
 $$
 L_\text{phys} \;=\; \frac{1}{N_c}\sum_{j}
-  \left\lVert \frac{\tfrac{d\hat{x}_\theta}{dt}(\tau_j)
-    - f(\hat{x}_\theta(\tau_j), u)}{s} \right\rVert^2 .
+  \left\lVert \frac{\tfrac{d\hat{x}_\theta}{dt}(\tau_j)  
+    - f(\hat{x}_\theta(\tau_j), u)}{s} \right\rVert^2 .  
 $$
 
 **Prior loss:** anchor the start. A weak boundary condition tying the trajectory
@@ -254,9 +254,9 @@ state into the data-free tail — a physics-driven forecast from the same fit.
 `update(...)` warm-starts from the current weights **and** optimiser state for
 cheap incremental re-fits as new samples arrive:
 
-* **growing window:** keep the whole history, anchor stays at the original
-  `t0`; or
-* **sliding window:** a fixed horizon `t0 = t1 − window`, self-anchored at the
+* **growing window:** keep the whole history, anchor stays at the original  
+  `t0`; or  
+* **sliding window:** a fixed horizon `t0 = t1 − window`, self-anchored at the  
   network's own current estimate at the window start (bounds compute on long
   runs).
 
@@ -286,15 +286,15 @@ biogas channels and on forecasting. A covariance-intersection **hybrid**
 
 ## Source files
 
-* `pyadm1ode_estimation/estimation/deep_learning/pinn.py` — `ADM1PINN`, `PINNLoss`
-* `pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py` — `PinnSmoother`
-* `pyadm1ode_estimation/estimation/deep_learning/observation_torch.py` — `TorchObservationModel`
+* `pyadm1ode_estimation/estimation/deep_learning/pinn.py` — `ADM1PINN`, `PINNLoss`  
+* `pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py` — `PinnSmoother`  
+* `pyadm1ode_estimation/estimation/deep_learning/observation_torch.py` — `TorchObservationModel`  
 
 ## References
 
-* Raissi, M., Perdikaris, P. & Karniadakis, G. E. (2019). *Physics-informed
-  neural networks.* Journal of Computational Physics 378:686–707.
-* ADM1da model and state indices: [ADM1da model](adm1.md).
+* Raissi, M., Perdikaris, P. & Karniadakis, G. E. (2019). *Physics-informed  
+  neural networks.* Journal of Computational Physics 378:686–707.  
+* ADM1da model and state indices: [ADM1da model](adm1.md).  
 
 ## API reference
 

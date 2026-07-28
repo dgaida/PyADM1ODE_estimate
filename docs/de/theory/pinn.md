@@ -29,10 +29,10 @@ rekonstruieren.
 
 Es gibt zwei klassische Wege, jeder mit einer Schwäche:
 
-* **Rein mechanistisches Modell (ADM1).** Vertrauenswürdige Struktur, aber es
+* **Rein mechanistisches Modell (ADM1).** Vertrauenswürdige Struktur, aber es  
   braucht den exakten Anfangszustand und exakte kinetische Parameter. Kleine
-  Fehler summieren sich und die Simulation driftet von der realen Anlage weg.
-* **Rein maschinelles Lernen.** Flexibel, aber es braucht einen großen
+  Fehler summieren sich und die Simulation driftet von der realen Anlage weg.  
+* **Rein maschinelles Lernen.** Flexibel, aber es braucht einen großen  
   gelabelten Datensatz *echter* Zustände zum Lernen, den wir an einer realen
   Anlage nie haben, denn die echten Zustände sind genau das, was wir nicht messen
   können.
@@ -45,12 +45,12 @@ Daten braucht und nicht in physikalisch unmögliche Trajektorien abdriften kann.
 
 ## 2. Ein neuronales Netz
 
-* Ein neuronales Netz ist eine flexible mathematische Funktion
+* Ein neuronales Netz ist eine flexible mathematische Funktion  
   $y = \text{NN}_\theta(x)$ mit vielen einstellbaren Zahlen $\theta$ (den
-  *Gewichten*).
-* **Training** heißt, $\theta$ so anzupassen, dass ein *Loss* per Gradientenabstieg minimiert
-  wird.
-* Die **Eingabe ist die Zeit $t$** und die **Ausgabe ist der Zustandsvektor $\hat{x}(t)$**.
+  *Gewichten*).  
+* **Training** heißt, $\theta$ so anzupassen, dass ein *Loss* per Gradientenabstieg minimiert  
+  wird.  
+* Die **Eingabe ist die Zeit $t$** und die **Ausgabe ist der Zustandsvektor $\hat{x}(t)$**.  
  Das Netz *ist* also die geschätzte Trajektorie selbst. Fragt man es zu
   einem beliebigen Zeitpunkt $t$, liefert es den geschätzten Anlagenzustand in
   diesem Moment.
@@ -138,8 +138,8 @@ durch eine typische Skala $s$ geteilt, sodass alle gleich zählen (Details in Ab
 
 $$
 L_\text{phys} \;=\; \frac{1}{N_c}\sum_{j}
-  \left\lVert \frac{\tfrac{d\hat{x}_\theta}{dt}(\tau_j)
-    - f(\hat{x}_\theta(\tau_j), u)}{s} \right\rVert^2 .
+  \left\lVert \frac{\tfrac{d\hat{x}_\theta}{dt}(\tau_j)  
+    - f(\hat{x}_\theta(\tau_j), u)}{s} \right\rVert^2 .  
 $$
 
 **Prior-Loss:** den Start verankern. Eine schwache Randbedingung, die die
@@ -265,9 +265,9 @@ in den datenfreien Bereich, eine physikgetriebene Prognose aus demselben Fit.
 Optimierer-Zustand für günstige inkrementelle Nachfits, wenn neue Messwerte
 eintreffen:
 
-* **wachsendes Fenster:** die ganze Historie behalten, Anker bleibt beim
-  ursprünglichen `t0`; oder
-* **gleitendes Fenster:** ein fester Horizont `t0 = t1 − window`, selbst
+* **wachsendes Fenster:** die ganze Historie behalten, Anker bleibt beim  
+  ursprünglichen `t0`; oder  
+* **gleitendes Fenster:** ein fester Horizont `t0 = t1 − window`, selbst  
   verankert am eigenen aktuellen Schätzwert des Netzes am Fensteranfang
   (begrenzt den Rechenaufwand bei langen Läufen).
 
@@ -299,15 +299,15 @@ bewahren.
 
 ## Quelldateien
 
-* `pyadm1ode_estimation/estimation/deep_learning/pinn.py` — `ADM1PINN`, `PINNLoss`
-* `pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py` — `PinnSmoother`
-* `pyadm1ode_estimation/estimation/deep_learning/observation_torch.py` — `TorchObservationModel`
+* `pyadm1ode_estimation/estimation/deep_learning/pinn.py` — `ADM1PINN`, `PINNLoss`  
+* `pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py` — `PinnSmoother`  
+* `pyadm1ode_estimation/estimation/deep_learning/observation_torch.py` — `TorchObservationModel`  
 
 ## Literatur
 
-* Raissi, M., Perdikaris, P. & Karniadakis, G. E. (2019). *Physics-informed
-  neural networks.* Journal of Computational Physics 378:686–707.
-* ADM1da-Modell und Zustandsindizes: [ADM1da-Modell](adm1.md).
+* Raissi, M., Perdikaris, P. & Karniadakis, G. E. (2019). *Physics-informed  
+  neural networks.* Journal of Computational Physics 378:686–707.  
+* ADM1da-Modell und Zustandsindizes: [ADM1da-Modell](adm1.md).  
 
 ## API-Referenz
 
