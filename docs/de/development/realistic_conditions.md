@@ -13,10 +13,10 @@ ergänzt), und das Ziel ist eine Methode, die **allgemein für Biogasanlagen**
 funktioniert, nicht für einen Datensatz. Deshalb werden Rauschen und
 Modellfehler **nicht an die aktuelle Datenlage angepasst**:
 
-* **Messrauschen** hängt an *Sensortypen* als generische Instrumenten-Genauigkeit
+* **Messrauschen** hängt an *Sensortypen* als generische Instrumenten-Genauigkeit  
   — ergänzt/entfernt man einen Sensor, ändern sich die anderen nicht, und die
-  Bedingungen übertragen sich auf andere Anlagen.
-* **Modellfehler** — die Lücke zwischen ADM1 und Realität — **lässt sich nicht
+  Bedingungen übertragen sich auf andere Anlagen.  
+* **Modellfehler** — die Lücke zwischen ADM1 und Realität — **lässt sich nicht  
   aus Betriebsdaten bestimmen** (er ist mit Eingangs- und Messfehler vermengt).
   Er wird daher aus der **Kinetik-Parameter-Unsicherheit der ADM1-Literatur**
   gesetzt, als multiplikative Störung.
@@ -70,24 +70,24 @@ ist als `R_INFLATION` verfügbar (Default 1.0).
 
 ## Abtastraten (reale Anlagen-Kadenz)
 
-* **Online (im Twin stündlich, an der Anlage Sekunden):** `q_gas`, pH,
-  Substratdosen, Füllstände, BHKW, Temperaturen.
-* **Täglich:** Gaszusammensetzung CH₄ / CO₂ (NDIR). O₂ und H₂S werden praktisch
+* **Online (im Twin stündlich, an der Anlage Sekunden):** `q_gas`, pH,  
+  Substratdosen, Füllstände, BHKW, Temperaturen.  
+* **Täglich:** Gaszusammensetzung CH₄ / CO₂ (NDIR). O₂ und H₂S werden praktisch  
   ebenfalls täglich gemessen, sind aber **keine ADM1da-Zustände** → nur
-  Monitoring, *nicht assimiliert*.
-* **Laborkadenz:** TS, VFA (gegated, z. B. VFA alle 12 h).
+  Monitoring, *nicht assimiliert*.  
+* **Laborkadenz:** TS, VFA (gegated, z. B. VFA alle 12 h).  
 
 ## Bewusst *nicht* enthalten (und warum)
 
-* **Anlagenspezifische Gas-Ableitungskette.** An der realen Anlage ist `Q_gas`
+* **Anlagenspezifische Gas-Ableitungskette.** An der realen Anlage ist `Q_gas`  
   kein Flowmeter-Wert, sondern wird aus Gasblasen-Füllstandsänderungen (ΔV,
   differenziert → rauschverstärkt) + BHKW-Verbrauch + Fackel rekonstruiert.
   Diese Fehlerstruktur ist anlagenspezifisch; das Fundament nutzt stattdessen
   die generische Flowmeter-Spezifikation, damit die Bedingungen übertragbar
   bleiben. (Ein anlagenspezifisches Rauschmodell kann beim Bewerten *dieser*
-  Anlage darübergelegt werden.)
-* **O₂ / H₂S.** Keine ADM1da-Zustände — können den UKF nicht informieren.
-* **σ oder R an die aktuelle Datenlage fitten** — würde zur unvollständigen
+  Anlage darübergelegt werden.)  
+* **O₂ / H₂S.** Keine ADM1da-Zustände — können den UKF nicht informieren.  
+* **σ oder R an die aktuelle Datenlage fitten** — würde zur unvollständigen  
   Sensorik hin verzerren.
 
 ## Verwendung
@@ -130,11 +130,11 @@ ADM1-Zuständen).
 
 ## Quellen
 
-* ADM1-Sensitivitätsanalyse — [WIT Transactions (ADM1 local SA)](https://www.witpress.com/elibrary/wit-transactions-on-ecology-and-the-environment/258/38278);
-  [Surrogate-based global SA of ADM1 (ScienceDirect)](https://www.sciencedirect.com/science/article/abs/pii/S0301479720313815).
-* UKF / Plant-Model-Mismatch für AD — [Comparison of UKF designs for AD (arXiv:2310.15958)](https://arxiv.org/html/2310.15958);
-  Haugen et al. 2014, *State Estimation … Pilot AD Reactor* ([DOI:10.1155/2014/572621](https://doi.org/10.1155/2014/572621)).
-* ADM1 Monte-Carlo / lognormale Unsicherheit — [Uncertainty analysis of a simplified AD model (IWA WST 92(4):610)](https://iwaponline.com/wst/article/92/4/610/108810/Uncertainty-analysis-of-a-simplified-anaerobic);
-  [Probabilistic ADM1 simulation of biogas (ScienceDirect)](https://www.sciencedirect.com/science/article/abs/pii/S1369703X23000050).
-* Sensor-Genauigkeit — NDIR-Biogasanalysatoren ([Olythe](https://www.olythe.io/analyzers/biogas-analyzer/), [Dynament](https://dynament.com/application/biogas-monitoring/));
+* ADM1-Sensitivitätsanalyse — [WIT Transactions (ADM1 local SA)](https://www.witpress.com/elibrary/wit-transactions-on-ecology-and-the-environment/258/38278);  
+  [Surrogate-based global SA of ADM1 (ScienceDirect)](https://www.sciencedirect.com/science/article/abs/pii/S0301479720313815).  
+* UKF / Plant-Model-Mismatch für AD — [Comparison of UKF designs for AD (arXiv:2310.15958)](https://arxiv.org/html/2310.15958);  
+  Haugen et al. 2014, *State Estimation … Pilot AD Reactor* ([DOI:10.1155/2014/572621](https://doi.org/10.1155/2014/572621)).  
+* ADM1 Monte-Carlo / lognormale Unsicherheit — [Uncertainty analysis of a simplified AD model (IWA WST 92(4):610)](https://iwaponline.com/wst/article/92/4/610/108810/Uncertainty-analysis-of-a-simplified-anaerobic);  
+  [Probabilistic ADM1 simulation of biogas (ScienceDirect)](https://www.sciencedirect.com/science/article/abs/pii/S1369703X23000050).  
+* Sensor-Genauigkeit — NDIR-Biogasanalysatoren ([Olythe](https://www.olythe.io/analyzers/biogas-analyzer/), [Dynament](https://dynament.com/application/biogas-monitoring/));  
   Biogas-Volumen-Metrologie ([PMC12693810](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12693810/)).
