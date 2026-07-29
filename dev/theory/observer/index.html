@@ -2133,11 +2133,11 @@ und gibt je Schritt einen Zustand aus:</p>
 \]</div>
 <p>Zwei Dinge werden unverändert vom <a href="../pinn/">Smoother</a> übernommen:</p>
 <ul>
-<li><strong>Positivität / Skalierung:</strong> der Kopf sagt nur die <strong>37 Flüssigzustände</strong> als
+<li><strong>Positivität / Skalierung:</strong> der Kopf sagt nur die <strong>37 Flüssigzustände</strong> als<br />
   Log-Abweichung von einer Referenz vorher, <span class="arithmatex">\(\hat{x}_\text{liq} = x_\text{ref}
   \odot \exp(\text{raw})\)</span>,
-  und die 4 Gasdrücke folgen aus dem quasi-stationären Gleichgewicht.</li>
-<li><strong>Kausalität:</strong> das GRU sieht in Schritt <span class="arithmatex">\(t\)</span> nur Vergangenheit und Gegenwart,
+  und die 4 Gasdrücke folgen aus dem quasi-stationären Gleichgewicht.  </li>
+<li><strong>Kausalität:</strong> das GRU sieht in Schritt <span class="arithmatex">\(t\)</span> nur Vergangenheit und Gegenwart,<br />
   der neueste Schritt ist damit eine echte <strong>online gefilterte</strong> Schätzung: das
   Netz läuft als Streaming-Filter (Abschnitt 3).</li>
 </ul>
@@ -2184,11 +2184,11 @@ es monoton-sicher.</p>
 die aktuelle Schätzung zurück und feintunt nach Zeitplan self-supervised auf dem
 Fenster. Zwei Betriebsdetails:</p>
 <ul>
-<li><strong>Zufuhr-bewusste Physik:</strong> abseits des nominalen Betriebspunkts stimmt die
+<li><strong>Zufuhr-bewusste Physik:</strong> abseits des nominalen Betriebspunkts stimmt die<br />
   nominale Zufuhr der vortrainierten Parameter nicht, daher skaliert die
   Feinabstimmung <code>q_ad</code> (die gesamte Zulaufrate in den Fermenter [m³/d])
-  auf die tatsächliche mittlere Zufuhr des Fensters.</li>
-<li><strong>Fehlende Sensoren:</strong> ein geblockter/offline Messwert kommt als <code>NaN</code>. Das
+  auf die tatsächliche mittlere Zufuhr des Fensters.  </li>
+<li><strong>Fehlende Sensoren:</strong> ein geblockter/offline Messwert kommt als <code>NaN</code>. Das<br />
   rekurrente Netz kann <code>NaN</code> nicht verarbeiten, daher wird er eingabeseitig auf
   den normierten Mittelwert (0) abgebildet und zielseitig aus dem Loss maskiert.</li>
 </ul>
@@ -2207,10 +2207,10 @@ Kaltstarts.</p>
 <hr />
 <h2 id="quelldateien">Quelldateien<a class="headerlink" href="#quelldateien" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observer.py</code> — <code>Adm1Observer</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observer_data.py</code> — <code>generate_observer_dataset</code>, <code>ObserverDataset</code>, <code>MeasurementDataset</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observer_train.py</code> — <code>pretrain_observer</code>, <code>pretrain_observer_selfsup</code>, <code>pretrain_observer_sim2real</code>, <code>finetune_observer</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/online_observer.py</code> — <code>SlidingWindowObserver</code></li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/observer.py</code> — <code>Adm1Observer</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/observer_data.py</code> — <code>generate_observer_dataset</code>, <code>ObserverDataset</code>, <code>MeasurementDataset</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/observer_train.py</code> — <code>pretrain_observer</code>, <code>pretrain_observer_selfsup</code>, <code>pretrain_observer_sim2real</code>, <code>finetune_observer</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/online_observer.py</code> — <code>SlidingWindowObserver</code>  </li>
 </ul>
 <h2 id="api-referenz">API-Referenz<a class="headerlink" href="#api-referenz" title="Permanent link">&para;</a></h2>
 

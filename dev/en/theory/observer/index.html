@@ -2134,11 +2134,11 @@ state per step:</p>
 \]</div>
 <p>Two things carry over unchanged from the <a href="../pinn/">smoother</a>:</p>
 <ul>
-<li><strong>Positivity / scaling</strong> — the head predicts only the <strong>37 liquid states</strong> as a
+<li><strong>Positivity / scaling</strong> — the head predicts only the <strong>37 liquid states</strong> as a<br />
   log-deviation from a reference, <span class="arithmatex">\(\hat{x}_\text{liq} = x_\text{ref}\odot
   \exp(\text{raw})\)</span>, and the 4 gas pressures are slaved by the quasi-steady
-  equilibrium solve.</li>
-<li><strong>Causality</strong> — the GRU at step <span class="arithmatex">\(t\)</span> sees only past and present inputs, so the
+  equilibrium solve.  </li>
+<li><strong>Causality</strong> — the GRU at step <span class="arithmatex">\(t\)</span> sees only past and present inputs, so the<br />
   newest step is a proper <strong>online filtered</strong> estimate: the same network runs as
   a streaming filter (section 3).</li>
 </ul>
@@ -2183,10 +2183,10 @@ against noise). Like pre-training it is monotone-safe.</p>
 current estimate and, on a schedule, self-supervised fine-tunes on the window.
 Two operational details:</p>
 <ul>
-<li><strong>Feed-aware physics</strong> — off the nominal operating point the pre-trained
+<li><strong>Feed-aware physics</strong> — off the nominal operating point the pre-trained<br />
   parameters' nominal feed is wrong, so the fine-tune rescales <code>q_ad</code> (the total
-  influent flow into the digester [m³/d]) to the window's actual mean feed.</li>
-<li><strong>Missing sensors</strong> — a gated/offline reading arrives as <code>NaN</code>. The recurrent
+  influent flow into the digester [m³/d]) to the window's actual mean feed.  </li>
+<li><strong>Missing sensors</strong> — a gated/offline reading arrives as <code>NaN</code>. The recurrent<br />
   net cannot take <code>NaN</code>, so it is mapped to the normalised mean (0) on the input
   side and masked out of the loss on the target side.</li>
 </ul>
@@ -2204,10 +2204,10 @@ ill-conditioned biogas map still limits self-supervised cold starts.</p>
 <hr />
 <h2 id="source-files">Source files<a class="headerlink" href="#source-files" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observer.py</code> — <code>Adm1Observer</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observer_data.py</code> — <code>generate_observer_dataset</code>, <code>ObserverDataset</code>, <code>MeasurementDataset</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observer_train.py</code> — <code>pretrain_observer</code>, <code>pretrain_observer_selfsup</code>, <code>pretrain_observer_sim2real</code>, <code>finetune_observer</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/online_observer.py</code> — <code>SlidingWindowObserver</code></li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/observer.py</code> — <code>Adm1Observer</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/observer_data.py</code> — <code>generate_observer_dataset</code>, <code>ObserverDataset</code>, <code>MeasurementDataset</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/observer_train.py</code> — <code>pretrain_observer</code>, <code>pretrain_observer_selfsup</code>, <code>pretrain_observer_sim2real</code>, <code>finetune_observer</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/online_observer.py</code> — <code>SlidingWindowObserver</code>  </li>
 </ul>
 <h2 id="api-reference">API reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h2>
 
