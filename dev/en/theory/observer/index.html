@@ -2154,6 +2154,53 @@ operating points instead of being refit each window.</p>
 41-state is known. The loss is a per-state-scaled state MSE
 <span class="arithmatex">\(\lVert (\hat{x}-x_\text{true})/s \rVert^2\)</span> (each state normalised by its RMS
 magnitude), which teaches the <em>full</em> state.</p>
+<div class="admonition tip">
+<p class="admonition-title">Overfitting is the binding constraint, not capacity</p>
+<p>With ~80 training series the network memorises them quickly: measured on the
+benchmark, the validation loss bottoms out around epoch 60 of 200 while the
+training loss keeps falling. <code>restore_best=True</code> (the default) plus
+<code>patience=N</code> returns the best-validated weights and halves the runtime at an
+identical result.</p>
+<p>What did <strong>not</strong> help, measured: enlarging the window set. Overlapping or
+randomly-placed windows (320 -&gt; 1120 -&gt; 1600) lower the validation loss
+slightly but make the full-series score <em>worse</em> (15.6 % -&gt; 16.7 %). They add
+gradient steps, not information -- the 80 series are the bottleneck, not how
+they are cut. Prefer capacity reduction and regularisation (<code>weight_decay</code>,
+<code>dropout</code>, a smaller <code>hidden</code>).</p>
+</div>
+<p>The scale <code>s</code> is computed from the <strong>training</strong> sequences only; deriving it over
+the whole set first would leak validation statistics into the objective. Options
+worth knowing:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>val_dataset</code></td>
+<td>an <strong>externally split</strong> validation set. Pass it to share one split across estimators -- <code>PinnData.observer_dataset</code> emits train and val from the same stratified split the filters use, which is what makes a filter and a network comparable. Splitting internally instead gives each model its own random split.</td>
+</tr>
+<tr>
+<td><code>burnin</code></td>
+<td>leading steps excluded from the loss. A causal observer cannot know the initial state, so that error measures the unknowable rather than the model.</td>
+</tr>
+<tr>
+<td><code>noise_std</code></td>
+<td>per-channel sensor noise in raw units, resampled onto the measurement features every batch. Only the measurement block is perturbed; the feed is a known control input.</td>
+</tr>
+<tr>
+<td><code>restore_best</code> / <code>patience</code></td>
+<td>best-validated weights / early stopping.</td>
+</tr>
+<tr>
+<td><code>weight_decay</code></td>
+<td>L2 regularisation.</td>
+</tr>
+</tbody>
+</table>
 <p><strong>Self-supervised</strong> (<code>pretrain_observer_selfsup</code>) — on <strong>measurement-only</strong>
 windows with <em>no</em> ground truth (real plant history, or simulated windows for an
 ablation). It uses the same objective as the online fine-tuning: a measurement
@@ -2196,6 +2243,12 @@ Two operational details:</p>
 <p><strong>Strengths.</strong> Near-instant inference after the one-time offline cost; learns the
 <em>full</em> state structure from the simulator (so it is strong even on unobserved
 states); generalises across operating points without a per-window refit.</p>
+<p>Measured on the benchmark's validation split, a plain 200-epoch run with no
+tuning already <strong>beats the do-nothing baseline in all four operating modes</strong>
+(15.6 % vs. 32.6 % median NRMSE), where the per-window
+<a href="../pinn/">smoother</a> manages two of four after four rounds of fixes. It also costs
+~1.7 s per epoch against ~2.5 min for a <em>single</em> smoother window -- roughly 70x
+cheaper per step, which is what puts a real hyperparameter search within reach.</p>
 <p><strong>Limits.</strong> Needs a <strong>representative</strong> pre-training distribution; carries a
 <strong>sim-to-real gap</strong> that only self-supervised adaptation closes; and the
 ill-conditioned biogas map still limits self-supervised cold starts.</p>

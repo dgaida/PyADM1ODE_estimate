@@ -1203,6 +1203,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#5-quasi-stationare-ladungsbilanz-solve_cationtrue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Quasi-stationäre Ladungsbilanz (solve_cation=True)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-begrenzte-residuen-res_clip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Begrenzte Residuen (res_clip)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1219,6 +1241,17 @@
   
     <nav class="md-nav" aria-label="6. Umsetzung in diesem Repository">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#die-datenanbindung-der-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Die Datenanbindung: der Adapter
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#batch-nicht-rekursiv" class="md-nav__link">
@@ -1270,10 +1303,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-starken-grenzen-und-die-einordnung-zum-ukf" class="md-nav__link">
+  <a href="#7-gemessener-stand" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Stärken, Grenzen und die Einordnung zum UKF
+        7. Gemessener Stand
       
     </span>
   </a>
@@ -2152,6 +2185,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#5-quasi-stationare-ladungsbilanz-solve_cationtrue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Quasi-stationäre Ladungsbilanz (solve_cation=True)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-begrenzte-residuen-res_clip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Begrenzte Residuen (res_clip)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2168,6 +2223,17 @@
   
     <nav class="md-nav" aria-label="6. Umsetzung in diesem Repository">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#die-datenanbindung-der-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Die Datenanbindung: der Adapter
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#batch-nicht-rekursiv" class="md-nav__link">
@@ -2219,10 +2285,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-starken-grenzen-und-die-einordnung-zum-ukf" class="md-nav__link">
+  <a href="#7-gemessener-stand" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Stärken, Grenzen und die Einordnung zum UKF
+        7. Gemessener Stand
       
     </span>
   </a>
@@ -2534,9 +2600,17 @@ derselbe Fit.</p>
 <h2 id="5-warum-adm1-schwierig-ist">5. Warum ADM1 schwierig ist<a class="headerlink" href="#5-warum-adm1-schwierig-ist" title="Permanent link">&para;</a></h2>
 <p>Ein Lehrbuch-PINN scheitert an ADM1: das System ist
 <strong>steif</strong> (Raten über viele Größenordnungen) und seine Zustände reichen von
-<span class="arithmatex">\(\sim 10^{-7}\)</span> bis in die Zehner, wobei alle nicht-negativ bleiben müssen. Vier
-Konstruktionsentscheidungen in <code>PinnSmoother</code> bringen es zur Konvergenz 
+<span class="arithmatex">\(\sim 10^{-7}\)</span> bis in die Zehner, wobei alle nicht-negativ bleiben müssen. Sechs
+Konstruktionsentscheidungen in <code>PinnSmoother</code> bringen es zur Konvergenz
 (es läuft stabil auf eine gute Lösung zu, statt zu entgleisen).</p>
+<div class="admonition warning">
+<p class="admonition-title">Das ist kein optionaler Feinschliff</p>
+<p>Auf dem mitgelieferten Benchmark gemessen: ohne die Ladungsbilanz-Auflösung
+aus §5.5 verbessert der Fit seinen eigenen Startwert <strong>nie</strong> — bei keiner
+Lernrate, keiner Loss-Gewichtung und keiner Netzgröße. Die beste je erreichte
+Data-Loss war ihr Wert bei Epoche 0; das Training hat den Fit nur
+verschlechtert. Zahlen in §7.</p>
+</div>
 <h3 id="1-positive-gut-skalierte-ausgaben">1. Positive, gut skalierte Ausgaben<a class="headerlink" href="#1-positive-gut-skalierte-ausgaben" title="Permanent link">&para;</a></h3>
 <p>Bisher hieß es vereinfacht: das Netz gibt <span class="arithmatex">\(\hat{x}(t)\)</span> aus. Genauer liefert die
 letzte Schicht erst eine <strong>rohe</strong>, unbeschränkte Zahlenreihe <span class="arithmatex">\(\text{raw}_\theta(t)\)</span>.
@@ -2571,6 +2645,62 @@ Beobachtbarkeit. Damit der Optimierer solche trägen Zustände trotzdem bewegt,
 statt sie am Prior zu parken, kann man sie in <span class="arithmatex">\(L_\text{phys}\)</span> einzeln <strong>höher gewichten</strong>:
 ein von Hand gesetzter Gewichtsvektor, <strong>kein gelernter Parameter</strong>. Welche man
 hochgewichtet, entscheidet man selbst per Fachwissen/Diagnose, nicht das Training.</p>
+<p>Der Prior selbst muss ein <strong>physikalisch erreichbarer Zustand</strong> sein. Eine
+komponentenweise Statistik (etwa der Median je Zustand über einen Trainingssatz)
+ist das im Allgemeinen nicht: nimmt man jede Komponente für sich, zerbrechen die
+Identitäten, die sie verbinden. Bei ADM1 ist das die Ladungsbilanz, und der so
+entstandene „Durchschnittszustand" impliziert einen pH weit außerhalb des
+physikalischen Bereichs. Stattdessen den <strong>Medoid</strong> nehmen — einen echten
+beobachteten Zustand; <code>PinnData</code> macht das automatisch (§6).</p>
+<h3 id="5-quasi-stationare-ladungsbilanz-solve_cationtrue">5. Quasi-stationäre Ladungsbilanz (<code>solve_cation=True</code>)<a class="headerlink" href="#5-quasi-stationare-ladungsbilanz-solve_cationtrue" title="Permanent link">&para;</a></h3>
+<p>ADM1 gewinnt den pH aus der Elektroneutralität:</p>
+<div class="arithmatex">\[
+    ext{fixed} = S_ ext{cat} - S_   ext{an} + (S_{\mathrm{NH_4}} - S_{\mathrm{NH_3}})
+              - S_{\mathrm{HCO_3}} - \sum   ext{VFA}^- ,
+\qquad
+S_{\mathrm H} =     frac12\!\left(- ext{fixed} + \sqrt{ ext{fixed}^2 + 4K_w}
+ight).
+\]</div>
+<p>An einem normalen Arbeitspunkt ist <code>fixed</code> eine Differenz von Termen der
+Größenordnung <span class="arithmatex">\(0{,}1\!-\!0{,}2\)</span> kmol m⁻³, die sich auf <span class="arithmatex">\(\sim\!10^{-6}\)</span> auslöscht —
+<strong>5,3 Dekaden Auslöschung</strong>. Wegen <span class="arithmatex">\(S_\mathrm{H} pprox K_w/    ext{fixed}\)</span> gilt
+faktisch $  ext{pH} pprox -\log_{10} K_w + \log_{10}(  ext{fixed})$: stört man
+irgendeinen Ionenzustand um 1 %, bewegt sich <code>fixed</code> um Größenordnungen.</p>
+<p>Das ist dieselbe Messerschneide wie die Biogas-Abbildung in §5.3, mit derselben
+Folge — der pH reagiert mit <span class="arithmatex">\(\sim\!5\cdot10^{4}\,\sigma\)</span> auf eine 1-%-Zustands-
+änderung, sein Gradient diktiert jeden Optimierungsschritt und der Fit divergiert.</p>
+<p>Die Lösung spiegelt den Gas-Solver: <strong>das Netz darf nicht raten, woran die
+Auslöschung hängt.</strong> Das Netz sagt direkt den <strong>pH</strong> vorher (eine gut skalierte
+Ausgabe um <span class="arithmatex">\(pprox 7{,}5\)</span> mit Empfindlichkeit 1:1), und <span class="arithmatex">\(S_ ext{cat}\)</span> wird
+geschlossen aus der Ladungsbilanz gelöst:</p>
+<div class="arithmatex">\[
+S_\mathrm{H} = 10^{-    ext{pH}},\qquad
+    ext{fixed} = 
+rac{K_w - S_\mathrm{H}^2}{S_\mathrm{H}},\qquad
+S_  ext{cat} =  ext{fixed} - (  ext{übrige Ladungsterme}).
+\]</div>
+<div class="admonition note">
+<p class="admonition-title">Was das kostet</p>
+<p><span class="arithmatex">\(S_ ext{cat}\)</span> ist damit kein differentieller, sondern ein algebraischer
+Zustand — aus der ODE wird eine <strong>DAE</strong>, die triviale Verdünnungsgleichung
+wird durch die Elektroneutralitäts-Nebenbedingung ersetzt. <code>PinnSmoother</code>
+maskiert ihn deshalb aus dem Physik-Residuum <strong>und</strong> dem Prior-Anker. Das ist
+Absicht: <span class="arithmatex">\(S_    ext{cat}\)</span> ist eine Buchhaltungsladung, keine gemessene Spezies,
+und genau die Erzwingung seiner Verdünnungsgleichung erzeugt die schlechte
+Kondition. Aus demselben Grund kann der gelöste Wert leicht negativ werden —
+das ist ein Anionenüberschuss und liegt im Rahmen dessen, wie ADM1 diese
+beiden Slots verwendet.</p>
+</div>
+<h3 id="6-begrenzte-residuen-res_clip">6. Begrenzte Residuen (<code>res_clip</code>)<a class="headerlink" href="#6-begrenzte-residuen-res_clip" title="Permanent link">&para;</a></h3>
+<p>Ein quadriertes Residuum hat einen Gradienten proportional zum Residuum, also
+diktiert ein schlecht konditionierter Kanal den ganzen Schritt. <code>res_clip</code> stellt
+das Residuum auf <strong>Huber</strong> um: quadratisch unterhalb der Schwelle <span class="arithmatex">\(\delta\)</span>, linear
+darüber, sodass der Gradient bei <span class="arithmatex">\(2\delta\)</span> gedeckelt bleibt, ohne null zu werden.</p>
+<p>Das ist bewusst weicher als ein hartes Abschneiden (das den Gradienten jenseits
+der Schwelle auf null setzt und einem bereits entglittenen Kanal jede Rückholkraft
+nimmt). Es begrenzt den Schaden eines schlecht konditionierten Kanals, ersetzt
+aber <strong>nicht</strong> §5.5 — es deckelt, wie weit ein schlechter Schritt geht, nicht die
+Kondition, die ihn verursacht.</p>
 <hr />
 <h2 id="6-umsetzung-in-diesem-repository">6. Umsetzung in diesem Repository<a class="headerlink" href="#6-umsetzung-in-diesem-repository" title="Permanent link">&para;</a></h2>
 <p>Die Umsetzung hat <strong>zwei Ebenen</strong>: eine Lehrbuch-Vorlage und den darauf
@@ -2619,24 +2749,65 @@ dem Basispaket <code>pyadm1</code>:</p>
 <td><code>deep_learning.observation_torch.TorchObservationModel</code></td>
 </tr>
 <tr>
+<td>Ladungsbilanz-Inversion</td>
+<td><code>deep_learning.charge_balance.solve_cation_for_ph</code></td>
+</tr>
+<tr>
 <td>Zufuhr / Parameter</td>
-<td><code>Adm1TorchParams</code> — die Substratzufuhr ist eingebacken, daher ist die Netzeingabe <strong>nur die Zeit</strong></td>
+<td><code>Adm1TorchParams</code> — die Netzeingabe bleibt <strong>nur die Zeit</strong>; eine im Fenster <em>veränderliche</em> Zufuhr kommt über <code>params_at</code></td>
 </tr>
 </tbody>
 </table>
+<h3 id="die-datenanbindung-der-adapter">Die Datenanbindung: der Adapter<a class="headerlink" href="#die-datenanbindung-der-adapter" title="Permanent link">&para;</a></h3>
+<p><code>PinnData</code> (<code>deep_learning/data_adapter.py</code>) bringt jeden in
+<code>filter_tuning.datasets</code> registrierten Datensatz in die Form, die beide
+PINN-Varianten brauchen. Drei Zusagen sind für die Korrektheit entscheidend:</p>
+<ul>
+<li><strong>Derselbe Split wie bei den Filtern.</strong> Beide gehen durch
+  <code>EstimatorDataset.split_indices</code> — stratifiziert nach dem Serien-Label,
+  gruppiert nach Serie. Gleiches <code>(val_frac, seed)</code> ⇒ gleiche Serien, und genau
+  das macht Netz und Filter vergleichbar. Mit <code>save_split()</code> / <code>split_file=</code>
+  einfrieren.</li>
+<li><strong>Statistik nur aus Train.</strong> Feature-Normierung, <code>x_ref</code>, <code>x_prior</code> (als
+  Medoid) und die Zustandsskala werden ausschließlich aus den Trainingsserien
+  geschätzt.</li>
+<li><strong>Feed-passende Physik.</strong> <code>smoother_inputs()</code> hängt jeder Serie eine
+  <code>params_at</code>-Closure über ihre <em>eigene</em> Zufuhr an, damit das ODE-Residuum gegen
+  die Anlage ausgewertet wird, die die Daten erzeugt hat. Das wiegt schwerer als
+  es klingt: ein ungefütterter Parametersatz (<code>q_ad = 0</code>) modelliert einen
+  <em>geschlossenen Batch-Reaktor</em>, und der Zulaufterm <span class="arithmatex">\(D_ ext{in}\,s_ ext{in}\)</span>
+  dominiert die rechte Seite von ADM1.</li>
+</ul>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.deep_learning</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinnData</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">data</span> <span class="o">=</span> <span class="n">PinnData</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;benchmark&quot;</span><span class="p">,</span> <span class="n">val_frac</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">inputs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">smoother_inputs</span><span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>     <span class="c1"># ein Payload je Serie</span>
+</span></code></pre></div>
 <h3 id="batch-nicht-rekursiv">Batch, nicht rekursiv<a class="headerlink" href="#batch-nicht-rekursiv" title="Permanent link">&para;</a></h3>
 <p>Anders als der UKF (ein rekursiver <code>StateEstimator</code> mit Prädiktion/Korrektur je
 Schritt) ist das PINN ein <strong><code>BatchEstimator</code></strong>: einmal über das Fenster fitten,
 dann abfragen.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.deep_learning</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinnSmoother</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">smoother</span> <span class="o">=</span> <span class="n">PinnSmoother</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">x_prior</span><span class="p">,</span> <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">smoother</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">obs_times</span><span class="p">,</span> <span class="n">obs_values</span><span class="p">,</span> <span class="n">t0</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">t1</span><span class="o">=</span><span class="mf">30.0</span><span class="p">)</span>   <span class="c1"># Training über [0, 30] Tage</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">traj</span> <span class="o">=</span> <span class="n">smoother</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">query_times</span><span class="p">)</span>                  <span class="c1"># (T, 41) Zustände + std</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.deep_learning</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinnSmoother</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">it</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">smoother</span> <span class="o">=</span> <span class="n">PinnSmoother</span><span class="p">(</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">data</span><span class="o">.</span><span class="n">physics_params</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">obs_model</span><span class="p">(),</span> <span class="n">it</span><span class="o">.</span><span class="n">x_prior</span><span class="p">,</span> <span class="n">it</span><span class="o">.</span><span class="n">x_scale</span><span class="p">,</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>   <span class="c1"># §5.3 — Gasdrücke werden gelöst</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">solve_cation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>       <span class="c1"># §5.5 — S_cation folgt dem vorhergesagten pH</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">res_clip</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>            <span class="c1"># §5.6 — Huber-Schwelle in Sigma</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">params_at</span><span class="o">=</span><span class="n">it</span><span class="o">.</span><span class="n">params_at</span><span class="p">,</span>  <span class="c1"># die eigene, zeitvariable Zufuhr der Serie</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">)</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">smoother</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">**</span><span class="n">it</span><span class="o">.</span><span class="n">fit_kwargs</span><span class="p">(),</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">traj</span> <span class="o">=</span> <span class="n">smoother</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">it</span><span class="o">.</span><span class="n">obs_times</span><span class="p">)</span>                 <span class="c1"># (T, 41) Zustände + std</span>
 </span></code></pre></div>
 <p><code>estimate</code> liefert einen <code>TrajectoryEstimate</code> (<code>time</code>, <code>x_hat</code>, <code>std</code>), die
 gemeinsame Ausgabewährung mit dem UKF, sodass das Twin-Experiment-Harness beide
 Schätzerfamilien gleich bewertet.</p>
+<p><code>restore_best=True</code> (Standard) gibt die Gewichte der besten Epoche zurück statt
+der letzten. Der Kollokations-Fit ist <strong>nicht monoton</strong> — er erreicht regelmäßig
+seine beste Trajektorie und läuft dann wieder von ihr weg, sodass die
+Endgewichte die bereits gefundene Antwort wegwerfen. Zugleich wird der Fit damit
+monoton-sicher: er kann nie etwas Schlechteres als den Prior zurückgeben.</p>
 <h3 id="prognose">Prognose<a class="headerlink" href="#prognose" title="Permanent link">&para;</a></h3>
 <p>Da das Kollokationsfenster <code>[t0, t1]</code> unabhängig von den Messzeiten ist, trägt
 das Setzen von <code>t1</code> <strong>hinter die letzte Messung</strong> den Zustand über die ADM1-ODE
@@ -2657,22 +2828,86 @@ eintreffen:</p>
 aufrufen, um Mittelwert und Standardabweichung über <code>k</code> stochastische
 Vorwärtspässe zu erhalten.</p>
 <hr />
-<h2 id="7-starken-grenzen-und-die-einordnung-zum-ukf">7. Stärken, Grenzen und die Einordnung zum UKF<a class="headerlink" href="#7-starken-grenzen-und-die-einordnung-zum-ukf" title="Permanent link">&para;</a></h2>
-<p><strong>Stärken.</strong> Trifft die biogastreibenden Zustände genau. Die weiche Physik-Kopplung ist flexibel,
-kommt mit spärlicher, unregelmäßiger Abtastung zurecht.</p>
-<p><strong>Grenzen.</strong> Die pH-/Ladungsbilanz-Abbildung ist schlecht konditioniert (beide
-Schätzer haben hier Mühe, das PINN mehr). Die MC-Dropout-Unsicherheit ist noch
-nicht kalibriert, ein Fit von Grund auf kostet Sekunden bis Minuten pro Fenster.</p>
+<h2 id="7-gemessener-stand">7. Gemessener Stand<a class="headerlink" href="#7-gemessener-stand" title="Permanent link">&para;</a></h2>
+<p>Die Zahlen stammen vom Validierungs-Split des mitgelieferten Benchmarks (4
+Betriebsmodi), 5-Tage-Fenster, reproduzierbar über <code>experiments/pinn_gate/</code>.</p>
+<p><strong>Die Optimierung ist gelöst.</strong> Data-Loss = mittleres quadriertes standardisiertes
+Residuum auf den Messkanälen; der Rauschboden (was der <em>wahre</em> Zustand erreicht)
+liegt bei 0,57.</p>
+<table>
+<thead>
+<tr>
+<th>Konfiguration</th>
+<th>Median der besten Data-Loss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ausgangspunkt</td>
+<td>3520</td>
+</tr>
+<tr>
+<td>+ <code>res_clip</code></td>
+<td>11,7</td>
+</tr>
+<tr>
+<td>+ <code>solve_cation</code> (§5.5)</td>
+<td><strong>0,562</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Der Messfit erreicht damit sein theoretisches Optimum. Vor der
+Ladungsbilanz-Auflösung hat das Training den Fit nie verbessert — der beste je
+erreichte Wert war der Wert bei Epoche 0.</p>
+<p><strong>Die Zustandsgenauigkeit ist es nicht.</strong> Median-NRMSE über 41 Zustände, gegen
+die triviale Referenz „Prior konstant halten":</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Median-NRMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x_prior</code> halten (nichts tun)</td>
+<td>25,1 %</td>
+</tr>
+<tr>
+<td>PINN A (bestes <code>rate_floor</code>)</td>
+<td>22,0 % — aber nur 2 von 4 Modi</td>
+</tr>
+<tr>
+<td>wahres <span class="arithmatex">\(x(t_0)\)</span> halten (Referenz)</td>
+<td>1,2 – 3,7 %</td>
+</tr>
+</tbody>
+</table>
+<p>Ein <code>rate_floor</code>-Sweep zeigt kein belastbares Optimum. <strong>Fünf Sensoren legen 41
+Zustände nicht fest</strong>, und der ADM1-Term kann die Lücke nicht schließen, weil ein
+Fit pro Fenster die wahre Kinetik nicht lernen kann (der Benchmark stört sie je
+Serie lognormal, <span class="arithmatex">\(\sigma = 0{,}25\)</span>). Die verbleibende Lücke ist
+<strong>Beobachtbarkeit, nicht Architektur</strong> — deshalb sind Breite, Tiefe und
+Aktivierung des Netzes bislang nicht optimiert: sie sind nachweislich nicht der
+begrenzende Faktor.</p>
+<p><strong>Grenzen.</strong> Die MC-Dropout-Unsicherheit ist nicht kalibriert. Ein Fit von Grund
+auf kostet ~2,5 min pro 5-Tage-Fenster, was den bezahlbaren Umfang einer
+Hyperparametersuche deckelt.</p>
 <p><strong>Einordnung.</strong> Der UKF (siehe <a href="../../usage/ukf/">UKF im Einsatz</a> und
-<a href="../../development/ukf_performance/">SR-UKF-Performance</a>) ist rekursiv, günstig pro
-Schritt und besser kalibriert, vor allem beim pH. Das PINN ist stärker auf den
-Biogaskanälen und bei der Prognose. Ein <strong><a href="../fusion/">Hybrid per Kovarianzschnitt</a></strong>
-kann beide fusionieren und die Stärken jedes Schätzers
-bewahren.</p>
+<a href="../../development/ukf_performance/">SR-UKF-Performance</a>) ist rekursiv und günstig
+pro Schritt. Auf dieser Metrik ist er allerdings selbst <strong>in 3 von 4 Modi
+schlechter als Nichtstun</strong> (50,5 % gegen 34,2 % gesamt auf dem Test-Split) — also
+beide Referenzen berichten, sonst sieht ein Ergebnis besser aus als es ist. Der
+<strong><a href="../observer/">vortrainierte Observer</a></strong> nimmt dieselbe Hürde in allen vier
+Modi, weil er über Serien hinweg lernt, was ein Einzelfenster-Fit nicht kann. Ein
+<strong><a href="../fusion/">Hybrid per Kovarianzschnitt</a></strong> kann Schätzer fusionieren.</p>
 <hr />
 <h2 id="quelldateien">Quelldateien<a class="headerlink" href="#quelldateien" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn.py</code> — <code>ADM1PINN</code>, <code>PINNLoss</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn.py</code> — <code>ADM1PINN</code>, <code>PINNLoss</code></li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/charge_balance.py</code> — <code>solve_cation_for_ph</code>, <code>apply_ph</code></li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/data_adapter.py</code> — <code>PinnData</code>, <code>FeatureSpec</code></li>
+<li><code>experiments/pinn_gate/</code> — Gate-Messung und <code>rate_floor</code>-Sweep  </li>
 <li><code>pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py</code> — <code>PinnSmoother</code>  </li>
 <li><code>pyadm1ode_estimation/estimation/deep_learning/observation_torch.py</code> — <code>TorchObservationModel</code>  </li>
 </ul>
@@ -2690,7 +2925,7 @@ bewahren.</p>
 
 
 <h3 id="pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">deep_learning</span><span class="o">.</span><span class="n">pinn_smoother</span><span class="o">.</span><span class="n">PinnSmoother</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">x_prior</span><span class="p">,</span> <span class="n">x_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hidden_layers</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">lambda_phys</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lambda_prior</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_scaling</span><span class="o">=</span><span class="s1">&#39;rate&#39;</span><span class="p">,</span> <span class="n">rate_floor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gas_n_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></code>
+              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">deep_learning</span><span class="o">.</span><span class="n">pinn_smoother</span><span class="o">.</span><span class="n">PinnSmoother</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">x_prior</span><span class="p">,</span> <span class="n">x_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hidden_layers</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">lambda_phys</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lambda_prior</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_scaling</span><span class="o">=</span><span class="s1">&#39;rate&#39;</span><span class="p">,</span> <span class="n">rate_floor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">res_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">restore_best</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">solve_cation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gas_n_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">params_at</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></code>
 
 <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother" class="headerlink" title="Permanent link">&para;</a></h3>
 

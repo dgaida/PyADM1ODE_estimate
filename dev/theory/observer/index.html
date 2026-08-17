@@ -2153,6 +2153,54 @@ generalisieren, statt es je Fenster neu zu fitten.</p>
 der wahre 41-Zustand bekannt ist. Der Loss ist ein zustandsweise skalierter
 Zustands-MSE <span class="arithmatex">\(\lVert (\hat{x}-x_\text{true})/s \rVert^2\)</span> (jeder Zustand mit seiner
 RMS-Größe normiert), der den <em>vollen</em> Zustand lehrt.</p>
+<div class="admonition tip">
+<p class="admonition-title">Der Engpass ist Overfitting, nicht Kapazitaet</p>
+<p>Bei ~80 Trainingsserien lernt das Netz sie schnell auswendig: auf dem
+Benchmark gemessen erreicht der Validierungs-Loss sein Minimum um Epoche 60
+von 200, waehrend der Trainings-Loss weiter faellt. <code>restore_best=True</code>
+(Standard) zusammen mit <code>patience=N</code> gibt die bestvalidierten Gewichte
+zurueck und halbiert die Laufzeit bei identischem Ergebnis.</p>
+<p>Was <strong>nicht</strong> geholfen hat, ebenfalls gemessen: die Fenstermenge zu
+vergroessern. Ueberlappende oder zufaellig platzierte Fenster
+(320 -&gt; 1120 -&gt; 1600) senken den Validierungs-Loss leicht, verschlechtern
+aber die Bewertung auf den vollen Serien (15,6 % -&gt; 16,7 %). Sie liefern mehr
+Gradientenschritte, keine zusaetzliche Information -- der Engpass sind die 80
+Serien, nicht ihre Zerlegung. Besser: Kapazitaet senken und regularisieren
+(<code>weight_decay</code>, <code>dropout</code>, kleineres <code>hidden</code>).</p>
+</div>
+<p>Die Skala <code>s</code> wird ausschliesslich aus den <strong>Trainings</strong>-Sequenzen berechnet; sie
+vorher ueber den gesamten Satz zu bilden wuerde Validierungsstatistik in das Ziel
+einsickern lassen. Wichtige Optionen:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Wirkung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>val_dataset</code></td>
+<td>ein <strong>extern gesplitteter</strong> Validierungssatz. Damit teilen sich mehrere Schaetzer einen Split -- <code>PinnData.observer_dataset</code> liefert Train und Val aus demselben stratifizierten Split, den auch die Filter nutzen, und genau das macht Filter und Netz vergleichbar. Intern zu splitten gaebe jedem Modell seinen eigenen Zufallssplit.</td>
+</tr>
+<tr>
+<td><code>burnin</code></td>
+<td>fuehrende Schritte, die aus dem Loss fallen. Ein kausaler Observer kann den Anfangszustand nicht kennen, dieser Fehler misst also das Unkennbare statt das Modell.</td>
+</tr>
+<tr>
+<td><code>noise_std</code></td>
+<td>Sensorrauschen je Kanal in Roh-Einheiten, pro Batch neu auf die Messfeatures gezogen. Nur der Messblock wird gestoert, die Zufuhr ist ein bekannter Stelleingang.</td>
+</tr>
+<tr>
+<td><code>restore_best</code> / <code>patience</code></td>
+<td>bestvalidierte Gewichte / Early Stopping.</td>
+</tr>
+<tr>
+<td><code>weight_decay</code></td>
+<td>L2-Regularisierung.</td>
+</tr>
+</tbody>
+</table>
 <p><strong>Self-supervised</strong> (<code>pretrain_observer_selfsup</code>)<strong>:</strong> auf <strong>reinen Mess</strong>-Fenstern
 <em>ohne</em> Grundwahrheit (reale Anlagenhistorie oder simulierte Fenster für eine
 Ablation). Es nutzt dasselbe Ziel wie die Online-Feinabstimmung: einen Mess-Fit
@@ -2198,6 +2246,13 @@ Fenster. Zwei Betriebsdetails:</p>
 <p><strong>Stärken:</strong> Nahezu sofortige Inferenz nach den einmaligen Offline-Kosten, lernt
 die <em>volle</em> Zustands-Struktur aus dem Simulator (also stark selbst bei
 unbeobachteten Zuständen). Generalisiert über Betriebspunkte ohne per-Window-Refit.</p>
+<p>Auf dem Validierungs-Split des Benchmarks gemessen schlägt schon ein schlichter
+200-Epochen-Lauf ohne jedes Tuning <strong>die Nichtstun-Referenz in allen vier
+Betriebsmodi</strong> (15,6 % gegen 32,6 % Median-NRMSE), während der
+<a href="../pinn/">Fenster-Smoother</a> nach vier Reparaturrunden zwei von vier schafft. Er
+kostet zudem ~1,7 s pro Epoche gegen ~2,5 min für ein <em>einzelnes</em>
+Smoother-Fenster — rund 70× günstiger pro Schritt, und genau das bringt eine
+echte Hyperparametersuche in Reichweite.</p>
 <p><strong>Grenzen:</strong> Braucht eine <strong>repräsentative</strong> Vortrainings-Verteilung. Trägt eine
 <strong>Sim-zu-Real-Lücke</strong>, die nur die self-supervised Anpassung schließt und die
 schlecht konditionierte Biogas-Abbildung begrenzt weiterhin self-supervised

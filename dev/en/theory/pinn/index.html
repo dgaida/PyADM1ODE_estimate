@@ -1205,6 +1205,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#5-quasi-steady-charge-balance-solve_cationtrue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Quasi-steady charge balance (solve_cation=True)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-bounded-residuals-res_clip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Bounded residuals (res_clip)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1221,6 +1243,17 @@
   
     <nav class="md-nav" aria-label="6. How it is implemented here">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feeding-it-the-dataset-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feeding it: the dataset adapter
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#batch-not-recursive" class="md-nav__link">
@@ -1272,10 +1305,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-strengths-limits-and-where-the-ukf-fits" class="md-nav__link">
+  <a href="#7-measured-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Strengths, limits, and where the UKF fits
+        7. Measured status
       
     </span>
   </a>
@@ -2154,6 +2187,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#5-quasi-steady-charge-balance-solve_cationtrue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Quasi-steady charge balance (solve_cation=True)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-bounded-residuals-res_clip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Bounded residuals (res_clip)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2170,6 +2225,17 @@
   
     <nav class="md-nav" aria-label="6. How it is implemented here">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feeding-it-the-dataset-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feeding it: the dataset adapter
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#batch-not-recursive" class="md-nav__link">
@@ -2221,10 +2287,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-strengths-limits-and-where-the-ukf-fits" class="md-nav__link">
+  <a href="#7-measured-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Strengths, limits, and where the UKF fits
+        7. Measured status
       
     </span>
   </a>
@@ -2529,8 +2595,16 @@ the ODE alone carries the state forward: that is how the same fit
 <h2 id="5-why-adm1-is-hard">5. Why ADM1 is hard<a class="headerlink" href="#5-why-adm1-is-hard" title="Permanent link">&para;</a></h2>
 <p>A textbook PINN fails on ADM1: the system is <strong>stiff</strong> (rates spanning many
 orders of magnitude) and its states span from <span class="arithmatex">\(\sim 10^{-7}\)</span> to tens, all of
-which must stay non-negative. Four engineering choices in <code>PinnSmoother</code> make it
+which must stay non-negative. Six engineering choices in <code>PinnSmoother</code> make it
 converge (it settles stably on a good solution instead of derailing).</p>
+<div class="admonition warning">
+<p class="admonition-title">These are not optional polish</p>
+<p>Measured on the shipped benchmark: without the charge-balance solve of
+section 5.5 the fit <strong>never improves</strong> on its own starting point, at any
+learning rate, loss weighting or network size. The best data loss it ever
+reached equalled its value at epoch 0 — training only ever made the fit
+worse. See section 7 for the numbers.</p>
+</div>
 <h3 id="1-positive-well-scaled-outputs">1. Positive, well-scaled outputs<a class="headerlink" href="#1-positive-well-scaled-outputs" title="Permanent link">&para;</a></h3>
 <p>So far we said the network outputs <span class="arithmatex">\(\hat{x}(t)\)</span>. More precisely, its last layer
 first produces a <strong>raw</strong>, unbounded vector <span class="arithmatex">\(\text{raw}_\theta(t)\)</span>. The physical
@@ -2565,6 +2639,58 @@ sluggish states instead of parking them at the prior, they can be <strong>up-wei
 individually in <span class="arithmatex">\(L_\text{phys}\)</span>: a hand-set weight vector, <strong>not a learned
 parameter</strong>. Which states to up-weight is your choice (domain knowledge /
 diagnosis), not something the training decides.</p>
+<p>The prior itself must be a <strong>physically reachable state</strong>. A componentwise
+statistic (say the per-state median over a training set) generally is not: taking
+each component's median independently breaks the identities that tie them
+together. On ADM1 that identity is the charge balance, and the resulting "average"
+state implies a pH far outside the physical range. Use a <strong>medoid</strong> — an actual
+observed state — instead; <code>PinnData</code> does this for you (section 6).</p>
+<h3 id="5-quasi-steady-charge-balance-solve_cationtrue">5. Quasi-steady charge balance (<code>solve_cation=True</code>)<a class="headerlink" href="#5-quasi-steady-charge-balance-solve_cationtrue" title="Permanent link">&para;</a></h3>
+<p>ADM1 gets pH from electroneutrality:</p>
+<div class="arithmatex">\[
+\text{fixed} = S_\text{cat} - S_\text{an} + (S_{\mathrm{NH_4}} - S_{\mathrm{NH_3}})
+              - S_{\mathrm{HCO_3}} - \sum \text{VFA}^- ,
+\qquad
+S_{\mathrm H} = \tfrac12\!\left(-\text{fixed} + \sqrt{\text{fixed}^2 + 4K_w}\right).
+\]</div>
+<p>At a normal operating point <code>fixed</code> is a difference of terms of order
+<span class="arithmatex">\(0.1\!-\!0.2\)</span> kmol m⁻³ that cancels down to <span class="arithmatex">\(\sim\!10^{-6}\)</span> — <strong>5.3 decades of
+cancellation</strong>. Since <span class="arithmatex">\(S_\mathrm{H} \approx K_w/\text{fixed}\)</span>, we effectively have
+<span class="arithmatex">\(\text{pH} \approx -\log_{10} K_w + \log_{10}(\text{fixed})\)</span>: perturb any one ion
+state by 1 % and <code>fixed</code> moves by orders of magnitude.</p>
+<p>That is the same knife-edge as the biogas map in section 5.3, and it has the same
+consequence — pH responds with <span class="arithmatex">\(\sim\!5\cdot10^{4}\,\sigma\)</span> to a 1 % state change,
+so its gradient dictates every optimiser step and the fit diverges.</p>
+<p>The fix mirrors the gas solve: <strong>do not let the network guess the quantity the
+cancellation hangs on.</strong> The network predicts <strong>pH</strong> directly (a well-scaled
+<span class="arithmatex">\(\approx 7.5\)</span> output whose sensitivity is 1:1) and <span class="arithmatex">\(S_\text{cat}\)</span> is solved from
+the charge balance in closed form:</p>
+<div class="arithmatex">\[
+S_\mathrm{H} = 10^{-\text{pH}},\qquad
+\text{fixed} = \frac{K_w - S_\mathrm{H}^2}{S_\mathrm{H}},\qquad
+S_\text{cat} = \text{fixed} - (\text{remaining charge terms}).
+\]</div>
+<div class="admonition note">
+<p class="admonition-title">What this trades away</p>
+<p><span class="arithmatex">\(S_\text{cat}\)</span> stops being a differential state and becomes an algebraic one
+— the model turns from an ODE into a <strong>DAE</strong>, its trivial dilution equation
+replaced by the electroneutrality constraint. <code>PinnSmoother</code> therefore masks
+it out of both the physics residual and the prior anchor. This is deliberate:
+<span class="arithmatex">\(S_\text{cat}\)</span> is a bookkeeping charge rather than a measured species, and
+enforcing its dilution equation is exactly what creates the ill-conditioning.
+For the same reason the solved value may come out slightly negative — that is
+a net anion excess, well within how ADM1 uses these two slots.</p>
+</div>
+<h3 id="6-bounded-residuals-res_clip">6. Bounded residuals (<code>res_clip</code>)<a class="headerlink" href="#6-bounded-residuals-res_clip" title="Permanent link">&para;</a></h3>
+<p>A squared residual has a gradient proportional to the residual, so one badly
+conditioned channel dictates the whole step. <code>res_clip</code> switches the residual to
+<strong>Huber</strong>: quadratic below the threshold <span class="arithmatex">\(\delta\)</span>, linear above it, so the
+gradient is capped at <span class="arithmatex">\(2\delta\)</span> while staying non-zero.</p>
+<p>This is deliberately softer than a hard clamp (which zeroes the gradient beyond
+the threshold and leaves a channel that has already blown past it with no force
+pulling it back). It bounds the damage from an ill-conditioned channel but does
+<strong>not</strong> substitute for section 5.5 — it caps how far a bad step can go, not the
+conditioning that causes it.</p>
 <hr />
 <h2 id="6-how-it-is-implemented-here">6. How it is implemented here<a class="headerlink" href="#6-how-it-is-implemented-here" title="Permanent link">&para;</a></h2>
 <p>The implementation has <strong>two layers</strong>: a textbook template and the production
@@ -2613,23 +2739,61 @@ estimator built on top of it.</p>
 <td><code>deep_learning.observation_torch.TorchObservationModel</code></td>
 </tr>
 <tr>
+<td>charge-balance inversion</td>
+<td><code>deep_learning.charge_balance.solve_cation_for_ph</code></td>
+</tr>
+<tr>
 <td>feed / parameters</td>
-<td><code>Adm1TorchParams</code> — the substrate feed is baked in, so the network input is <strong>time only</strong></td>
+<td><code>Adm1TorchParams</code> — the network input stays <strong>time only</strong>; a feed that <em>changes</em> inside the window enters through <code>params_at</code></td>
 </tr>
 </tbody>
 </table>
+<h3 id="feeding-it-the-dataset-adapter">Feeding it: the dataset adapter<a class="headerlink" href="#feeding-it-the-dataset-adapter" title="Permanent link">&para;</a></h3>
+<p><code>PinnData</code> (<code>deep_learning/data_adapter.py</code>) turns any dataset registered in
+<code>filter_tuning.datasets</code> into what both PINN variants need. Three guarantees
+matter for correctness:</p>
+<ul>
+<li><strong>The same split as the filters.</strong> Both go through
+  <code>EstimatorDataset.split_indices</code> — stratified by the series label, grouped by
+  series. Same <code>(val_frac, seed)</code> ⇒ same series, which is what makes a network
+  and a filter comparable. Freeze it with <code>save_split()</code> / <code>split_file=</code>.</li>
+<li><strong>Train-only statistics.</strong> Feature normalisation, <code>x_ref</code>, <code>x_prior</code> (as a
+  medoid) and the per-state scale are estimated on the training series alone.</li>
+<li><strong>Feed-matched physics.</strong> <code>smoother_inputs()</code> attaches a <code>params_at</code> closure
+  over each series' own feed, so the ODE residual is evaluated against the plant
+  that produced the data. This matters more than it sounds: an unfed parameter
+  snapshot (<code>q_ad = 0</code>) models a <em>closed batch reactor</em>, and the influent term
+  <span class="arithmatex">\(D_\text{in}\,s_\text{in}\)</span> dominates the ADM1 right-hand side.</li>
+</ul>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.deep_learning</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinnData</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">data</span> <span class="o">=</span> <span class="n">PinnData</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;benchmark&quot;</span><span class="p">,</span> <span class="n">val_frac</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">inputs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">smoother_inputs</span><span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>     <span class="c1"># one payload per series</span>
+</span></code></pre></div>
 <h3 id="batch-not-recursive">Batch, not recursive<a class="headerlink" href="#batch-not-recursive" title="Permanent link">&para;</a></h3>
 <p>Unlike the UKF (a recursive <code>StateEstimator</code> doing predict/update each step), the
 PINN is a <strong><code>BatchEstimator</code></strong>: fit the whole window once, then query it.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.deep_learning</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinnSmoother</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">smoother</span> <span class="o">=</span> <span class="n">PinnSmoother</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">x_prior</span><span class="p">,</span> <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">smoother</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">obs_times</span><span class="p">,</span> <span class="n">obs_values</span><span class="p">,</span> <span class="n">t0</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">t1</span><span class="o">=</span><span class="mf">30.0</span><span class="p">)</span>   <span class="c1"># train over [0, 30] days</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">traj</span> <span class="o">=</span> <span class="n">smoother</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">query_times</span><span class="p">)</span>                  <span class="c1"># (T, 41) states + std</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.deep_learning</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinnSmoother</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">it</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">smoother</span> <span class="o">=</span> <span class="n">PinnSmoother</span><span class="p">(</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">data</span><span class="o">.</span><span class="n">physics_params</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">obs_model</span><span class="p">(),</span> <span class="n">it</span><span class="o">.</span><span class="n">x_prior</span><span class="p">,</span> <span class="n">it</span><span class="o">.</span><span class="n">x_scale</span><span class="p">,</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>   <span class="c1"># section 5.3 — slave the gas pressures</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">solve_cation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>       <span class="c1"># section 5.5 — slave S_cation to a predicted pH</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">res_clip</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>            <span class="c1"># section 5.6 — Huber threshold in sigma</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">params_at</span><span class="o">=</span><span class="n">it</span><span class="o">.</span><span class="n">params_at</span><span class="p">,</span>  <span class="c1"># the series&#39; own, time-varying feed</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">)</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">smoother</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">**</span><span class="n">it</span><span class="o">.</span><span class="n">fit_kwargs</span><span class="p">(),</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">traj</span> <span class="o">=</span> <span class="n">smoother</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">it</span><span class="o">.</span><span class="n">obs_times</span><span class="p">)</span>                 <span class="c1"># (T, 41) states + std</span>
 </span></code></pre></div>
 <p><code>estimate</code> returns a <code>TrajectoryEstimate</code> (<code>time</code>, <code>x_hat</code>, <code>std</code>), the shared
 output currency with the UKF, so the twin-experiment harness scores both
 estimator families the same way.</p>
+<p><code>restore_best=True</code> (the default) returns the weights of the best-scoring epoch
+rather than the last ones. The collocation fit is <strong>not monotone</strong> — it routinely
+reaches its best trajectory and then walks away from it, so returning the final
+weights throws away the answer it already found. It also makes the fit
+monotone-safe: it can never return something worse than the prior.</p>
 <h3 id="forecasting">Forecasting<a class="headerlink" href="#forecasting" title="Permanent link">&para;</a></h3>
 <p>Because the collocation window <code>[t0, t1]</code> is independent of the measurement
 times, setting <code>t1</code> <strong>past the last measurement</strong> makes the ADM1 ODE carry the
@@ -2648,23 +2812,85 @@ cheap incremental re-fits as new samples arrive:</p>
 <p>Optional <strong>MC-Dropout</strong>: set <code>dropout &gt; 0</code> and call <code>estimate(..., mc_samples=k)</code>
 to get the mean and standard deviation over <code>k</code> stochastic forward passes.</p>
 <hr />
-<h2 id="7-strengths-limits-and-where-the-ukf-fits">7. Strengths, limits, and where the UKF fits<a class="headerlink" href="#7-strengths-limits-and-where-the-ukf-fits" title="Permanent link">&para;</a></h2>
-<p><strong>Strengths.</strong> Fits the biogas-driving states tightly. The soft-physics coupling
-is flexible and handles sparse, irregular sampling.</p>
-<p><strong>Limits.</strong> The pH / charge-balance map is ill-conditioned (both estimators
-struggle here, the PINN more so). The MC-Dropout uncertainty is not yet
-calibrated, and a from-scratch fit costs seconds to minutes per window.</p>
+<h2 id="7-measured-status">7. Measured status<a class="headerlink" href="#7-measured-status" title="Permanent link">&para;</a></h2>
+<p>Numbers below are on the shipped benchmark's validation split (4 operating
+modes), 5-day windows, reproducible via <code>experiments/pinn_gate/</code>.</p>
+<p><strong>The optimisation is solved.</strong> Data loss = mean squared standardised residual on
+the measured channels; the noise floor (what the <em>true</em> state scores) is 0.57.</p>
+<table>
+<thead>
+<tr>
+<th>Configuration</th>
+<th>Median best data loss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>baseline</td>
+<td>3520</td>
+</tr>
+<tr>
+<td>+ <code>res_clip</code></td>
+<td>11.7</td>
+</tr>
+<tr>
+<td>+ <code>solve_cation</code> (section 5.5)</td>
+<td><strong>0.562</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The measurement fit now reaches its theoretical optimum. Before the charge-balance
+solve, training never improved the fit at all — the best value it ever reached was
+its value at epoch 0.</p>
+<p><strong>The state accuracy is not.</strong> Median-over-41-states NRMSE against the trivial
+baseline of holding the prior constant:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>median NRMSE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hold <code>x_prior</code> (do nothing)</td>
+<td>25.1 %</td>
+</tr>
+<tr>
+<td>PINN A (best <code>rate_floor</code>)</td>
+<td>22.0 % — but only 2 of 4 modes</td>
+</tr>
+<tr>
+<td>hold the <em>true</em> <span class="arithmatex">\(x(t_0)\)</span> (reference)</td>
+<td>1.2 – 3.7 %</td>
+</tr>
+</tbody>
+</table>
+<p>A <code>rate_floor</code> sweep shows no robust optimum. <strong>Five sensors do not pin down 41
+states</strong>, and the ADM1 term cannot close the gap because a per-window fit has no
+way to learn the true kinetics (the benchmark perturbs them lognormally per
+series, <span class="arithmatex">\(\sigma = 0.25\)</span>). The remaining gap is <strong>observability, not architecture</strong>
+— which is why network width, depth and activation have not been tuned: they are
+demonstrably not the binding constraint.</p>
+<p><strong>Limits.</strong> MC-Dropout uncertainty is not calibrated. A from-scratch fit costs
+~2.5 min per 5-day window, which caps how much hyperparameter search is affordable.</p>
 <p><strong>Where it sits.</strong> The UKF (see <a href="../../usage/ukf/">UKF in practice</a> and
-<a href="../../development/ukf_performance/">SR-UKF performance</a>) is recursive, cheap per
-step, and better calibrated — especially on pH. The PINN is stronger on the
-biogas channels and on forecasting. A covariance-intersection
-<strong><a href="../fusion/">hybrid</a></strong> can fuse the two, keeping each estimator's strengths.</p>
+<a href="../../development/ukf_performance/">SR-UKF performance</a>) is recursive and cheap
+per step. Note that on this metric the UKF is itself <strong>worse than doing nothing in
+3 of 4 modes</strong> (50.5 % vs. 34.2 % overall on the test split) — so report both
+baselines, or a result looks better than it is. The
+<strong><a href="../observer/">pre-trained observer</a></strong> clears the same bar in all four modes,
+because it learns across series what a single-window fit cannot. A
+covariance-intersection <strong><a href="../fusion/">hybrid</a></strong> can fuse estimators.</p>
 <hr />
 <h2 id="source-files">Source files<a class="headerlink" href="#source-files" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>pyadm1ode_estimation/estimation/deep_learning/pinn.py</code> — <code>ADM1PINN</code>, <code>PINNLoss</code>  </li>
 <li><code>pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py</code> — <code>PinnSmoother</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/charge_balance.py</code> — <code>solve_cation_for_ph</code>, <code>apply_ph</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/data_adapter.py</code> — <code>PinnData</code>, <code>FeatureSpec</code>  </li>
 <li><code>pyadm1ode_estimation/estimation/deep_learning/observation_torch.py</code> — <code>TorchObservationModel</code>  </li>
+<li><code>experiments/pinn_gate/</code> — the gate measurement and the <code>rate_floor</code> sweep  </li>
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
@@ -2680,7 +2906,7 @@ biogas channels and on forecasting. A covariance-intersection
 
 
 <h3 id="pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">deep_learning</span><span class="o">.</span><span class="n">pinn_smoother</span><span class="o">.</span><span class="n">PinnSmoother</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">x_prior</span><span class="p">,</span> <span class="n">x_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hidden_layers</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">lambda_phys</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lambda_prior</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_scaling</span><span class="o">=</span><span class="s1">&#39;rate&#39;</span><span class="p">,</span> <span class="n">rate_floor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gas_n_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></code>
+              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">deep_learning</span><span class="o">.</span><span class="n">pinn_smoother</span><span class="o">.</span><span class="n">PinnSmoother</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">x_prior</span><span class="p">,</span> <span class="n">x_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hidden_layers</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">lambda_phys</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lambda_prior</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_scaling</span><span class="o">=</span><span class="s1">&#39;rate&#39;</span><span class="p">,</span> <span class="n">rate_floor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">res_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">restore_best</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">solve_cation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gas_n_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">params_at</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></code>
 
 <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother" class="headerlink" title="Permanent link">&para;</a></h3>
 
