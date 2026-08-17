@@ -233,8 +233,8 @@ beobachteten Zustand; `PinnData` macht das automatisch (§6).
 ADM1 gewinnt den pH aus der Elektroneutralität:
 
 $$
-	ext{fixed} = S_	ext{cat} - S_	ext{an} + (S_{\mathrm{NH_4}} - S_{\mathrm{NH_3}})
-              - S_{\mathrm{HCO_3}} - \sum 	ext{VFA}^- ,
+	ext{fixed} = S_	ext{cat} - S_	ext{an} + (S_{\mathrm{NH_4}} - S_{\mathrm{NH_3}})  
+              - S_{\mathrm{HCO_3}} - \sum 	ext{VFA}^- ,  
 \qquad
 S_{\mathrm H} = 	frac12\!\left(-	ext{fixed} + \sqrt{	ext{fixed}^2 + 4K_w}
 ight).
@@ -314,15 +314,15 @@ dem Basispaket `pyadm1`:
 `filter_tuning.datasets` registrierten Datensatz in die Form, die beide
 PINN-Varianten brauchen. Drei Zusagen sind für die Korrektheit entscheidend:
 
-* **Derselbe Split wie bei den Filtern.** Beide gehen durch
+* **Derselbe Split wie bei den Filtern.** Beide gehen durch  
   `EstimatorDataset.split_indices` — stratifiziert nach dem Serien-Label,
   gruppiert nach Serie. Gleiches `(val_frac, seed)` ⇒ gleiche Serien, und genau
   das macht Netz und Filter vergleichbar. Mit `save_split()` / `split_file=`
-  einfrieren.
-* **Statistik nur aus Train.** Feature-Normierung, `x_ref`, `x_prior` (als
+  einfrieren.  
+* **Statistik nur aus Train.** Feature-Normierung, `x_ref`, `x_prior` (als  
   Medoid) und die Zustandsskala werden ausschließlich aus den Trainingsserien
-  geschätzt.
-* **Feed-passende Physik.** `smoother_inputs()` hängt jeder Serie eine
+  geschätzt.  
+* **Feed-passende Physik.** `smoother_inputs()` hängt jeder Serie eine  
   `params_at`-Closure über ihre *eigene* Zufuhr an, damit das ODE-Residuum gegen
   die Anlage ausgewertet wird, die die Daten erzeugt hat. Das wiegt schwerer als
   es klingt: ein ungefütterter Parametersatz (`q_ad = 0`) modelliert einen
@@ -446,9 +446,9 @@ Modi, weil er über Serien hinweg lernt, was ein Einzelfenster-Fit nicht kann. E
 
 ## Quelldateien
 
-* `pyadm1ode_estimation/estimation/deep_learning/pinn.py` — `ADM1PINN`, `PINNLoss`
-* `pyadm1ode_estimation/estimation/deep_learning/charge_balance.py` — `solve_cation_for_ph`, `apply_ph`
-* `pyadm1ode_estimation/estimation/deep_learning/data_adapter.py` — `PinnData`, `FeatureSpec`
+* `pyadm1ode_estimation/estimation/deep_learning/pinn.py` — `ADM1PINN`, `PINNLoss`  
+* `pyadm1ode_estimation/estimation/deep_learning/charge_balance.py` — `solve_cation_for_ph`, `apply_ph`  
+* `pyadm1ode_estimation/estimation/deep_learning/data_adapter.py` — `PinnData`, `FeatureSpec`  
 * `experiments/pinn_gate/` — Gate-Messung und `rate_floor`-Sweep  
 * `pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py` — `PinnSmoother`  
 * `pyadm1ode_estimation/estimation/deep_learning/observation_torch.py` — `TorchObservationModel`  
