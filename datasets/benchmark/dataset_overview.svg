@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1024" font-family="'Segoe UI',Arial,sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#718096"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1200" height="1024" fill="#ffffff"/>
+
+  <!-- Header -->
+  <text x="40" y="48" font-size="27" font-weight="700" fill="#1a202c">ADM1 State-Estimation Benchmark</text>
+  <text x="40" y="76" font-size="14.5" fill="#4a5568">Landwirtschaftliche Biogasanlage · aus 5 Sensoren + Feed den 41-dim ADM1-Zustand schätzen · <tspan font-family="Consolas,monospace" fill="#2b6cb0">train.npz</tspan> + <tspan font-family="Consolas,monospace" fill="#9b2c2c">test.npz</tspan></text>
+  <line x1="40" y1="90" x2="1160" y2="90" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- ============ Section 1 ============ -->
+  <rect x="40" y="104" width="1120" height="30" rx="6" fill="#2c5282"/>
+  <text x="56" y="124" font-size="16.5" font-weight="700" fill="#ffffff">1 · Aufgabe &amp; Aufbau einer Reihe</text>
+
+  <!-- task flow: inputs -> states -->
+  <text x="48" y="166" font-size="12.5" font-weight="700" fill="#2b6cb0">measurements <tspan font-family="Consolas,monospace" font-weight="400" fill="#718096">(·,5)</tspan> <tspan font-weight="400" fill="#718096">· 5 Sensoren</tspan></text>
+  <rect x="48" y="174" width="250" height="46" rx="6" fill="#f0f6fc" stroke="#cbd5e0"/>
+  <polyline points="54,208 92,196 130,204 168,192 206,200 244,194 294,200" fill="none" stroke="#3182ce" stroke-width="1.4"/>
+  <polyline points="54,190 92,196 130,186 168,194 206,188 244,196 294,190" fill="none" stroke="#38a169" stroke-width="1.4"/>
+  <polyline points="54,201 92,206 130,198 168,205 206,200 244,207 294,203" fill="none" stroke="#a0aec0" stroke-width="1.2"/>
+
+  <text x="48" y="246" font-size="12.5" font-weight="700" fill="#2b6cb0">feed_noisy <tspan font-family="Consolas,monospace" font-weight="400" fill="#718096">(·,5)</tspan> <tspan font-weight="400" fill="#718096">· Mischung variiert</tspan></text>
+  <rect x="48" y="254" width="250" height="42" rx="6" fill="#f0f6fc" stroke="#cbd5e0"/>
+  <polyline points="54,289 120,289 120,273 200,273 200,281 294,281" fill="none" stroke="#dd6b20" stroke-width="1.6"/>
+  <polyline points="54,286 150,286 150,279 294,279" fill="none" stroke="#3182ce" stroke-width="1.4"/>
+
+  <line x1="304" y1="235" x2="340" y2="235" stroke="#718096" stroke-width="2" marker-end="url(#arw)"/>
+  <text x="322" y="226" font-size="10.5" fill="#718096" text-anchor="middle">Modell</text>
+
+  <text x="346" y="166" font-size="12.5" font-weight="700" fill="#276749">states <tspan font-family="Consolas,monospace" font-weight="400" fill="#718096">(·,41)</tspan> · Ziel</text>
+  <rect x="346" y="174" width="212" height="122" rx="6" fill="#e6f4ea" stroke="#38a169" stroke-width="1.5"/>
+  <text x="452" y="248" font-size="40" font-weight="700" fill="#9ae6b4" text-anchor="middle" opacity="0.6">41</text>
+  <g stroke="#48bb78" stroke-width="0.9" opacity="0.75">
+    <line x1="356" y1="188" x2="548" y2="188"/><line x1="356" y1="200" x2="548" y2="200"/>
+    <line x1="356" y1="212" x2="548" y2="212"/><line x1="356" y1="224" x2="548" y2="224"/>
+    <line x1="356" y1="236" x2="548" y2="236"/><line x1="356" y1="248" x2="548" y2="248"/>
+    <line x1="356" y1="260" x2="548" y2="260"/><line x1="356" y1="272" x2="548" y2="272"/>
+    <line x1="356" y1="284" x2="548" y2="284"/>
+  </g>
+
+  <!-- one series over 60 days -->
+  <text x="600" y="166" font-size="12.5" font-weight="700" fill="#2d3748">Eine Reihe · 60 Tage · 1441 Schritte (stündlich) · 5 Lastwechsel</text>
+  <rect x="600" y="174" width="560" height="58" rx="6" fill="#f7fafc" stroke="#cbd5e0"/>
+  <g stroke="#cbd5e0" stroke-width="1" stroke-dasharray="3,3">
+    <line x1="693" y1="176" x2="693" y2="230"/><line x1="787" y1="176" x2="787" y2="230"/>
+    <line x1="880" y1="176" x2="880" y2="230"/><line x1="973" y1="176" x2="973" y2="230"/><line x1="1067" y1="176" x2="1067" y2="230"/>
+  </g>
+  <polyline points="603,222 693,222 693,206 787,206 787,196 880,196 880,187 973,187 973,183 1067,183 1067,181 1157,181" fill="none" stroke="#dd6b20" stroke-width="1.6"/>
+  <polyline points="603,225 693,225 693,219 787,219 787,213 880,213 880,209 973,209 1067,207 1157,207" fill="none" stroke="#3182ce" stroke-width="1.4"/>
+  <polyline points="603,228 787,228 787,226 1157,226" fill="none" stroke="#38a169" stroke-width="1.4"/>
+  <text x="1152" y="188" font-size="10" fill="#718096" text-anchor="end">Feed [m³/d]</text>
+
+  <rect x="600" y="240" width="560" height="56" rx="6" fill="#fff5f5" stroke="#feb2b2"/>
+  <g stroke="#feb2b2" stroke-width="1" stroke-dasharray="3,3">
+    <line x1="693" y1="242" x2="693" y2="294"/><line x1="787" y1="242" x2="787" y2="294"/>
+    <line x1="880" y1="242" x2="880" y2="294"/><line x1="973" y1="242" x2="973" y2="294"/><line x1="1067" y1="242" x2="1067" y2="294"/>
+  </g>
+  <line x1="603" y1="264" x2="1157" y2="264" stroke="#fc8181" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="1152" y="261" font-size="9.5" fill="#e53e3e" text-anchor="end">kritisch</text>
+  <polyline points="603,289 693,287 787,282 880,270 973,258 1067,250 1157,246" fill="none" stroke="#c53030" stroke-width="1.8"/>
+  <text x="606" y="254" font-size="10" fill="#c53030">FOS/TAC</text>
+  <text x="600" y="310" font-size="10.5" fill="#a0aec0">Tag 0</text>
+  <text x="1157" y="310" font-size="10.5" fill="#a0aec0" text-anchor="end">60 · Last + Mischung wechseln ~alle 10 d</text>
+
+  <!-- ============ Section 2 ============ -->
+  <rect x="40" y="322" width="1120" height="30" rx="6" fill="#2c5282"/>
+  <text x="56" y="342" font-size="16.5" font-weight="700" fill="#ffffff">2 · Zwei Sätze — gleicher Aufbau, Test zusätzlich mit UKF-Referenz</text>
+
+  <!-- Train card -->
+  <rect x="40" y="358" width="550" height="202" rx="8" fill="#ebf3fb" stroke="#3182ce" stroke-width="1.5"/>
+  <text x="60" y="388" font-size="17" font-weight="700" fill="#2b6cb0">train.npz — 100 Reihen</text>
+  <text x="60" y="408" font-size="12" fill="#718096">4 Modi × 25 · gestapelte Arrays · mit Wahrheit</text>
+  <g font-size="13.5" fill="#2d3748">
+    <text x="60" y="438">measurements</text><text x="570" y="438" text-anchor="end" font-family="Consolas,monospace" font-size="12.5" fill="#4a5568">(100,1441,5)</text>
+    <text x="60" y="462">feed_noisy</text><text x="570" y="462" text-anchor="end" font-family="Consolas,monospace" font-size="12.5" fill="#4a5568">(100,1441,5)</text>
+    <text x="60" y="486" font-weight="700" fill="#276749">states  · Ziel</text><text x="570" y="486" text-anchor="end" font-family="Consolas,monospace" font-size="12.5" fill="#276749">(100,1441,41)</text>
+  </g>
+  <text x="60" y="514" font-size="11.5" fill="#718096">+ time · switch_days · kinetic_factors · seed · regime</text>
+  <text x="60" y="536" font-size="11.5" fill="#718096">+ feed_true (exakt; feed_noisy = feed_true + 5 %)</text>
+
+  <!-- Test card -->
+  <rect x="610" y="358" width="550" height="202" rx="8" fill="#fff5f5" stroke="#c53030" stroke-width="1.5"/>
+  <text x="630" y="388" font-size="17" font-weight="700" fill="#9b2c2c">test.npz — 20 Reihen</text>
+  <text x="630" y="408" font-size="12" fill="#718096">4 Modi × 5 · Liste von Reihen · Wahrheit + Referenz</text>
+  <g font-size="13.5" fill="#2d3748">
+    <text x="630" y="438">measurements · feed_noisy</text><text x="1140" y="438" text-anchor="end" font-family="Consolas,monospace" font-size="12.5" fill="#4a5568">(T,5)</text>
+    <text x="630" y="462" font-weight="700" fill="#276749">states  · Ziel</text><text x="1140" y="462" text-anchor="end" font-family="Consolas,monospace" font-size="12.5" fill="#276749">(T,41)</text>
+    <text x="630" y="486" font-weight="700" fill="#6b46c1">ukf_x_hat · ukf_std  · Referenz</text><text x="1140" y="486" text-anchor="end" font-family="Consolas,monospace" font-size="12.5" fill="#6b46c1">(T,41)</text>
+  </g>
+  <text x="630" y="514" font-size="11.5" fill="#718096">+ regime · seed · switch_days · ukf_pending</text>
+  <text x="630" y="536" font-size="11.5" fill="#718096">Test-Kinetik + Seeds ≠ Train → misst Generalisierung</text>
+
+  <!-- ============ Section 3 ============ -->
+  <rect x="40" y="576" width="1120" height="30" rx="6" fill="#2c5282"/>
+  <text x="56" y="596" font-size="16.5" font-weight="700" fill="#ffffff">3 · Vier Operating-Modi — FOS/TAC-Signatur (in Train &amp; Test)</text>
+
+  <!-- mode glyphs: plot area local 0..210 x, 0..60 y ; critical dotted at y30 -->
+  <g>
+    <rect x="40" y="612" width="266" height="116" rx="8" fill="#f7fafc" stroke="#cbd5e0"/>
+    <text x="58" y="634" font-size="13.5" font-weight="700" fill="#dd6b20">low_high</text>
+    <text x="288" y="634" font-size="11" fill="#a0aec0" text-anchor="end">×25 / ×5</text>
+    <g transform="translate(58,646)">
+      <line x1="0" y1="30" x2="230" y2="30" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,3"/>
+      <polyline points="0,55 33,53.5 66,51 99,42.5 132,30 165,19 198,12.5 230,10" fill="none" stroke="#dd6b20" stroke-width="2"/>
+    </g>
+    <text x="58" y="722" font-size="11" fill="#718096">gesund → kritisch (Onset)</text>
+  </g>
+  <g>
+    <rect x="326" y="612" width="266" height="116" rx="8" fill="#f7fafc" stroke="#cbd5e0"/>
+    <text x="344" y="634" font-size="13.5" font-weight="700" fill="#38a169">stable_low</text>
+    <text x="574" y="634" font-size="11" fill="#a0aec0" text-anchor="end">×25 / ×5</text>
+    <g transform="translate(344,646)">
+      <line x1="0" y1="30" x2="230" y2="30" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,3"/>
+      <polyline points="0,55 38,51 77,53 115,49 153,52 191,50 230,52.5" fill="none" stroke="#38a169" stroke-width="2"/>
+    </g>
+    <text x="344" y="722" font-size="11" fill="#718096">niedrige Last · gesund (~0,05–0,3)</text>
+  </g>
+  <g>
+    <rect x="612" y="612" width="266" height="116" rx="8" fill="#f7fafc" stroke="#cbd5e0"/>
+    <text x="630" y="634" font-size="13.5" font-weight="700" fill="#c53030">stable_high</text>
+    <text x="860" y="634" font-size="11" fill="#a0aec0" text-anchor="end">×25 / ×5</text>
+    <g transform="translate(630,646)">
+      <line x1="0" y1="30" x2="230" y2="30" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,3"/>
+      <polyline points="0,15 38,10 77,12.5 115,7.5 153,10 191,6 230,10" fill="none" stroke="#c53030" stroke-width="2"/>
+    </g>
+    <text x="630" y="722" font-size="11" fill="#718096">chron. Überlast (~0,9–1,2)</text>
+  </g>
+  <g>
+    <rect x="898" y="612" width="262" height="116" rx="8" fill="#f7fafc" stroke="#cbd5e0"/>
+    <text x="916" y="634" font-size="13.5" font-weight="700" fill="#805ad5">oscillating</text>
+    <text x="1142" y="634" font-size="11" fill="#a0aec0" text-anchor="end">×25 / ×5</text>
+    <g transform="translate(916,646)">
+      <line x1="0" y1="30" x2="226" y2="30" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,3"/>
+      <polyline points="0,52.5 27,32.5 75,45 102,22.5 150,35 177,12.5 226,25" fill="none" stroke="#805ad5" stroke-width="2"/>
+    </g>
+    <text x="916" y="722" font-size="11" fill="#718096">Sägezahn, netto ↑ (irreversibel)</text>
+  </g>
+
+  <!-- ============ Section 4 ============ -->
+  <rect x="40" y="744" width="1120" height="30" rx="6" fill="#2c5282"/>
+  <text x="56" y="764" font-size="16.5" font-weight="700" fill="#ffffff">4 · Entstehung · Sensoren · Substrate · Referenz-Latte</text>
+
+  <!-- pipeline chips -->
+  <g font-size="13" text-anchor="middle">
+    <rect x="40"  y="784" width="250" height="48" rx="8" fill="#edf2f7" stroke="#a0aec0" stroke-width="1.3"/>
+    <text x="165" y="807" font-weight="700" fill="#2d3748">Anlage</text><text x="165" y="824" font-size="11" fill="#718096">ADM1 · k_dec_ac=0,02</text>
+    <rect x="326" y="784" width="250" height="48" rx="8" fill="#edf2f7" stroke="#a0aec0" stroke-width="1.3"/>
+    <text x="451" y="807" font-weight="700" fill="#2d3748">Kinetik stören</text><text x="451" y="824" font-size="11" fill="#718096">lognormal σ=0,25 (je Reihe)</text>
+    <rect x="612" y="784" width="250" height="48" rx="8" fill="#edf2f7" stroke="#a0aec0" stroke-width="1.3"/>
+    <text x="737" y="807" font-weight="700" fill="#2d3748">Warmup</text><text x="737" y="824" font-size="11" fill="#718096">30 d + 2 d Burn-in verworfen</text>
+    <rect x="898" y="784" width="262" height="48" rx="8" fill="#ebf3fb" stroke="#3182ce" stroke-width="1.3"/>
+    <text x="1029" y="807" font-weight="700" fill="#2b6cb0">Aufzeichnen</text><text x="1029" y="824" font-size="11" fill="#718096">60 Tage · stündlich</text>
+  </g>
+  <g stroke="#718096" stroke-width="2" fill="none" marker-end="url(#arw)">
+    <line x1="292" y1="808" x2="322" y2="808"/><line x1="578" y1="808" x2="608" y2="808"/><line x1="864" y1="808" x2="894" y2="808"/>
+  </g>
+
+  <!-- sensors -->
+  <rect x="40" y="852" width="360" height="152" rx="8" fill="#f7fafc" stroke="#cbd5e0"/>
+  <text x="60" y="880" font-size="14" font-weight="700" fill="#2d3748">5 Sensoren · Rauschen</text>
+  <g font-size="13" fill="#2d3748">
+    <text x="60" y="908">Q_gas · Q_ch4 · Q_co2 <tspan fill="#718096">[m³/d]</tspan></text><text x="380" y="908" text-anchor="end" fill="#718096">±3–4 %</text>
+    <text x="60" y="932">pH</text><text x="380" y="932" text-anchor="end" fill="#718096">±0,02</text>
+    <text x="60" y="956">TS <tspan fill="#718096">[%]</tspan></text><text x="380" y="956" text-anchor="end" fill="#718096">±0,2</text>
+    <text x="60" y="980">Feed (Dosierung)</text><text x="380" y="980" text-anchor="end" fill="#718096">±5 %</text>
+  </g>
+  <text x="60" y="998" font-size="10.5" fill="#a0aec0">alles in meta.json (Index → Name → Einheit)</text>
+
+  <!-- substrates -->
+  <rect x="420" y="852" width="360" height="152" rx="8" fill="#f7fafc" stroke="#cbd5e0"/>
+  <text x="440" y="880" font-size="14" font-weight="700" fill="#2d3748">5 Substrate · Ref-Fluss [m³/d]</text>
+  <g font-size="13" fill="#2d3748">
+    <text x="440" y="906">maize_silage</text><text x="760" y="906" text-anchor="end" fill="#718096">4,74</text>
+    <text x="440" y="928">solid_manure</text><text x="760" y="928" text-anchor="end" fill="#718096">13,70</text>
+    <text x="440" y="950">chicken_litter</text><text x="760" y="950" text-anchor="end" fill="#718096">1,09</text>
+    <text x="440" y="972">slurry</text><text x="760" y="972" text-anchor="end" fill="#718096">3,68</text>
+    <text x="440" y="994">cereal_grain</text><text x="760" y="994" text-anchor="end" fill="#718096">0,20</text>
+  </g>
+
+  <!-- reference latte -->
+  <rect x="800" y="852" width="360" height="152" rx="8" fill="#faf5ff" stroke="#805ad5" stroke-width="1.3"/>
+  <text x="820" y="880" font-size="14" font-weight="700" fill="#6b46c1">UKF-Referenz</text>
+  <g font-size="13.5" fill="#2d3748">
+    <text x="820" y="910">Transienten-NRMSE</text><text x="1140" y="910" text-anchor="end" font-weight="700" fill="#6b46c1">18 %</text>
+    <text x="820" y="938">Gesamt-NRMSE</text><text x="1140" y="938" text-anchor="end">20 %</text>
+    <text x="820" y="966">2σ-Coverage</text><text x="1140" y="966" text-anchor="end">91 %</text>
+  </g>
+  <text x="820" y="992" font-size="10.5" fill="#a0aec0">known-input · Kopfmetrik = Transient · schwach auf oscillating</text>
+</svg>

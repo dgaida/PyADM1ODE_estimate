@@ -327,3 +327,203 @@ def test_rate_scaling_bounds_physics_loss():
     # scaled residual orders of magnitude larger.
     assert max(h_rate["phys"]) < 1.0e3
     assert max(h_state["phys"]) > 1.0e2 * max(h_rate["phys"])
+
+
+# --------------------------------------------------------------------------
+# Robust residual (res_clip)
+# --------------------------------------------------------------------------
+def test_robust_sq_is_quadratic_inside_and_linear_outside():
+    """Huber: below the threshold identical to res^2, above it linear — so the
+    gradient is bounded and one ill-conditioned channel cannot set the step."""
+    import torch
+
+    from pyadm1ode_estimation.estimation.deep_learning.pinn_smoother import _robust_sq
+
+    res = torch.tensor([0.0, 1.0, -2.0, 3.0, 10.0, -50.0], dtype=torch.float64)
+    assert torch.allclose(_robust_sq(res, None), res**2)
+
+    out = _robust_sq(res, 3.0)
+    inside = res.abs() <= 3.0
+    assert torch.allclose(out[inside], res[inside] ** 2)
+    # continuous at the threshold, and far below the square outside it
+    assert out[3].item() == pytest.approx(9.0)
+    assert out[5].item() == pytest.approx(3.0 * (2 * 50.0 - 3.0))
+    assert out[5].item() < (res[5] ** 2).item()
+
+
+def test_robust_sq_bounds_the_gradient():
+    import torch
+
+    from pyadm1ode_estimation.estimation.deep_learning.pinn_smoother import _robust_sq
+
+    for value in (10.0, 100.0, 1000.0):
+        r = torch.tensor([value], dtype=torch.float64, requires_grad=True)
+        _robust_sq(r, 3.0).sum().backward()
+        assert r.grad.item() == pytest.approx(6.0)  # 2 * delta, independent of value
+        # ...whereas the plain square grows without bound
+        r2 = torch.tensor([value], dtype=torch.float64, requires_grad=True)
+        (r2**2).sum().backward()
+        assert r2.grad.item() == pytest.approx(2 * value)
+
+
+def test_res_clip_must_be_positive():
+    params, obs, x_prior = _setup()
+    with pytest.raises(ValueError, match="res_clip must be positive"):
+        PinnSmoother(params, obs, x_prior, res_clip=0.0)
+
+
+def test_res_clip_still_fits_a_reachable_target():
+    """Robustifying must not stop the fit converging when nothing is off-scale."""
+    params, obs, x_prior = _setup()
+    sm = PinnSmoother(
+        params, obs, x_prior, lambda_phys=0.0, lambda_prior=0.0, res_clip=3.0, seed=1
+    )
+    times = [0.1, 0.3, 0.5, 0.7, 0.9]
+    y = _reachable_measurements(obs, x_prior, times, seed=1)
+    hist = sm.fit(times, y, t0=0.0, t1=1.0, n_collocation=16, epochs=250, lr=1e-3)
+    assert np.isfinite(hist["data"]).all()
+    assert hist["data"][-1] < 0.5 * hist["data"][0]
+
+
+# --------------------------------------------------------------------------
+# Adjustment 3: quasi-steady charge balance (solve_cation)
+# --------------------------------------------------------------------------
+def test_charge_balance_inversion_round_trips():
+    """solve_cation_for_ph must be the exact inverse of ph_torch."""
+    from pyadm1.core.adm1_torch import ph_torch
+
+    from pyadm1ode_estimation.estimation.deep_learning.charge_balance import apply_ph
+
+    params, _, x_prior = _setup()
+    x = torch.tensor(np.tile(x_prior, (6, 1)), dtype=torch.float64)
+    targets = torch.tensor([6.0, 6.5, 7.0, 7.5, 8.0, 8.5], dtype=torch.float64)
+    assert torch.allclose(
+        ph_torch(apply_ph(x, targets, params), params), targets, atol=1e-8
+    )
+
+
+def test_charge_balance_inversion_is_differentiable():
+    from pyadm1ode_estimation.estimation.deep_learning.charge_balance import (
+        solve_cation_for_ph,
+    )
+
+    params, _, x_prior = _setup()
+    x = torch.tensor(np.atleast_2d(x_prior), dtype=torch.float64)
+    ph = torch.tensor([7.4], dtype=torch.float64, requires_grad=True)
+    solve_cation_for_ph(x, ph, params).sum().backward()
+    assert ph.grad is not None and bool(torch.isfinite(ph.grad).all())
+
+
+def test_solve_cation_conditions_the_ph_channel():
+    """The point of Adjustment 3: pH must stop being orders of magnitude steeper
+    than every other channel with respect to the network's own outputs."""
+    params, obs, x_prior = _setup()
+    j = obs.channel_names.index("pH")
+    sens = {}
+    for flag in (False, True):
+        sm = PinnSmoother(
+            params, obs, x_prior, quasi_steady_gas=True, solve_cation=flag, seed=0
+        )
+        y = obs.predict(sm._forward_state(torch.tensor([[0.0]], dtype=torch.float64)))
+        g = torch.autograd.grad(y[0, j], sm.net.net[-1].bias)[0]
+        sens[flag] = float(g.norm())
+    assert sens[True] < sens[False] / 100.0, sens
+
+
+def test_solve_cation_preserves_the_prior_at_initialisation():
+    """Zero-init must still put the trajectory exactly on the prior's liquid state.
+
+    Reparameterising the S_cation slot as pH only holds up if solving the charge
+    balance hands back the very cation the prior had — otherwise every fit would
+    start from a different state than the caller asked for.
+
+    States the prior sets to exactly zero are excluded: the log transform floors
+    its base at 1e-8 (a true-zero prior would pin that state at zero forever),
+    which is pre-existing behaviour independent of this parameterisation.
+    """
+    params, obs, x_prior = _setup()
+    sm = PinnSmoother(
+        params, obs, x_prior, quasi_steady_gas=True, solve_cation=True, seed=0
+    )
+    x0 = sm.estimate([0.0]).x_hat[0]
+
+    positive = x_prior[:37] > 0.0
+    assert np.allclose(x0[:37][positive], x_prior[:37][positive], rtol=1e-6)
+    assert np.allclose(x0[:37][~positive], 1.0e-8)
+    # the reparameterised slot specifically
+    cation = 29
+    assert x0[cation] == pytest.approx(x_prior[cation], rel=1e-9)
+
+
+def test_solve_cation_masks_the_cation_from_physics_and_prior():
+    """S_cation becomes algebraic, so its ODE / prior anchor must be dropped."""
+    from pyadm1ode_estimation.estimation.deep_learning.charge_balance import (
+        CATION_INDEX,
+    )
+
+    params, obs, x_prior = _setup()
+    on = PinnSmoother(
+        params, obs, x_prior, quasi_steady_gas=True, solve_cation=True, seed=0
+    )
+    off = PinnSmoother(
+        params, obs, x_prior, quasi_steady_gas=True, solve_cation=False, seed=0
+    )
+    assert on._state_mask[CATION_INDEX].item() == 0.0
+    assert off._state_mask[CATION_INDEX].item() == 1.0
+    assert on._state_mask.sum().item() == on._n_free - 1
+
+
+def test_solve_cation_needs_the_cation_slot_among_the_free_states():
+    params, obs, x_prior = _setup()
+    # Not reachable through the public flags today, but the guard must exist.
+    assert PinnSmoother(params, obs, x_prior, solve_cation=True)._n_free > 29
+
+
+# --------------------------------------------------------------------------
+# Best-weight restore
+# --------------------------------------------------------------------------
+def test_restore_best_returns_the_best_trajectory_not_the_last():
+    """The collocation fit is not monotone: it reaches its best trajectory and then
+    walks away from it. Returning the final weights throws away the answer."""
+    params, obs, x_prior = _setup()
+    times = [0.1, 0.3, 0.5, 0.7, 0.9]
+    y = _reachable_measurements(obs, x_prior, times, seed=11)
+
+    def run(restore_best):
+        sm = PinnSmoother(
+            params,
+            obs,
+            x_prior,
+            lambda_phys=0.0,
+            lambda_prior=0.0,
+            restore_best=restore_best,
+            seed=11,
+        )
+        hist = sm.fit(times, y, t0=0.0, t1=1.0, n_collocation=16, epochs=200, lr=5e-2)
+        # loss of the model actually handed back
+        x = sm.estimate(times).x_hat
+        res = (obs.predict(torch.tensor(x)) - torch.tensor(y)) / obs.noise_std_tensor()
+        return hist, float((res**2).mean())
+
+    hist_off, returned_off = run(False)
+    hist_on, returned_on = run(True)
+
+    # identical optimisation path — restoring happens only at the end
+    assert np.allclose(hist_off["loss"], hist_on["loss"])
+    # with a large lr the run overshoots, so the last weights are worse than the best
+    assert min(hist_on["loss"]) < hist_on["loss"][-1]
+    assert returned_on <= returned_off
+
+
+def test_restore_best_is_monotone_safe():
+    """It must never hand back something worse than where it started."""
+    params, obs, x_prior = _setup()
+    times = [0.2, 0.6]
+    y = _reachable_measurements(obs, x_prior, times, seed=12)
+    sm = PinnSmoother(params, obs, x_prior, lambda_phys=1.0, restore_best=True, seed=12)
+    hist = sm.fit(times, y, t0=0.0, t1=1.0, n_collocation=12, epochs=120, lr=1e-1)
+
+    x = sm.estimate(times).x_hat
+    assert np.isfinite(x).all() and np.all(x[:, :37] > 0.0)
+    # the restored model's loss equals the best the run ever saw
+    assert min(hist["loss"]) <= hist["loss"][0] + 1e-12

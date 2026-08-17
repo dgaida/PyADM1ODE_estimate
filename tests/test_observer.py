@@ -459,3 +459,127 @@ def test_observer_rejects_bad_ref():
     d.initialize({"Q_substrates": [11.4] + [0.0] * 9})
     with pytest.raises(ValueError):
         Adm1Observer.from_adm1(d.adm1, np.zeros(37), n_features=5)
+
+
+def _observer_and_dataset(n: int = 6, seed: int = 0, hidden: int = 16):
+    """A small simulated dataset plus a matching observer (fast fixture)."""
+    ds = generate_observer_dataset(
+        n_scenarios=n,
+        substrates=_SUBSTRATES,
+        warmup_days=8.0,
+        duration_days=1.0,
+        dt_hours=1.0,
+        seed=seed,
+    )
+    obs = Adm1Observer(
+        ds.params,
+        ds.x_ref,
+        n_features=ds.features.shape[-1],
+        hidden=hidden,
+        num_layers=1,
+        gas_n_iter=10,
+    )
+    return obs, ds
+
+
+# --------------------------------------------------------------------------
+# Pre-training: external split, train-only statistics, best-val restore
+# --------------------------------------------------------------------------
+def test_pretrain_scale_uses_training_sequences_only():
+    """Computing the per-state scale over the whole set first leaks validation
+    statistics into the objective every batch."""
+    obs, ds = _observer_and_dataset(n=8)
+    res = pretrain_observer(obs, ds, epochs=1, batch_size=4, val_frac=0.5, seed=0)
+
+    train_states = ds.states[res.train_idx]
+    expected = np.sqrt((train_states**2).mean(axis=(0, 1))) + 1e-8
+    assert np.allclose(res.scale, expected, rtol=1e-5)
+
+    all_states = np.sqrt((ds.states**2).mean(axis=(0, 1))) + 1e-8
+    assert not np.allclose(res.scale, all_states, rtol=1e-5)
+
+
+def test_pretrain_accepts_an_external_validation_set():
+    """Sharing one split across estimators requires injecting it, not re-drawing."""
+    obs, ds = _observer_and_dataset(n=6)
+    _, val_ds = _observer_and_dataset(n=3, seed=7)
+    res = pretrain_observer(obs, ds, val_dataset=val_ds, epochs=2, batch_size=3, seed=0)
+
+    assert len(res.train_idx) == 6  # the whole dataset trains
+    assert len(res.val_idx) == 3
+    assert np.allclose(
+        res.scale, np.sqrt((ds.states**2).mean(axis=(0, 1))) + 1e-8, rtol=1e-5
+    )
+
+
+def test_pretrain_restores_the_best_validated_weights():
+    obs, ds = _observer_and_dataset(n=8)
+    res = pretrain_observer(
+        obs,
+        ds,
+        epochs=12,
+        batch_size=4,
+        val_frac=0.5,
+        lr=5e-2,
+        restore_best=True,
+        seed=3,
+    )
+    assert 0 <= res.best_epoch < len(res.history["val"])
+    assert res.best_val == pytest.approx(min(res.history["val"]))
+
+    # the restored model must actually score its best value, not the last one
+    val_ds_states = torch.tensor(ds.states[res.val_idx], dtype=obs._dtype)
+    val_feats = torch.tensor(ds.features[res.val_idx], dtype=obs._dtype)
+    scale = torch.tensor(res.scale, dtype=obs._dtype)
+    obs.eval()
+    with torch.no_grad():
+        got = float((((obs(val_feats) - val_ds_states) / scale) ** 2).mean())
+    assert got == pytest.approx(res.best_val, rel=1e-4)
+
+
+def test_pretrain_early_stopping_halts_and_is_flagged():
+    obs, ds = _observer_and_dataset(n=6)
+    res = pretrain_observer(
+        obs, ds, epochs=200, batch_size=3, val_frac=0.5, patience=3, lr=1e-4, seed=5
+    )
+    assert len(res.history["val"]) < 200
+    assert res.stopped_early
+    assert len(res.history["val"]) - 1 - res.best_epoch >= 3
+
+
+def test_pretrain_noise_augmentation_perturbs_only_the_sensor_columns():
+    """Noise belongs on the measurements; the substrate feed is a known input."""
+    from pyadm1ode_estimation.estimation.deep_learning.observer_train import (
+        _noise_scales,
+    )
+
+    _, ds = _observer_and_dataset(n=4)
+    n_ch = len(ds.channel_names)
+    scales = _noise_scales(ds, np.full(n_ch, 0.5)).numpy()
+    assert np.all(scales[:n_ch] > 0.0)
+    assert np.all(scales[n_ch:] == 0.0)
+    # given in raw units, applied in normalised feature units
+    assert np.allclose(scales[:n_ch], 0.5 / np.asarray(ds.feat_std)[:n_ch])
+
+
+def test_pretrain_noise_std_length_is_checked():
+    from pyadm1ode_estimation.estimation.deep_learning.observer_train import (
+        _noise_scales,
+    )
+
+    _, ds = _observer_and_dataset(n=4)
+    with pytest.raises(ValueError, match="noise_std must have shape"):
+        _noise_scales(ds, [0.1, 0.2])
+
+
+def test_pretrain_burnin_excludes_the_leading_steps():
+    from pyadm1ode_estimation.estimation.deep_learning.observer_train import (
+        _scaled_state_loss,
+    )
+
+    x = torch.zeros(2, 6, 3)
+    y = torch.zeros(2, 6, 3)
+    y[:, :2, :] = 100.0  # a huge error only in the burn-in region
+    scale = torch.ones(3)
+    assert float(_scaled_state_loss(x, y, scale, burnin=0)) > 0.0
+    assert float(_scaled_state_loss(x, y, scale, burnin=2)) == pytest.approx(0.0)

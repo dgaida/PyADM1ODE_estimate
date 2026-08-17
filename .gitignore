@@ -49,3 +49,27 @@ output/
 
 reports/
 old/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Dataset artefacts that are large and recreatable. The dataset itself
+# (train.npz / test.npz / meta.json / the small JSON search traces) IS tracked,
+# because the tuning cannot run without it. See PyADM1ODE_estimate_local/README.md
+# for where the excluded files live.
+_backup_*/
+gen_parts/
+ukf_parts/
+filter_tuning_results/*.npz
+
+# Experiment outputs and run logs
+experiments/**/results/
+
+# LaTeX build artefacts
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.toc
+*.log

@@ -46,3 +46,11 @@ include = ["pyadm1ode_estimation*"]
 markers = [
     "slow: integration tests that spin up worker pools or take >5 s",
 ]
+
+[tool.black]
+# Pin the target so a local black and the CI's black cannot disagree: without this,
+# the default target follows whatever Python the tool happens to run under.
+target-version = ["py310"]
+
+[tool.ruff]
+target-version = "py310"

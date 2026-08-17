@@ -51,6 +51,33 @@ der wahre 41-Zustand bekannt ist. Der Loss ist ein zustandsweise skalierter
 Zustands-MSE $\lVert (\hat{x}-x_\text{true})/s \rVert^2$ (jeder Zustand mit seiner
 RMS-Größe normiert), der den *vollen* Zustand lehrt.
 
+!!! tip "Der Engpass ist Overfitting, nicht Kapazitaet"
+    Bei ~80 Trainingsserien lernt das Netz sie schnell auswendig: auf dem
+    Benchmark gemessen erreicht der Validierungs-Loss sein Minimum um Epoche 60
+    von 200, waehrend der Trainings-Loss weiter faellt. `restore_best=True`
+    (Standard) zusammen mit `patience=N` gibt die bestvalidierten Gewichte
+    zurueck und halbiert die Laufzeit bei identischem Ergebnis.
+
+    Was **nicht** geholfen hat, ebenfalls gemessen: die Fenstermenge zu
+    vergroessern. Ueberlappende oder zufaellig platzierte Fenster
+    (320 -> 1120 -> 1600) senken den Validierungs-Loss leicht, verschlechtern
+    aber die Bewertung auf den vollen Serien (15,6 % -> 16,7 %). Sie liefern mehr
+    Gradientenschritte, keine zusaetzliche Information -- der Engpass sind die 80
+    Serien, nicht ihre Zerlegung. Besser: Kapazitaet senken und regularisieren
+    (`weight_decay`, `dropout`, kleineres `hidden`).
+
+Die Skala `s` wird ausschliesslich aus den **Trainings**-Sequenzen berechnet; sie
+vorher ueber den gesamten Satz zu bilden wuerde Validierungsstatistik in das Ziel
+einsickern lassen. Wichtige Optionen:
+
+| Option | Wirkung |
+| --- | --- |
+| `val_dataset` | ein **extern gesplitteter** Validierungssatz. Damit teilen sich mehrere Schaetzer einen Split -- `PinnData.observer_dataset` liefert Train und Val aus demselben stratifizierten Split, den auch die Filter nutzen, und genau das macht Filter und Netz vergleichbar. Intern zu splitten gaebe jedem Modell seinen eigenen Zufallssplit. |
+| `burnin` | fuehrende Schritte, die aus dem Loss fallen. Ein kausaler Observer kann den Anfangszustand nicht kennen, dieser Fehler misst also das Unkennbare statt das Modell. |
+| `noise_std` | Sensorrauschen je Kanal in Roh-Einheiten, pro Batch neu auf die Messfeatures gezogen. Nur der Messblock wird gestoert, die Zufuhr ist ein bekannter Stelleingang. |
+| `restore_best` / `patience` | bestvalidierte Gewichte / Early Stopping. |
+| `weight_decay` | L2-Regularisierung. |
+
 **Self-supervised** (`pretrain_observer_selfsup`)**:** auf **reinen Mess**-Fenstern
 *ohne* Grundwahrheit (reale Anlagenhistorie oder simulierte Fenster für eine
 Ablation). Es nutzt dasselbe Ziel wie die Online-Feinabstimmung: einen Mess-Fit
@@ -107,6 +134,14 @@ Fenster. Zwei Betriebsdetails:
 **Stärken:** Nahezu sofortige Inferenz nach den einmaligen Offline-Kosten, lernt
 die *volle* Zustands-Struktur aus dem Simulator (also stark selbst bei
 unbeobachteten Zuständen). Generalisiert über Betriebspunkte ohne per-Window-Refit.
+
+Auf dem Validierungs-Split des Benchmarks gemessen schlägt schon ein schlichter
+200-Epochen-Lauf ohne jedes Tuning **die Nichtstun-Referenz in allen vier
+Betriebsmodi** (15,6 % gegen 32,6 % Median-NRMSE), während der
+[Fenster-Smoother](pinn.md) nach vier Reparaturrunden zwei von vier schafft. Er
+kostet zudem ~1,7 s pro Epoche gegen ~2,5 min für ein *einzelnes*
+Smoother-Fenster — rund 70× günstiger pro Schritt, und genau das bringt eine
+echte Hyperparametersuche in Reichweite.
 
 **Grenzen:** Braucht eine **repräsentative** Vortrainings-Verteilung. Trägt eine
 **Sim-zu-Real-Lücke**, die nur die self-supervised Anpassung schließt und die

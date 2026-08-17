@@ -10,7 +10,6 @@ State estimation framework for PyADM1ODE biogas plant models.
 ![Last commit](https://img.shields.io/github/last-commit/dgaida/PyADM1ODE_estimate)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dgaida.github.io/PyADM1ODE_estimate/)
 
-
 This repository implements advanced state estimation algorithms for the Anaerobic Digestion Model No. 1 (ADM1), focusing on agricultural biogas plants.
 
 ## Project Goals
@@ -27,22 +26,24 @@ This project is part of a research initiative (AP 4.2 - AP 4.4) to develop and c
 PyADM1ODE_estimation/
 ├── pyadm1ode_estimation/       # Main package
 │   ├── estimation/             # Estimation algorithms
-│   │   ├── __init__.py
 │   │   ├── base.py             # StateEstimator protocol + EstimationStep
 │   │   ├── state_vector.py     # StateChannel / StateVectorSpec
 │   │   ├── process_model.py    # ADM1ProcessModel (pyadm1 propagator)
 │   │   ├── observation_model.py# ObservationChannel / ObservationModel
+│   │   ├── specs.py            # State blocks, observability groups
+│   │   ├── calibration.py      # Post-hoc uncertainty calibration
 │   │   ├── twin.py             # Twin-experiment helpers
-│   │   ├── filters/            # Filter implementations
-│   │   │   └── ukf.py          # Unscented Kalman Filter (scaled, gated obs)
-│   │   ├── deep_learning/      # Deep Learning models (Ensembles, PINN)
+│   │   ├── filters/            # sr_ukf.py, constrained_ukf.py, parallel_ukf.py
+│   │   ├── filter_tuning/      # Tune Q/R/P0/sigma of the filters (see its README)
+│   │   ├── deep_learning/      # PINN smoother, GRU observer
 │   │   └── fusion/             # Fusion algorithms (Covariance Intersection)
 │   ├── artifacts/              # Handoff artifacts (calibration → estimation)
-│   │   └── calibration_artifact.py  # YAML format for calibrated parameters
-│   ├── utils/                  # Utility functions
-│   └── ...
+│   ├── example_plants/         # Reference plant definitions
+│   ├── io/                     # Sensor definitions and sources
+│   └── utils/                  # Utility functions
+├── datasets/benchmark/         # The state-estimation benchmark (train/test + tooling)
+├── experiments/                # Standalone studies (observability, PINN gate, twin)
 ├── docs/                       # Documentation (MkDocs, bilingual)
-├── examples/                   # Usage examples (UKF, twin experiment)
 ├── tests/                      # Unit and integration tests
 ├── README.md
 ├── pyproject.toml
@@ -62,6 +63,23 @@ pip install -e .
 ```
 
 Note: This package requires [PyADM1ODE](https://github.com/dgaida/PyADM1ODE) to be installed.
+
+### Running the filter tuning on another machine
+
+The CMA-ES tuning of the UKF noise parameters is CPU-bound and takes one to three days, so it
+is usually run on a dedicated machine, one variant per machine:
+
+```bash
+pip install -r requirements.txt && pip install -e . && pip install cma
+
+python -m pyadm1ode_estimation.estimation.filter_tuning.tune_filter cmaes \
+    --variant full --days 60 --sigma-per 1 --score-per 1 \
+    --popsize 8 --gens 8 --patience 3 --val-per 5 --top-k 5 \
+    --objective accuracy --jobs 30 --email you@example.org
+```
+
+See **[TUNING.md](TUNING.md)** for the full runbook: what every option means, how to run it
+detached, how to enable the e-mail report, expected runtimes and the known pitfalls.
 
 ## Usage
 

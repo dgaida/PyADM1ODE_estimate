@@ -20,6 +20,8 @@ self-supervised on real history to close the sim-to-real gap.
 
 from __future__ import annotations
 
+import copy
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
@@ -41,12 +43,52 @@ class PretrainResult:
     train_idx: np.ndarray
     val_idx: np.ndarray
     scale: np.ndarray  # per-state RMS used for normalisation, shape (41,)
+    best_epoch: int = -1  # epoch whose weights were restored (-1 = none)
+    best_val: float = float("nan")  # its validation loss
+    stopped_early: bool = False  # True if patience ran out before ``epochs``
 
 
 def _scaled_state_loss(
-    x_hat: torch.Tensor, x_true: torch.Tensor, scale: torch.Tensor
+    x_hat: torch.Tensor,
+    x_true: torch.Tensor,
+    scale: torch.Tensor,
+    burnin: int = 0,
 ) -> torch.Tensor:
+    """Per-state-normalised MSE, optionally ignoring the first ``burnin`` steps.
+
+    A causal observer cannot know the initial state, so the error in the first
+    steps measures the unknowable rather than the model. Excluding it stops that
+    from dominating the gradient.
+    """
+    if burnin:
+        x_hat, x_true = x_hat[..., burnin:, :], x_true[..., burnin:, :]
     return (((x_hat - x_true) / scale) ** 2).mean()
+
+
+def _noise_scales(
+    dataset: ObserverDataset, noise_std: Sequence[float] | None
+) -> torch.Tensor | None:
+    """Per-feature noise magnitude in *normalised* feature units.
+
+    ``noise_std`` is given in raw sensor units (what a datasheet quotes). The
+    features are ``(raw - mean) / std``, an affine map, so adding noise ``eps``
+    to a reading is adding ``eps / feat_std`` to its feature. Only the leading
+    measurement block is perturbed; the feed columns are a known control input.
+    """
+    if noise_std is None:
+        return None
+    if dataset.channel_names is None:
+        raise ValueError(
+            "noise augmentation needs dataset.channel_names to locate the sensor "
+            "columns; rebuild the dataset with the measurement block included."
+        )
+    sigma = np.asarray(noise_std, dtype=float)
+    n_ch = len(dataset.channel_names)
+    if sigma.shape != (n_ch,):
+        raise ValueError(f"noise_std must have shape ({n_ch},), got {sigma.shape}.")
+    scales = np.zeros(dataset.features.shape[-1], dtype=float)
+    scales[:n_ch] = sigma / np.asarray(dataset.feat_std, dtype=float)[:n_ch]
+    return torch.tensor(scales, dtype=torch.get_default_dtype())
 
 
 def _selfsup_losses(
@@ -109,44 +151,94 @@ def pretrain_observer(
     observer: Adm1Observer,
     dataset: ObserverDataset,
     *,
+    val_dataset: ObserverDataset | None = None,
     epochs: int = 300,
     lr: float = 1.0e-3,
     batch_size: int = 32,
     val_frac: float = 0.2,
+    burnin: int = 0,
+    noise_std: Sequence[float] | None = None,
+    weight_decay: float = 0.0,
+    restore_best: bool = True,
+    patience: int | None = None,
     seed: int = 0,
     verbose: bool = False,
 ) -> PretrainResult:
     """Supervised pre-training of the observer on a simulator dataset.
 
-    Returns the loss history (train/val scaled-MSE), the train/val split, and
-    the per-state normalisation scale (reused for evaluation).
+    Args:
+        dataset: training sequences. If ``val_dataset`` is given this is used in
+            full for training; otherwise it is split internally by ``val_frac``.
+        val_dataset: an **externally split** validation set. Pass this to share
+            one split across estimators — the deep-learning adapter's
+            :meth:`~.data_adapter.PinnData.observer_dataset` emits train and val
+            from the same stratified split the filters use, which is what makes a
+            filter and a network comparable. Splitting internally instead gives
+            each model its own random split.
+        burnin: leading steps excluded from the loss (the observer cannot know
+            the initial state; see :func:`_scaled_state_loss`).
+        noise_std: per-channel sensor noise in **raw units**, resampled onto the
+            measurement features every batch. Cheap augmentation that targets the
+            actual nuisance, and with ~80 series the binding constraint is
+            overfitting, not capacity.
+        weight_decay: AdamW-style L2 on the weights.
+        restore_best: return the best-validated weights rather than the last
+            ones. Training past the validation minimum only makes the model
+            worse; the pilot's best epoch was 62 of 200.
+        patience: stop after this many epochs without a validation improvement
+            (``None`` = run all ``epochs``).
+
+    Returns:
+        :class:`PretrainResult` with the loss history, the split, the per-state
+        normalisation scale, and which epoch was restored.
     """
     dtype = observer._dtype
-    feats = torch.tensor(dataset.features, dtype=dtype)  # (N, T, n_feat)
-    states = torch.tensor(dataset.states, dtype=dtype)  # (N, T, 41)
-    scale = torch.sqrt((states**2).mean(dim=(0, 1))) + 1e-8  # (41,)
-
-    n = feats.shape[0]
     rng = np.random.default_rng(seed)
-    perm = rng.permutation(n)
-    n_val = max(1, round(val_frac * n))
-    val_idx = perm[:n_val]
-    train_idx = perm[n_val:]
-    val_t = torch.as_tensor(val_idx)
-
-    opt = torch.optim.Adam(observer.parameters(), lr=lr)
-    history: dict[str, list[float]] = {"train": [], "val": []}
     torch.manual_seed(seed)
+
+    if val_dataset is not None:
+        feats = torch.tensor(dataset.features, dtype=dtype)
+        states = torch.tensor(dataset.states, dtype=dtype)
+        val_feats = torch.tensor(val_dataset.features, dtype=dtype)
+        val_states = torch.tensor(val_dataset.states, dtype=dtype)
+        train_idx = np.arange(feats.shape[0])
+        val_idx = np.arange(val_feats.shape[0])
+        train_states = states
+    else:
+        feats = torch.tensor(dataset.features, dtype=dtype)
+        states = torch.tensor(dataset.states, dtype=dtype)
+        perm = rng.permutation(feats.shape[0])
+        n_val = max(1, round(val_frac * feats.shape[0]))
+        val_idx, train_idx = perm[:n_val], perm[n_val:]
+        val_feats = feats[torch.as_tensor(val_idx)]
+        val_states = states[torch.as_tensor(val_idx)]
+        train_states = states[torch.as_tensor(train_idx)]
+
+    # Normalisation from the TRAINING sequences only — computing it over the
+    # whole set first would leak validation statistics into the objective.
+    scale = torch.sqrt((train_states**2).mean(dim=(0, 1))) + 1e-8  # (n_state,)
+    noise = _noise_scales(dataset, noise_std)
+    if noise is not None:
+        noise = noise.to(dtype=dtype)
+
+    opt = torch.optim.Adam(observer.parameters(), lr=lr, weight_decay=weight_decay)
+    history: dict[str, list[float]] = {"train": [], "val": []}
+    best_val, best_epoch, best_state = float("inf"), -1, None
+    stopped_early = False
 
     for ep in range(epochs):
         observer.train()
-        order = rng.permutation(train_idx)
+        order = rng.permutation(
+            train_idx if val_dataset is None else np.arange(len(feats))
+        )
         batch_losses = []
         for i in range(0, len(order), batch_size):
             b = torch.as_tensor(order[i : i + batch_size])
+            xb, yb = feats[b], states[b]
+            if noise is not None:
+                xb = xb + noise * torch.randn_like(xb)
             opt.zero_grad()
-            x_hat = observer(feats[b])
-            loss = _scaled_state_loss(x_hat, states[b], scale)
+            loss = _scaled_state_loss(observer(xb), yb, scale, burnin)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(observer.parameters(), 1.0)
             opt.step()
@@ -155,21 +247,40 @@ def pretrain_observer(
         observer.eval()
         with torch.no_grad():
             val_loss = float(
-                _scaled_state_loss(observer(feats[val_t]), states[val_t], scale)
+                _scaled_state_loss(observer(val_feats), val_states, scale, burnin)
             )
         history["train"].append(float(np.mean(batch_losses)))
         history["val"].append(val_loss)
+
+        if val_loss < best_val:
+            best_val, best_epoch = val_loss, ep
+            if restore_best:
+                best_state = copy.deepcopy(observer.state_dict())
         if verbose and (ep % max(1, epochs // 10) == 0 or ep == epochs - 1):
             print(
                 f"[{ep:4d}] train={history['train'][-1]:.4e}  val={val_loss:.4e}",
                 flush=True,
             )
+        if patience is not None and ep - best_epoch >= patience:
+            stopped_early = True
+            if verbose:
+                print(
+                    f"[{ep:4d}] no val improvement for {patience} epochs — stopping.",
+                    flush=True,
+                )
+            break
+
+    if best_state is not None:
+        observer.load_state_dict(best_state)
 
     return PretrainResult(
         history=history,
         train_idx=train_idx,
         val_idx=val_idx,
         scale=scale.cpu().numpy(),
+        best_epoch=best_epoch,
+        best_val=best_val,
+        stopped_early=stopped_early,
     )
 
 

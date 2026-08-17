@@ -146,7 +146,7 @@ additional TAC + NDIR sensors).
 ## Reproducibility
 
 ```powershell
-cd "c:\Users\Tim\Documents\4. Bioplant\PyADM1ODE_estimate\private_docs\observability_experiment"
+cd experiments/observability_experiment
 python -u subsystem_checker.py                              # all six
 python -u subsystem_checker.py --only A_gas_methanogenesis  # one
 python -u subsystem_checker.py --only AD_combined           # Variante II only

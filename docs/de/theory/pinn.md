@@ -165,9 +165,16 @@ $$
 
 Ein Lehrbuch-PINN scheitert an ADM1: das System ist
 **steif** (Raten über viele Größenordnungen) und seine Zustände reichen von
-$\sim 10^{-7}$ bis in die Zehner, wobei alle nicht-negativ bleiben müssen. Vier
-Konstruktionsentscheidungen in `PinnSmoother` bringen es zur Konvergenz 
+$\sim 10^{-7}$ bis in die Zehner, wobei alle nicht-negativ bleiben müssen. Sechs
+Konstruktionsentscheidungen in `PinnSmoother` bringen es zur Konvergenz
 (es läuft stabil auf eine gute Lösung zu, statt zu entgleisen).
+
+!!! warning "Das ist kein optionaler Feinschliff"
+    Auf dem mitgelieferten Benchmark gemessen: ohne die Ladungsbilanz-Auflösung
+    aus §5.5 verbessert der Fit seinen eigenen Startwert **nie** — bei keiner
+    Lernrate, keiner Loss-Gewichtung und keiner Netzgröße. Die beste je erreichte
+    Data-Loss war ihr Wert bei Epoche 0; das Training hat den Fit nur
+    verschlechtert. Zahlen in §7.
 
 ### 1. Positive, gut skalierte Ausgaben
 
@@ -213,6 +220,71 @@ statt sie am Prior zu parken, kann man sie in $L_\text{phys}$ einzeln **höher g
 ein von Hand gesetzter Gewichtsvektor, **kein gelernter Parameter**. Welche man
 hochgewichtet, entscheidet man selbst per Fachwissen/Diagnose, nicht das Training.
 
+Der Prior selbst muss ein **physikalisch erreichbarer Zustand** sein. Eine
+komponentenweise Statistik (etwa der Median je Zustand über einen Trainingssatz)
+ist das im Allgemeinen nicht: nimmt man jede Komponente für sich, zerbrechen die
+Identitäten, die sie verbinden. Bei ADM1 ist das die Ladungsbilanz, und der so
+entstandene „Durchschnittszustand" impliziert einen pH weit außerhalb des
+physikalischen Bereichs. Stattdessen den **Medoid** nehmen — einen echten
+beobachteten Zustand; `PinnData` macht das automatisch (§6).
+
+### 5. Quasi-stationäre Ladungsbilanz (`solve_cation=True`)
+
+ADM1 gewinnt den pH aus der Elektroneutralität:
+
+$$
+	ext{fixed} = S_	ext{cat} - S_	ext{an} + (S_{\mathrm{NH_4}} - S_{\mathrm{NH_3}})
+              - S_{\mathrm{HCO_3}} - \sum 	ext{VFA}^- ,
+\qquad
+S_{\mathrm H} = 	frac12\!\left(-	ext{fixed} + \sqrt{	ext{fixed}^2 + 4K_w}
+ight).
+$$
+
+An einem normalen Arbeitspunkt ist `fixed` eine Differenz von Termen der
+Größenordnung $0{,}1\!-\!0{,}2$ kmol m⁻³, die sich auf $\sim\!10^{-6}$ auslöscht —
+**5,3 Dekaden Auslöschung**. Wegen $S_\mathrm{H} pprox K_w/	ext{fixed}$ gilt
+faktisch $	ext{pH} pprox -\log_{10} K_w + \log_{10}(	ext{fixed})$: stört man
+irgendeinen Ionenzustand um 1 %, bewegt sich `fixed` um Größenordnungen.
+
+Das ist dieselbe Messerschneide wie die Biogas-Abbildung in §5.3, mit derselben
+Folge — der pH reagiert mit $\sim\!5\cdot10^{4}\,\sigma$ auf eine 1-%-Zustands-
+änderung, sein Gradient diktiert jeden Optimierungsschritt und der Fit divergiert.
+
+Die Lösung spiegelt den Gas-Solver: **das Netz darf nicht raten, woran die
+Auslöschung hängt.** Das Netz sagt direkt den **pH** vorher (eine gut skalierte
+Ausgabe um $pprox 7{,}5$ mit Empfindlichkeit 1:1), und $S_	ext{cat}$ wird
+geschlossen aus der Ladungsbilanz gelöst:
+
+$$
+S_\mathrm{H} = 10^{-	ext{pH}},\qquad
+	ext{fixed} = rac{K_w - S_\mathrm{H}^2}{S_\mathrm{H}},\qquad
+S_	ext{cat} = 	ext{fixed} - (	ext{übrige Ladungsterme}).
+$$
+
+!!! note "Was das kostet"
+    $S_	ext{cat}$ ist damit kein differentieller, sondern ein algebraischer
+    Zustand — aus der ODE wird eine **DAE**, die triviale Verdünnungsgleichung
+    wird durch die Elektroneutralitäts-Nebenbedingung ersetzt. `PinnSmoother`
+    maskiert ihn deshalb aus dem Physik-Residuum **und** dem Prior-Anker. Das ist
+    Absicht: $S_	ext{cat}$ ist eine Buchhaltungsladung, keine gemessene Spezies,
+    und genau die Erzwingung seiner Verdünnungsgleichung erzeugt die schlechte
+    Kondition. Aus demselben Grund kann der gelöste Wert leicht negativ werden —
+    das ist ein Anionenüberschuss und liegt im Rahmen dessen, wie ADM1 diese
+    beiden Slots verwendet.
+
+### 6. Begrenzte Residuen (`res_clip`)
+
+Ein quadriertes Residuum hat einen Gradienten proportional zum Residuum, also
+diktiert ein schlecht konditionierter Kanal den ganzen Schritt. `res_clip` stellt
+das Residuum auf **Huber** um: quadratisch unterhalb der Schwelle $\delta$, linear
+darüber, sodass der Gradient bei $2\delta$ gedeckelt bleibt, ohne null zu werden.
+
+Das ist bewusst weicher als ein hartes Abschneiden (das den Gradienten jenseits
+der Schwelle auf null setzt und einem bereits entglittenen Kanal jede Rückholkraft
+nimmt). Es begrenzt den Schaden eines schlecht konditionierten Kanals, ersetzt
+aber **nicht** §5.5 — es deckelt, wie weit ein schlechter Schritt geht, nicht die
+Kondition, die ihn verursacht.
+
 ---
 
 ## 6. Umsetzung in diesem Repository
@@ -233,7 +305,36 @@ dem Basispaket `pyadm1`:
 | $f$ — rechte Seite von ADM1 | `pyadm1.core.adm1_torch.adm1da_rhs_torch` |
 | Gas-Flüssig-Gleichgewicht | `pyadm1.core.adm1_torch.gas_equilibrium_torch` |
 | $h$ — Messabbildung | `deep_learning.observation_torch.TorchObservationModel` |
-| Zufuhr / Parameter | `Adm1TorchParams` — die Substratzufuhr ist eingebacken, daher ist die Netzeingabe **nur die Zeit** |
+| Ladungsbilanz-Inversion | `deep_learning.charge_balance.solve_cation_for_ph` |
+| Zufuhr / Parameter | `Adm1TorchParams` — die Netzeingabe bleibt **nur die Zeit**; eine im Fenster *veränderliche* Zufuhr kommt über `params_at` |
+
+### Die Datenanbindung: der Adapter
+
+`PinnData` (`deep_learning/data_adapter.py`) bringt jeden in
+`filter_tuning.datasets` registrierten Datensatz in die Form, die beide
+PINN-Varianten brauchen. Drei Zusagen sind für die Korrektheit entscheidend:
+
+* **Derselbe Split wie bei den Filtern.** Beide gehen durch
+  `EstimatorDataset.split_indices` — stratifiziert nach dem Serien-Label,
+  gruppiert nach Serie. Gleiches `(val_frac, seed)` ⇒ gleiche Serien, und genau
+  das macht Netz und Filter vergleichbar. Mit `save_split()` / `split_file=`
+  einfrieren.
+* **Statistik nur aus Train.** Feature-Normierung, `x_ref`, `x_prior` (als
+  Medoid) und die Zustandsskala werden ausschließlich aus den Trainingsserien
+  geschätzt.
+* **Feed-passende Physik.** `smoother_inputs()` hängt jeder Serie eine
+  `params_at`-Closure über ihre *eigene* Zufuhr an, damit das ODE-Residuum gegen
+  die Anlage ausgewertet wird, die die Daten erzeugt hat. Das wiegt schwerer als
+  es klingt: ein ungefütterter Parametersatz (`q_ad = 0`) modelliert einen
+  *geschlossenen Batch-Reaktor*, und der Zulaufterm $D_	ext{in}\,s_	ext{in}$
+  dominiert die rechte Seite von ADM1.
+
+```python
+from pyadm1ode_estimation.estimation.deep_learning import PinnData
+
+data = PinnData.build("benchmark", val_frac=0.2, seed=0)
+inputs = data.smoother_inputs("val", days=5.0)     # ein Payload je Serie
+```
 
 ### Batch, nicht rekursiv
 
@@ -244,14 +345,27 @@ dann abfragen.
 ```python
 from pyadm1ode_estimation.estimation.deep_learning import PinnSmoother
 
-smoother = PinnSmoother(params, obs, x_prior, quasi_steady_gas=True)
-smoother.fit(obs_times, obs_values, t0=0.0, t1=30.0)   # Training über [0, 30] Tage
-traj = smoother.estimate(query_times)                  # (T, 41) Zustände + std
+it = inputs[0]
+smoother = PinnSmoother(
+    data.physics_params(), data.obs_model(), it.x_prior, it.x_scale,
+    quasi_steady_gas=True,   # §5.3 — Gasdrücke werden gelöst
+    solve_cation=True,       # §5.5 — S_cation folgt dem vorhergesagten pH
+    res_clip=3.0,            # §5.6 — Huber-Schwelle in Sigma
+    params_at=it.params_at,  # die eigene, zeitvariable Zufuhr der Serie
+)
+smoother.fit(**it.fit_kwargs(), epochs=2000, lr=1e-3)
+traj = smoother.estimate(it.obs_times)                 # (T, 41) Zustände + std
 ```
 
 `estimate` liefert einen `TrajectoryEstimate` (`time`, `x_hat`, `std`), die
 gemeinsame Ausgabewährung mit dem UKF, sodass das Twin-Experiment-Harness beide
 Schätzerfamilien gleich bewertet.
+
+`restore_best=True` (Standard) gibt die Gewichte der besten Epoche zurück statt
+der letzten. Der Kollokations-Fit ist **nicht monoton** — er erreicht regelmäßig
+seine beste Trajektorie und läuft dann wieder von ihr weg, sodass die
+Endgewichte die bereits gefundene Antwort wegwerfen. Zugleich wird der Fit damit
+monoton-sicher: er kann nie etwas Schlechteres als den Prior zurückgeben.
 
 ### Prognose
 
@@ -279,27 +393,63 @@ Vorwärtspässe zu erhalten.
 
 ---
 
-## 7. Stärken, Grenzen und die Einordnung zum UKF
+## 7. Gemessener Stand
 
-**Stärken.** Trifft die biogastreibenden Zustände genau. Die weiche Physik-Kopplung ist flexibel,
-kommt mit spärlicher, unregelmäßiger Abtastung zurecht.
+Die Zahlen stammen vom Validierungs-Split des mitgelieferten Benchmarks (4
+Betriebsmodi), 5-Tage-Fenster, reproduzierbar über `experiments/pinn_gate/`.
 
-**Grenzen.** Die pH-/Ladungsbilanz-Abbildung ist schlecht konditioniert (beide
-Schätzer haben hier Mühe, das PINN mehr). Die MC-Dropout-Unsicherheit ist noch
-nicht kalibriert, ein Fit von Grund auf kostet Sekunden bis Minuten pro Fenster.
+**Die Optimierung ist gelöst.** Data-Loss = mittleres quadriertes standardisiertes
+Residuum auf den Messkanälen; der Rauschboden (was der *wahre* Zustand erreicht)
+liegt bei 0,57.
+
+| Konfiguration | Median der besten Data-Loss |
+| --- | --- |
+| Ausgangspunkt | 3520 |
+| + `res_clip` | 11,7 |
+| + `solve_cation` (§5.5) | **0,562** |
+
+Der Messfit erreicht damit sein theoretisches Optimum. Vor der
+Ladungsbilanz-Auflösung hat das Training den Fit nie verbessert — der beste je
+erreichte Wert war der Wert bei Epoche 0.
+
+**Die Zustandsgenauigkeit ist es nicht.** Median-NRMSE über 41 Zustände, gegen
+die triviale Referenz „Prior konstant halten":
+
+| | Median-NRMSE |
+| --- | --- |
+| `x_prior` halten (nichts tun) | 25,1 % |
+| PINN A (bestes `rate_floor`) | 22,0 % — aber nur 2 von 4 Modi |
+| wahres $x(t_0)$ halten (Referenz) | 1,2 – 3,7 % |
+
+Ein `rate_floor`-Sweep zeigt kein belastbares Optimum. **Fünf Sensoren legen 41
+Zustände nicht fest**, und der ADM1-Term kann die Lücke nicht schließen, weil ein
+Fit pro Fenster die wahre Kinetik nicht lernen kann (der Benchmark stört sie je
+Serie lognormal, $\sigma = 0{,}25$). Die verbleibende Lücke ist
+**Beobachtbarkeit, nicht Architektur** — deshalb sind Breite, Tiefe und
+Aktivierung des Netzes bislang nicht optimiert: sie sind nachweislich nicht der
+begrenzende Faktor.
+
+**Grenzen.** Die MC-Dropout-Unsicherheit ist nicht kalibriert. Ein Fit von Grund
+auf kostet ~2,5 min pro 5-Tage-Fenster, was den bezahlbaren Umfang einer
+Hyperparametersuche deckelt.
 
 **Einordnung.** Der UKF (siehe [UKF im Einsatz](../usage/ukf.md) und
-[SR-UKF-Performance](../development/ukf_performance.md)) ist rekursiv, günstig pro
-Schritt und besser kalibriert, vor allem beim pH. Das PINN ist stärker auf den
-Biogaskanälen und bei der Prognose. Ein **[Hybrid per Kovarianzschnitt](fusion.md)**
-kann beide fusionieren und die Stärken jedes Schätzers
-bewahren.
+[SR-UKF-Performance](../development/ukf_performance.md)) ist rekursiv und günstig
+pro Schritt. Auf dieser Metrik ist er allerdings selbst **in 3 von 4 Modi
+schlechter als Nichtstun** (50,5 % gegen 34,2 % gesamt auf dem Test-Split) — also
+beide Referenzen berichten, sonst sieht ein Ergebnis besser aus als es ist. Der
+**[vortrainierte Observer](observer.md)** nimmt dieselbe Hürde in allen vier
+Modi, weil er über Serien hinweg lernt, was ein Einzelfenster-Fit nicht kann. Ein
+**[Hybrid per Kovarianzschnitt](fusion.md)** kann Schätzer fusionieren.
 
 ---
 
 ## Quelldateien
 
-* `pyadm1ode_estimation/estimation/deep_learning/pinn.py` — `ADM1PINN`, `PINNLoss`  
+* `pyadm1ode_estimation/estimation/deep_learning/pinn.py` — `ADM1PINN`, `PINNLoss`
+* `pyadm1ode_estimation/estimation/deep_learning/charge_balance.py` — `solve_cation_for_ph`, `apply_ph`
+* `pyadm1ode_estimation/estimation/deep_learning/data_adapter.py` — `PinnData`, `FeatureSpec`
+* `experiments/pinn_gate/` — Gate-Messung und `rate_floor`-Sweep  
 * `pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py` — `PinnSmoother`  
 * `pyadm1ode_estimation/estimation/deep_learning/observation_torch.py` — `TorchObservationModel`  
 

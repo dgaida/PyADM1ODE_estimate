@@ -22,7 +22,11 @@ The three loss terms are
 :class:`~pyadm1ode_estimation.estimation.deep_learning.observation_torch.TorchObservationModel`
 — the differentiable RHS and measurement map. The substrate feed for the
 window is baked into the model parameters (``Adm1TorchParams``), so the network
-input is time only.
+input is time only. A feed that *changes* inside the window is supported via
+``params_at`` (see below); the parameters must in any case describe the plant
+that produced the data — the influent term ``D_in·s_in`` dominates the ADM1
+right-hand side, so a nominal or (worse) zero feed is a large silent model error
+that pins the fit at the prior.
 
 Design choices (see the DL overview doc): the network predicts a *log-deviation
 from a prior* — ``x(t) = x_prior * exp(raw(t))`` with the output layer zero-
@@ -35,7 +39,8 @@ tuning knobs for the stiff ADM1 system.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+import copy
+from collections.abc import Callable, Sequence
 
 import numpy as np
 import torch
@@ -43,14 +48,42 @@ from pyadm1.core.adm1_torch import (
     Adm1TorchParams,
     adm1da_rhs_torch,
     gas_equilibrium_torch,
+    ph_torch,
 )
 
 from ..base import TrajectoryEstimate
+from .charge_balance import CATION_INDEX as _CATION_INDEX
+from .charge_balance import apply_ph
 from .observation_torch import TorchObservationModel
 from .pinn import ADM1PINN
 
 _STATE_SIZE = 41
 _N_LIQUID = 37  # states 0-36; the 4 gas-phase states (37-40) can be slaved
+
+
+def _robust_sq(res: torch.Tensor, delta: float | None) -> torch.Tensor:
+    """Squared residual, switching to linear growth beyond ``delta`` (Huber).
+
+    A plain ``res**2`` has a gradient proportional to ``res``, so one badly
+    conditioned channel dictates the whole step. On ADM1 that channel is **pH**:
+    it responds ~50 000 sigma to a 1 % state change (the gas channels ~20, TS
+    ~0.3), so the first optimiser step overshoots into a region where the fit is
+    orders of magnitude worse and never recovers.
+
+    Huber caps the *gradient* at ``2 * delta`` while keeping it non-zero, so an
+    off-scale channel still points the right way but can no longer set the step
+    size. ``delta=None`` restores the plain square.
+
+    Note this is deliberately softer than the hard ``torch.clamp`` in
+    :func:`~.observer_train._selfsup_losses`: clamping zeroes the gradient beyond
+    the threshold, which leaves a channel that has already blown past it with no
+    force pulling it back.
+    """
+    if delta is None:
+        return res**2
+    a = res.abs()
+    d = float(delta)
+    return torch.where(a <= d, res**2, d * (2.0 * a - d))
 
 
 class PinnSmoother:
@@ -69,14 +102,23 @@ class PinnSmoother:
         physics_scaling: str = "rate",
         rate_floor: float = 1.0,
         physics_weight: Sequence[float] | None = None,
+        res_clip: float | None = None,
+        restore_best: bool = True,
         quasi_steady_gas: bool = False,
+        solve_cation: bool = False,
         gas_n_iter: int = 20,
+        params_at: Callable[[np.ndarray], Adm1TorchParams] | None = None,
         device: str = "cpu",
         seed: int = 0,
         dtype: torch.dtype = torch.float64,
     ):
         torch.manual_seed(seed)
         self.params = params
+        # Optional ``t -> params`` for a feed that changes inside the window. Only
+        # the ODE right-hand side reads q_ad / s_in (the gas solve and h(x) do
+        # not), so this is applied to the physics residual alone — evaluated once
+        # per fit at the fixed collocation times, not per epoch.
+        self.params_at = params_at
         self.obs = obs
         self.dtype = dtype
         self.device = device
@@ -100,6 +142,14 @@ class PinnSmoother:
         # 0.05) keeps the relative residual near 1 for a wrongly-flat slow state,
         # so slow dynamics stay visible in the loss.
         self.rate_floor = float(rate_floor)
+        # Huber threshold on the standardised data / physics residuals, in sigma.
+        # See ``_robust_sq``: without it the ill-conditioned pH map sets every step.
+        self.res_clip = None if res_clip is None else float(res_clip)
+        if self.res_clip is not None and self.res_clip <= 0.0:
+            raise ValueError(f"res_clip must be positive or None, got {res_clip!r}.")
+        # Return the best-scoring weights of the run rather than the last ones.
+        # Set False only to observe the raw (non-monotone) trajectory.
+        self.restore_best = bool(restore_best)
         # With quasi_steady_gas the network only predicts the 37 liquid states;
         # the 4 gas-phase pressures are solved from the liquid state each call
         # (removes the knife-edge free pTOTAL). Physics + prior are enforced on
@@ -107,6 +157,7 @@ class PinnSmoother:
         self.quasi_steady_gas = bool(quasi_steady_gas)
         self._n_free = _N_LIQUID if quasi_steady_gas else _STATE_SIZE
         self._gas_n_iter = int(gas_n_iter)
+        self.solve_cation = bool(solve_cation)
 
         x_prior = np.asarray(x_prior, dtype=float)
         if x_prior.shape != (_STATE_SIZE,):
@@ -140,6 +191,26 @@ class PinnSmoother:
                 )
             self._phys_weight = torch.tensor(w, dtype=dtype, device=device)
 
+        # Quasi-steady charge balance: the network's S_cation slot is reinterpreted
+        # as **pH** and S_cation is solved from electroneutrality (see
+        # :mod:`charge_balance`). Two consequences are set up here:
+        #  1. that slot's log-transform base becomes the prior's pH, so the
+        #     zero-initialised network still starts exactly at the prior state;
+        #  2. S_cation stops being a differential state (it is now algebraic), so
+        #     it is masked out of the ODE residual *and* the prior anchor — its
+        #     dilution equation is what the constraint replaces.
+        self._state_mask = torch.ones(self._n_free, dtype=dtype, device=device)
+        if self.solve_cation:
+            if _CATION_INDEX >= self._n_free:
+                raise ValueError(
+                    f"solve_cation needs the S_cation slot ({_CATION_INDEX}) among the "
+                    f"{self._n_free} free states."
+                )
+            ph0 = ph_torch(self._x_prior, params)
+            self._base[_CATION_INDEX] = ph0
+            self._scale[_CATION_INDEX] = torch.clamp(ph0.abs(), min=1.0)
+            self._state_mask[_CATION_INDEX] = 0.0
+
         self.net = ADM1PINN(
             input_dim=1,
             output_dim=self._n_free,
@@ -165,13 +236,19 @@ class PinnSmoother:
 
         In quasi-steady-gas mode the network outputs the 37 liquid states and
         the 4 gas-phase pressures are solved from them, then concatenated.
+
+        With ``solve_cation`` the ``S_cation`` slot carries **pH** instead, and
+        the actual ``S_cation`` is solved from electroneutrality — so the returned
+        vector is always the physical 41-state, whatever the parameterisation.
         """
         raw = torch.exp(torch.clamp(self.net(t), -10.0, 10.0))
+        vals = self._base[: self._n_free] * raw
+        if self.solve_cation:
+            vals = apply_ph(vals, vals[..., _CATION_INDEX], self.params)
         if self.quasi_steady_gas:
-            x_liq = self._base[:_N_LIQUID] * raw
-            gas = gas_equilibrium_torch(x_liq, self.params, n_iter=self._gas_n_iter)
-            return torch.cat([x_liq, gas], dim=-1)
-        return self._base * raw
+            gas = gas_equilibrium_torch(vals, self.params, n_iter=self._gas_n_iter)
+            return torch.cat([vals, gas], dim=-1)
+        return vals
 
     def _dxdt(self, t: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
         """Autograd time-derivative of the ``_n_free`` free states, ``(N, n_free)``."""
@@ -274,12 +351,27 @@ class PinnSmoother:
         t0_t = torch.tensor([[t0]], dtype=self.dtype, device=self.device)
         n = self._n_free
 
+        # Physics parameters at the collocation times. The grid is fixed for the
+        # whole run, so a time-varying feed costs one evaluation, not one per epoch.
+        p_phys = self.params
+        if self.params_at is not None:
+            p_phys = self.params_at(t_coll.detach().cpu().numpy().reshape(-1))
+
         history: dict[str, list[float]] = {
             "loss": [],
             "data": [],
             "phys": [],
             "prior": [],
         }
+        # Best-weight tracking. The collocation fit is not monotone — on the stiff
+        # ADM1 it routinely reaches its best trajectory well before the last epoch
+        # and then walks away from it, so returning the *final* weights throws away
+        # the answer it already found. Snapshot the weights that produced the best
+        # loss and restore them at the end (as pretrain_observer_selfsup does), which
+        # also makes the fit monotone-safe: it can never return worse than the prior.
+        best_loss = float("inf")
+        best_state: dict | None = None
+
         self.net.train()
         for ep in range(epochs):
             opt.zero_grad()
@@ -288,12 +380,12 @@ class PinnSmoother:
             y_pred = self.obs.predict(self._forward_state(t_obs))
             res_d = (y_pred - y_obs_t) / self._sigma
             res_d = torch.where(valid, res_d, torch.zeros_like(res_d))
-            l_data = (res_d**2).sum() / n_valid
+            l_data = _robust_sq(res_d, self.res_clip).sum() / n_valid
 
             # physics loss on the free states only (in QSS mode the 4 gas ODEs
             # are satisfied by construction, so only the 37 liquid ODEs remain)
             x_c = self._forward_state(t_coll)
-            f = adm1da_rhs_torch(x_c, self.params)
+            f = adm1da_rhs_torch(x_c, p_phys)
             f_free = f[..., :n]
             if self.physics_scaling == "rate":
                 # relative residual: divide by |f| (floored at ``rate_floor *
@@ -307,23 +399,40 @@ class PinnSmoother:
             res_p = (self._dxdt(t_coll, x_c) - f_free) / denom
             # per-state weight (default uniform): up-weight slow / weakly-observed
             # states so the optimiser moves them instead of parking them.
-            l_phys = (self._phys_weight[:n] * res_p**2).mean()
+            # ``_state_mask`` drops any state the parameterisation made algebraic
+            # (S_cation under solve_cation): its ODE is replaced by the constraint.
+            w_phys = self._phys_weight[:n] * self._state_mask[:n]
+            l_phys = (w_phys * _robust_sq(res_p, self.res_clip)).mean()
 
             # prior anchor at t0 (free states)
             res_pr = (
                 self._forward_state(t0_t)[..., :n] - x_prior_anchor[:n]
             ) / self._scale[:n]
-            l_prior = (res_pr**2).mean()
+            l_prior = (self._state_mask[:n] * res_pr**2).mean()
 
             loss = l_data + self.lambda_phys * l_phys + self.lambda_prior * l_prior
+
+            ld, lp, lpr, lo = (
+                float(v.detach()) for v in (l_data, l_phys, l_prior, loss)
+            )
+            if not np.isfinite(lo):
+                # The stiff RHS / gas solve can diverge in a single step. Stop here
+                # rather than let a non-finite gradient poison every weight.
+                if verbose:
+                    print(
+                        f"[{ep:5d}] non-finite loss — stopping, restoring best weights."
+                    )
+                break
+            # Snapshot *before* stepping: these are the weights that produced ``lo``.
+            if self.restore_best and lo < best_loss:
+                best_loss = lo
+                best_state = copy.deepcopy(self.net.state_dict())
+
             loss.backward()
             if grad_clip is not None:
                 torch.nn.utils.clip_grad_norm_(self.net.parameters(), grad_clip)
             opt.step()
 
-            ld, lp, lpr, lo = (
-                float(v.detach()) for v in (l_data, l_phys, l_prior, loss)
-            )
             history["loss"].append(lo)
             history["data"].append(ld)
             history["phys"].append(lp)
@@ -333,6 +442,11 @@ class PinnSmoother:
                     f"[{ep:5d}] loss={lo:.4e} data={ld:.4e} phys={lp:.4e} prior={lpr:.4e}"
                 )
 
+        if best_state is not None:
+            # Note the Adam moments in ``opt`` still refer to the last step, not to
+            # the restored weights. That is deliberate: update() warm-starts from
+            # here, and stale moments only make its first steps slightly cautious.
+            self.net.load_state_dict(best_state)
         return history
 
     # -- warm-started rolling update ------------------------------------

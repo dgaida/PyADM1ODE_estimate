@@ -50,6 +50,32 @@ Pre-training can use either of two objectives (or both):
 $\lVert (\hat{x}-x_\text{true})/s \rVert^2$ (each state normalised by its RMS
 magnitude), which teaches the *full* state.
 
+!!! tip "Overfitting is the binding constraint, not capacity"
+    With ~80 training series the network memorises them quickly: measured on the
+    benchmark, the validation loss bottoms out around epoch 60 of 200 while the
+    training loss keeps falling. `restore_best=True` (the default) plus
+    `patience=N` returns the best-validated weights and halves the runtime at an
+    identical result.
+
+    What did **not** help, measured: enlarging the window set. Overlapping or
+    randomly-placed windows (320 -> 1120 -> 1600) lower the validation loss
+    slightly but make the full-series score *worse* (15.6 % -> 16.7 %). They add
+    gradient steps, not information -- the 80 series are the bottleneck, not how
+    they are cut. Prefer capacity reduction and regularisation (`weight_decay`,
+    `dropout`, a smaller `hidden`).
+
+The scale `s` is computed from the **training** sequences only; deriving it over
+the whole set first would leak validation statistics into the objective. Options
+worth knowing:
+
+| Option | What it does |
+| --- | --- |
+| `val_dataset` | an **externally split** validation set. Pass it to share one split across estimators -- `PinnData.observer_dataset` emits train and val from the same stratified split the filters use, which is what makes a filter and a network comparable. Splitting internally instead gives each model its own random split. |
+| `burnin` | leading steps excluded from the loss. A causal observer cannot know the initial state, so that error measures the unknowable rather than the model. |
+| `noise_std` | per-channel sensor noise in raw units, resampled onto the measurement features every batch. Only the measurement block is perturbed; the feed is a known control input. |
+| `restore_best` / `patience` | best-validated weights / early stopping. |
+| `weight_decay` | L2 regularisation. |
+
 **Self-supervised** (`pretrain_observer_selfsup`) — on **measurement-only**
 windows with *no* ground truth (real plant history, or simulated windows for an
 ablation). It uses the same objective as the online fine-tuning: a measurement
@@ -103,6 +129,13 @@ Two operational details:
 **Strengths.** Near-instant inference after the one-time offline cost; learns the
 *full* state structure from the simulator (so it is strong even on unobserved
 states); generalises across operating points without a per-window refit.
+
+Measured on the benchmark's validation split, a plain 200-epoch run with no
+tuning already **beats the do-nothing baseline in all four operating modes**
+(15.6 % vs. 32.6 % median NRMSE), where the per-window
+[smoother](pinn.md) manages two of four after four rounds of fixes. It also costs
+~1.7 s per epoch against ~2.5 min for a *single* smoother window -- roughly 70x
+cheaper per step, which is what puts a real hyperparameter search within reach.
 
 **Limits.** Needs a **representative** pre-training distribution; carries a
 **sim-to-real gap** that only self-supervised adaptation closes; and the
