@@ -2655,8 +2655,8 @@ beobachteten Zustand; <code>PinnData</code> macht das automatisch (§6).</p>
 <h3 id="5-quasi-stationare-ladungsbilanz-solve_cationtrue">5. Quasi-stationäre Ladungsbilanz (<code>solve_cation=True</code>)<a class="headerlink" href="#5-quasi-stationare-ladungsbilanz-solve_cationtrue" title="Permanent link">&para;</a></h3>
 <p>ADM1 gewinnt den pH aus der Elektroneutralität:</p>
 <div class="arithmatex">\[
-    ext{fixed} = S_ ext{cat} - S_   ext{an} + (S_{\mathrm{NH_4}} - S_{\mathrm{NH_3}})
-              - S_{\mathrm{HCO_3}} - \sum   ext{VFA}^- ,
+    ext{fixed} = S_ ext{cat} - S_   ext{an} + (S_{\mathrm{NH_4}} - S_{\mathrm{NH_3}})  
+              - S_{\mathrm{HCO_3}} - \sum   ext{VFA}^- ,  
 \qquad
 S_{\mathrm H} =     frac12\!\left(- ext{fixed} + \sqrt{ ext{fixed}^2 + 4K_w}
 ight).
@@ -2763,16 +2763,16 @@ dem Basispaket <code>pyadm1</code>:</p>
 <code>filter_tuning.datasets</code> registrierten Datensatz in die Form, die beide
 PINN-Varianten brauchen. Drei Zusagen sind für die Korrektheit entscheidend:</p>
 <ul>
-<li><strong>Derselbe Split wie bei den Filtern.</strong> Beide gehen durch
-  <code>EstimatorDataset.split_indices</code> — stratifiziert nach dem Serien-Label,
+<li><strong>Derselbe Split wie bei den Filtern.</strong> Beide gehen durch<br />
+<code>EstimatorDataset.split_indices</code> — stratifiziert nach dem Serien-Label,
   gruppiert nach Serie. Gleiches <code>(val_frac, seed)</code> ⇒ gleiche Serien, und genau
   das macht Netz und Filter vergleichbar. Mit <code>save_split()</code> / <code>split_file=</code>
-  einfrieren.</li>
-<li><strong>Statistik nur aus Train.</strong> Feature-Normierung, <code>x_ref</code>, <code>x_prior</code> (als
+  einfrieren.  </li>
+<li><strong>Statistik nur aus Train.</strong> Feature-Normierung, <code>x_ref</code>, <code>x_prior</code> (als<br />
   Medoid) und die Zustandsskala werden ausschließlich aus den Trainingsserien
-  geschätzt.</li>
-<li><strong>Feed-passende Physik.</strong> <code>smoother_inputs()</code> hängt jeder Serie eine
-  <code>params_at</code>-Closure über ihre <em>eigene</em> Zufuhr an, damit das ODE-Residuum gegen
+  geschätzt.  </li>
+<li><strong>Feed-passende Physik.</strong> <code>smoother_inputs()</code> hängt jeder Serie eine<br />
+<code>params_at</code>-Closure über ihre <em>eigene</em> Zufuhr an, damit das ODE-Residuum gegen
   die Anlage ausgewertet wird, die die Daten erzeugt hat. Das wiegt schwerer als
   es klingt: ein ungefütterter Parametersatz (<code>q_ad = 0</code>) modelliert einen
   <em>geschlossenen Batch-Reaktor</em>, und der Zulaufterm <span class="arithmatex">\(D_ ext{in}\,s_ ext{in}\)</span>
@@ -2780,8 +2780,8 @@ PINN-Varianten brauchen. Drei Zusagen sind für die Korrektheit entscheidend:</p
 </ul>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.deep_learning</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinnData</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">data</span> <span class="o">=</span> <span class="n">PinnData</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">&quot;benchmark&quot;</span><span class="p">,</span> <span class="n">val_frac</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">inputs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">smoother_inputs</span><span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>     <span class="c1"># ein Payload je Serie</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">data</span> <span class="o">=</span> <span class="n">PinnData</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">"benchmark"</span><span class="p">,</span> <span class="n">val_frac</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">inputs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">smoother_inputs</span><span class="p">(</span><span class="s2">"val"</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>     <span class="c1"># ein Payload je Serie</span>
 </span></code></pre></div>
 <h3 id="batch-nicht-rekursiv">Batch, nicht rekursiv<a class="headerlink" href="#batch-nicht-rekursiv" title="Permanent link">&para;</a></h3>
 <p>Anders als der UKF (ein rekursiver <code>StateEstimator</code> mit Prädiktion/Korrektur je
@@ -2904,9 +2904,9 @@ Modi, weil er über Serien hinweg lernt, was ein Einzelfenster-Fit nicht kann. E
 <hr />
 <h2 id="quelldateien">Quelldateien<a class="headerlink" href="#quelldateien" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn.py</code> — <code>ADM1PINN</code>, <code>PINNLoss</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/charge_balance.py</code> — <code>solve_cation_for_ph</code>, <code>apply_ph</code></li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/data_adapter.py</code> — <code>PinnData</code>, <code>FeatureSpec</code></li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn.py</code> — <code>ADM1PINN</code>, <code>PINNLoss</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/charge_balance.py</code> — <code>solve_cation_for_ph</code>, <code>apply_ph</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/deep_learning/data_adapter.py</code> — <code>PinnData</code>, <code>FeatureSpec</code>  </li>
 <li><code>experiments/pinn_gate/</code> — Gate-Messung und <code>rate_floor</code>-Sweep  </li>
 <li><code>pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py</code> — <code>PinnSmoother</code>  </li>
 <li><code>pyadm1ode_estimation/estimation/deep_learning/observation_torch.py</code> — <code>TorchObservationModel</code>  </li>
@@ -2925,7 +2925,7 @@ Modi, weil er über Serien hinweg lernt, was ein Einzelfenster-Fit nicht kann. E
 
 
 <h3 id="pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">deep_learning</span><span class="o">.</span><span class="n">pinn_smoother</span><span class="o">.</span><span class="n">PinnSmoother</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">x_prior</span><span class="p">,</span> <span class="n">x_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hidden_layers</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">lambda_phys</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lambda_prior</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_scaling</span><span class="o">=</span><span class="s1">&#39;rate&#39;</span><span class="p">,</span> <span class="n">rate_floor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">res_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">restore_best</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">solve_cation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gas_n_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">params_at</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></code>
+              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">deep_learning</span><span class="o">.</span><span class="n">pinn_smoother</span><span class="o">.</span><span class="n">PinnSmoother</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">x_prior</span><span class="p">,</span> <span class="n">x_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hidden_layers</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">lambda_phys</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lambda_prior</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_scaling</span><span class="o">=</span><span class="s1">'rate'</span><span class="p">,</span> <span class="n">rate_floor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">res_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">restore_best</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">solve_cation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gas_n_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">params_at</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cpu'</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></code>
 
 <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother" class="headerlink" title="Permanent link">&para;</a></h3>
 
