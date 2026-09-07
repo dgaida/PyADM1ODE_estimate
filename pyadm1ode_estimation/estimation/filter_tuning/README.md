@@ -81,11 +81,11 @@ trace is written after every generation, so a crash costs at most one generation
 
 ## Notes
 
-- **Objective** = 2σ coverage → 0.955 **+** FOS/TAC-band coverage → 0.955 **+** critical
+- **Objective** = 2σ coverage → 0.955 **+** FOS/TAC-band coverage → 0.955 **+** critical  
   balanced accuracy (see `metrics.objective`). Tunes both honest uncertainty and the
-  "is the plant critical?" decision.
-- **Cost:** the UKF base runs dominate 1.1; `tune_filter.py` is serial — for large sweeps run
+  "is the plant critical?" decision.  
+- **Cost:** the UKF base runs dominate 1.1; `tune_filter.py` is serial — for large sweeps run  
   candidates/episodes as parallel processes (as the archived `old/benchmark` scripts did).
-  1.2 is heaviest (autograd Jacobians of the stiff RHS) → use short `--days`, few episodes.
-- Only 1.1/1.2 change the point estimate x̂; σ-calibration only makes the error bars honest.
+  1.2 is heaviest (autograd Jacobians of the stiff RHS) → use short `--days`, few episodes.  
+- Only 1.1/1.2 change the point estimate x̂; σ-calibration only makes the error bars honest.  
   The FOS/TAC point accuracy is capped by observability, so no amount of tuning fixes it.

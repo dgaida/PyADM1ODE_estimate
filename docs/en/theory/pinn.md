@@ -223,8 +223,8 @@ observed state — instead; `PinnData` does this for you (section 6).
 ADM1 gets pH from electroneutrality:
 
 $$
-\text{fixed} = S_\text{cat} - S_\text{an} + (S_{\mathrm{NH_4}} - S_{\mathrm{NH_3}})
-              - S_{\mathrm{HCO_3}} - \sum \text{VFA}^- ,
+\text{fixed} = S_\text{cat} - S_\text{an} + (S_{\mathrm{NH_4}} - S_{\mathrm{NH_3}})  
+              - S_{\mathrm{HCO_3}} - \sum \text{VFA}^- ,  
 \qquad
 S_{\mathrm H} = \tfrac12\!\left(-\text{fixed} + \sqrt{\text{fixed}^2 + 4K_w}\right).
 $$
@@ -302,13 +302,13 @@ The differentiable physics pieces it wires together all come from the base
 `filter_tuning.datasets` into what both PINN variants need. Three guarantees
 matter for correctness:
 
-* **The same split as the filters.** Both go through
+* **The same split as the filters.** Both go through  
   `EstimatorDataset.split_indices` — stratified by the series label, grouped by
   series. Same `(val_frac, seed)` ⇒ same series, which is what makes a network
-  and a filter comparable. Freeze it with `save_split()` / `split_file=`.
-* **Train-only statistics.** Feature normalisation, `x_ref`, `x_prior` (as a
-  medoid) and the per-state scale are estimated on the training series alone.
-* **Feed-matched physics.** `smoother_inputs()` attaches a `params_at` closure
+  and a filter comparable. Freeze it with `save_split()` / `split_file=`.  
+* **Train-only statistics.** Feature normalisation, `x_ref`, `x_prior` (as a  
+  medoid) and the per-state scale are estimated on the training series alone.  
+* **Feed-matched physics.** `smoother_inputs()` attaches a `params_at` closure  
   over each series' own feed, so the ODE residual is evaluated against the plant
   that produced the data. This matters more than it sounds: an unfed parameter
   snapshot (`q_ad = 0`) models a *closed batch reactor*, and the influent term

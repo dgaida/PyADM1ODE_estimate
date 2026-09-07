@@ -9,11 +9,11 @@ task for an agricultural biogas plant. Same plant as the internal UKF comparison
 
 Per hourly time step you receive:
 
-- **`measurements` (T, 5)** — noisy sensors: `Q_gas`, `Q_ch4`, `Q_co2` [m³/d],
-  `pH`, `TS` [% total solids].
-- **`feed_noisy` (T, 5)** — the substrate feed with 5 % dosing-report noise
-  (maize silage, solid manure, chicken litter, slurry, cereal grain).
-- **`fostac` (T, 2)** / **`fostac_true` (T, 2)** — the FOS/TAC laboratory
+- **`measurements` (T, 5)** — noisy sensors: `Q_gas`, `Q_ch4`, `Q_co2` [m³/d],  
+  `pH`, `TS` [% total solids].  
+- **`feed_noisy` (T, 5)** — the substrate feed with 5 % dosing-report noise  
+  (maize silage, solid manure, chicken litter, slurry, cereal grain).  
+- **`fostac` (T, 2)** / **`fostac_true` (T, 2)** — the FOS/TAC laboratory  
   titration, measured and noise-free: column 0 FOS [mg HAc/L], column 1
   TAC [mg CaCO3/L]. Wet chemistry, not an online sensor, but stored **hourly**
   so you pick your own sampling frequency. See
@@ -21,7 +21,7 @@ Per hourly time step you receive:
 
 Predict:
 
-- **`states` (T, 41)** — the ADM1 state trajectory (the index → name → unit map
+- **`states` (T, 41)** — the ADM1 state trajectory (the index → name → unit map  
   is in `meta.json`).
 
 Each series spans **60 days** as **6 phases of ~10 days** (5 substrate load changes),
@@ -169,11 +169,11 @@ transparency.
 (pH ~7.4) and inflates near-zero ones — it mixes *how big* a state is with *how well*
 it is estimated. Two metrics avoid that:
 
-- **`vs_ukf` — the RMSE ratio model/UKF** (median over states, per window). `<1` beats
+- **`vs_ukf` — the RMSE ratio model/UKF** (median over states, per window). `<1` beats  
   the UKF. Because both errors are measured on the *same* state, its scale, offset and
   variation cancel completely — this is the fairest single number, and beating the UKF
-  is the goal, so **this is the metric to optimise**.
-- **`per_state_report(pred, series, window)` — per-state RMSE in physical units** next
+  is the goal, so **this is the metric to optimise**.  
+- **`per_state_report(pred, series, window)` — per-state RMSE in physical units** next  
   to each state's own `true_mean` / `true_range` (plus the UKF's RMSE and the ratio).
   The honest way to see *which* states you miss and whether an error is actually large
   (e.g. the UKF's `S_ac` RMSE ≈ 4 is huge against its range ≈ 6 — it barely tracks it,
