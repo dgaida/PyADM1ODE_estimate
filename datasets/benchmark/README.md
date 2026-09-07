@@ -205,22 +205,25 @@ The reference to beat (median over states, mean over the scoring series):
 
 | Metric | UKF reference |
 |---|---|
-| transient NRMSE | **18 %** |
-| steady NRMSE | 21 % |
-| overall NRMSE | 20 % |
-| 2σ coverage | **91 %** |
+| transient NRMSE | **14 %** |
+| steady NRMSE | 15 % |
+| overall NRMSE | 15 % |
+| 2σ coverage | **97 %** |
 
-Per mode (overall NRMSE): low_high 14 % · oscillating 15 % · stable_low 25 % ·
-**stable_high 28 %** — chronic acidification from a cold healthy start stays the hardest
+Per mode (overall NRMSE): low_high 11 % · oscillating 13 % · stable_low 15 % ·
+**stable_high 21 %** — chronic acidification from a cold healthy start stays the hardest
 case. The acidified VFA states (`S_ac`, `S_pro` and their ions) remain the weak spot, but
 the filter now tracks them well enough to be a demanding baseline.
 
-> **The reference was re-tuned (2026-08) and is now ~2.5x more accurate** than the
-> previously shipped one (overall NRMSE 52 % → 20 %). Its process/measurement noise was
-> optimised with CMA-ES, warm-started from the *empirically measured* model error rather
-> than a hand-set Q. The tuning pipeline is
-> `pyadm1ode_estimation/estimation/filter_tuning/cmaes_search.py`. The previous reference and
-> the full write-up of the tuning are kept outside this repository.
+> **Replaced on 2026-08-21.** The shipped reference is now the one tuned with an
+> **accuracy-first** objective over 60-day episodes (overall NRMSE 20 % → **15 %**,
+> coverage 91 % → **97 %**). It is *not* uniformly better: the previous reference was the
+> stronger FOS/TAC detector (critical AUC 0.948 against 0.888). The swap is a deliberate
+> choice in favour of state accuracy, which is what this dataset is primarily a yardstick
+> for. Both references come from the same pipeline,
+> `pyadm1ode_estimation/estimation/filter_tuning/cmaes_search.py`, warm-started from the
+> *empirically measured* model error rather than a hand-set Q. The previous reference and
+> the full write-up are kept outside this repository.
 
 Its **uncertainty is calibrated** on the training set (see
 `estimation/filter_tuning/sigma_calibration.py`, built on the data-agnostic
@@ -230,10 +233,9 @@ training residuals, so the ±2σ band is well covered and the states the filter 
 track carry an honestly large σ, **without changing the point estimate**. (Inflating
 the process noise `Q` instead was tried and rejected: with the known-input variant's
 fewer observations it corrupts the prediction.) The shipped `ukf_calibration.json`
-uses the **cross-validated** best config (train/val/test, `σ_hi=10, γ=2.2`). Against the
-CMA-ES-retuned reference the shipped test coverage is **0.91** (0.92 before the retune —
-σ was fitted on 4 training series at 60 days). To regenerate the reference from
-`ukf_calibration.json`, use `cmaes_search.build_reference`.
+carries the σ scaling of the shipped reference, fitted on 4 training series at 60 days.
+Test coverage is **0.97**. To regenerate the reference from `ukf_calibration.json`, use
+`cmaes_search.build_reference`.
 
 **FOS/TAC critical decision.** Estimating FOS/TAC (VFA/TAC) — "is the plant critical?"
 — is hard from these 5 sensors (the VFA states are barely observable; even *true*

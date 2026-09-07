@@ -129,7 +129,6 @@ def _load():
             "states": tr["states"][i],
             "switch_days": tr["switch_days"][i],
             "regime": str(tr["regime"][i]) if "regime" in tr else "",
-            **({"fostac": tr["fostac"][i]} if "fostac" in tr else {}),
         }
         for i in range(len(tr["time"]))
     ]
@@ -185,23 +184,6 @@ def _draw_overview(fig, s, sub_names):
     axft.plot(t, ft_true, "k-", lw=1.6, label="Truth")
     if has_ukf:
         axft.plot(t, fostac(s["ukf_x_hat"]), "C3-", lw=1.0, label="UKF")
-    # The laboratory titration is stored hourly; show it at the interval an
-    # operator would realistically sample, so the panel conveys how sparse the
-    # measurement actually is next to the continuous truth.
-    if "fostac" in s:
-        from fostac import SAMPLE_EVERY_DAYS, sample_indices
-
-        lab = np.asarray(s["fostac"], dtype=float)
-        idx = sample_indices(len(lab), every_days=SAMPLE_EVERY_DAYS)
-        idx = idx[lab[idx, 0] > 0.0]  # drop below-detection titrations
-        axft.plot(
-            t[idx],
-            lab[idx, 0] / np.maximum(lab[idx, 1], 1e-9),
-            "C0o",
-            ms=4,
-            mfc="none",
-            label=f"Labor ({SAMPLE_EVERY_DAYS:.0f} d)",
-        )
     for val, lbl in FOSTAC_THRESHOLDS:
         axft.axhline(val, color="0.6", ls="--", lw=0.7)
         axft.text(
