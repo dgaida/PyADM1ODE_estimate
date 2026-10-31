@@ -1,452 +1,229 @@
-# Physics-Informed Neural Networks (PINN) for ADM1
+# PINN v2 — the collocation trajectory PINN
 
-This page explains the PINN estimator from the ground up. It starts with the
-idea, then builds up the exact mathematics, explains the ADM1-specific tricks
-that make it work at all, and finally how it is implemented in this repository
-(`pinn.py`, `pinn_smoother.py`).
+This page explains the physics-informed neural network of the repository as it
+exists today: **PINN v2**, a trajectory network trained on the ADM1da residual
+at collocation points and run causally in a rolling window. The GRU observer
+(PINN B) has its [own page](observer.md).
 
 !!! abstract "In one sentence"
-    A PINN is a neural network that reconstructs the digester's hidden state
-    trajectory $\hat{x}(t)$ by simultaneously **fitting the few available sensor
-    measurements** and **obeying the ADM1 differential equations**.
+    The network *is* the state trajectory: $\hat{x}(t) = \exp(\mu + \sigma\, z_\theta(t, u))$.
+    It is trained to **fit the sensor readings** through the measurement model
+    and to **satisfy the ADM1da equations** at freely chosen time points, with
+    the known feed $u$ as input.
 
-Sections 1–3 are the intuition (no maths), section 4 is the formal loss
-function, section 5 explains why the stiff ADM1 needs special care, and
-section 6 maps every idea onto the actual code.
+![PINN: neural network with built-in physics](../../assets/slides/folie_schaetzung_pinn.svg)
 
----
+*PINN v2 at a glance (slide in German): the network maps time and feed to the
+41-state trajectory; training minimises a data penalty (distance to the sensor
+readings) plus a physics penalty (violation of the model equations), and the
+network is retrained every day on a sliding 10-day window.*
 
-## 1. The problem this solves
-
-A biogas digester is described by **41 internal ADM1 states**: dissolved sugars
-and acids, particulate fractions, microbial biomass, ion/charge species and
-gas-phase pressures (see the [ADM1da model](adm1.md)). Online we can only measure
-a handful of them indirectly: biogas flow $Q_\text{gas}$, methane $Q_\text{ch4}$,
-pH, and a few more. **State estimation** is the task of reconstructing all 41
-states over time from those few noisy signals.
-
-There are two classic routes, each with a weakness:
-
-* **Pure mechanistic model (ADM1).** Trustworthy structure, but it needs the  
-  exact initial state and exact kinetic parameters. Small errors accumulate and
-  the simulation drifts away from the real plant.  
-* **Pure machine learning.** Flexible, but it needs a large labelled dataset of  
-  *true* states to learn from, which on a real plant we never have, because the
-  true states are exactly what we cannot measure.
-
-A PINN combines the two: a neural network flexible enough to fit the sparse data,
-**constrained by the ADM1 physics** so that it needs far less data and cannot
-wander into physically impossible trajectories.
+Sections 1–3 are the idea, section 4 the loss, section 5 the causal operation,
+section 6 what the structure study found, section 7 the implementation map.
 
 ---
 
-## 2. A neural network
+## 1. The problem and the two routes
 
-* A neural network is a flexible mathematical function $y = \text{NN}_\theta(x)$  
-  with many tunable numbers $\theta$ (its *weights*).  
-* **Training** means adjusting $\theta$ so that a *loss* is minimised by gradient  
-  descent.  
-* The **input is time $t$** and the **output is the state vector $\hat{x}(t)$**.  
-  So the network *is* the estimated trajectory itself: ask it at any time $t$ and
-  it returns the estimated plant state at that instant.
+A digester has **41 ADM1da states**; online we see five signals (gas flow,
+methane, CO₂, pH, total solids). The UKF solves this recursively with the ADM1da
+as its prediction model. A PINN takes the opposite route: it writes down the
+whole trajectory as a network and uses the physics as a *soft constraint*.
 
-Concretely it is a multilayer perceptron (MLP): a few `Linear` layers with a
-smooth `tanh` nonlinearity in between. `tanh` is preferred in PINNs because its
-derivatives are smooth.
+Two properties follow:
 
----
-
-## 3. What "physics-informed" means
-
-A network trained on data alone would fit the measurement points but be free to
-do anything between and after them. A PINN adds a second requirement: the
-trajectory must satisfy the known governing equation
-
-$$
-\frac{dx}{dt} = f(x, u),
-$$
-
-where $f$ is the ADM1 right-hand side and $u$ is the (known) substrate feed.
-
-The trick that makes this checkable is **automatic differentiation**: because the
-network output $\hat{x}(t)$ is an explicit function of the input $t$, we can ask
-the deep-learning framework for its exact time derivative $\tfrac{d\hat{x}}{dt}$.
-ADM1 gives us $f(\hat{x}, u)$. Their mismatch,
-
-$$
-r(t) \;=\; \frac{d\hat{x}}{dt} - f(\hat{x}, u),
-$$
-
-is the **physics residual** &rarr; zero when the trajectory obeys the model.
-
-Training then minimises a sum of three demands:
-
-$$
-\boxed{\text{network prediction } \hat{x}(t)}\ \Longrightarrow\
-\left\{
-\begin{array}{l}
-\text{compare with the sensors} \ \longrightarrow\ \boxed{\text{data loss}} \\[8pt]
-\text{compare with the ADM1 ODE} \ \longrightarrow\ \boxed{\text{physics loss}} \\[8pt]
-\text{compare with the prior at the start} \ \longrightarrow\ \boxed{\text{prior loss}}
-\end{array}
-\right\}
-\ \Longrightarrow\ \boxed{\text{total loss } L}
-$$
-
-Gradient descent on $\theta$ minimises $L$ and feeds the updated weights back
-into the network.
-
-The payoff of the physics term: it **interpolates through gaps** in the data,
-**regularises** against sensor noise, and — because the ODE is defined at every
-instant — lets the model **forecast** past the last measurement.
+* **Soft physics.** The equations are a penalty, so the network can trade  
+  model error against data fit. That is a strength when the model is wrong and a
+  weakness when the data are too few to pin the state down.
+* **Per-series fit.** Nothing is learned *across* series. Whatever the network  
+  knows about kinetics it must infer from the window it sees. The benchmark
+  perturbs 26 kinetic constants per series ($\sigma = 0.25$, lognormal), and a
+  5-sensor window cannot identify them. That is the ceiling of this approach,
+  measured in section 6.
 
 ---
 
-## 4. The mathematics
+## 2. The network
 
-Let the network be $\hat{x}_\theta(t)$. The estimator minimises
-
-$$
-L(\theta) \;=\; L_\text{data} \;+\; \lambda_\text{phys}\, L_\text{phys}
-             \;+\; \lambda_\text{prior}\, L_\text{prior}.
-$$
-
-The weights $\lambda_\text{phys}, \lambda_\text{prior}$ balance the three demands
-and are the main tuning knobs.
-
-**Data loss:** fit the measurements. With the differentiable measurement map $h$
-(state $\to$ sensor channels) and per-channel noise std $\sigma$, over the
-observed cells $\mathcal{O}$ (missing/gated readings are masked out):
+`TrajectoryNet` (`pinn/model.py`) maps normalised time plus **feed features**
+to the state:
 
 $$
-L_\text{data} \;=\; \frac{1}{|\mathcal{O}|}
-  \sum_{i}\left\lVert \frac{h(\hat{x}_\theta(t_i)) - y_i}{\sigma} \right\rVert^2 .
+\hat{x}(t) = \exp\big(\mu + \sigma \odot z_\theta(\tilde t,\ \phi(u, t))\big),
 $$
 
-**Physics loss:** obey the ODE. It measures how strongly the predicted
-trajectory violates the ODE. This is checked at $N_c$ *collocation points*
-$\{\tau_j\}$, self-chosen times placed across the window. ADM1 mixes very fast
-processes (acid–base reactions) with very slow ones (biomass). Without a fix the
-fast ones would dominate the loss, so the residual is divided per state by a
-typical scale $s$ so that all count equally (details in section 5):
+* $\mu, \sigma$ — per-state mean / std of $\log x$ on the **training split**  
+  (`train_split_log_stats`), so the output normalisation never sees the
+  evaluated series' truth. The exponential keeps every state positive.
+* $\tilde t$ — time scaled to the window, optionally expanded into $K$  
+  deterministic Fourier pairs $(\sin 2\pi k \tilde t, \cos 2\pi k \tilde t)$
+  (`ArchConfig.fourier_features`). This is the one structural knob that
+  measurably helped (section 6).
+* $\phi(u, t)$ — the current feed, or the current feed plus daily / weekly  
+  history means (`feed_mode = "current" | "hist7" | "hist30"`).
+* Body: `depth` tanh layers of `width` units; options for layer norm, residual  
+  blocks, the "modified MLP" and per-state output heads exist and were tested.
 
-$$
-L_\text{phys} \;=\; \frac{1}{N_c}\sum_{j}
-  \left\lVert \frac{\tfrac{d\hat{x}_\theta}{dt}(\tau_j)  
-    - f(\hat{x}_\theta(\tau_j), u)}{s} \right\rVert^2 .  
-$$
-
-**Prior loss:** anchor the start. A weak boundary condition tying the trajectory
-to a physical prior state $x_\text{prior}$ at $t_0$:
-
-$$
-L_\text{prior} \;=\;
-  \left\lVert \frac{\hat{x}_\theta(t_0) - x_\text{prior}}{s} \right\rVert^2 .
-$$
-
-!!! tip "Why collocation points matter"
-    Because $L_\text{data}$ lives only at the measurement times but
-    $L_\text{phys}$ can be evaluated at any collocation point, the two time
-    ranges are decoupled. Put collocation points past the last measurement and
-    the ODE alone carries the state forward: that is how the same fit
-    **forecasts**.
+**Closure.** By default the network predicts the **31 core states** only. The
+six ion species follow from the acid–base equilibria and the charge balance
+(`solve_charge_balance`, a Newton solve for $S_{H^+}$), the four gas pressures
+from the quasi-steady headspace (`close_state`). Both closures are
+differentiable, and the rates of the closed states come from a forward-mode
+Jacobian-vector product (`close_state_with_rates`), so the residual below is
+exact. The alternative "DAE mode" predicts all 41 states and adds the six
+equilibrium residuals as algebraic rows.
 
 ---
 
-## 5. Why ADM1 is hard
+## 3. The physics side
 
-A textbook PINN fails on ADM1: the system is **stiff** (rates spanning many
-orders of magnitude) and its states span from $\sim 10^{-7}$ to tens, all of
-which must stay non-negative. Six engineering choices in `PinnSmoother` make it
-converge (it settles stably on a good solution instead of derailing).
+`ADM1Physics` (`pinn/physics.py`) evaluates the ADM1da right-hand side for a
+*batch* of time points with *different* feeds. It shares the differentiable
+core `pyadm1.core.adm1_torch.adm1da_rhs_torch` with the UKF's torch backend and
+the GRU observer, so one tested implementation of the equations serves all
+estimators.
 
-!!! warning "These are not optional polish"
-    Measured on the shipped benchmark: without the charge-balance solve of
-    section 5.5 the fit **never improves** on its own starting point, at any
-    learning rate, loss weighting or network size. The best data loss it ever
-    reached equalled its value at epoch 0 — training only ever made the fit
-    worse. See section 7 for the numbers.
+* `InfluentModel` turns the feed $u$ [m³/d per substrate] into $(q_{ad}, s_{in})$  
+  with plain array algebra. Its `"nominal_mix"` mode reproduces how the
+  benchmark truth was generated (composition from the nominal mix, total flow
+  from the feed); `"blend"` is the physically correct flow-weighted blend for
+  plants whose composition really varies.
+* `build_params` snapshots the plant's parameters, optionally with the series'  
+  true kinetic factors (for verification only — a field PINN has the nominal
+  model).
+* The residual rows are the core states except the fast dissolved gases  
+  $S_{h2}, S_{ch4}$; the rows of $S_{co2}$ and $S_{nh4}$ are formed as the
+  conserved sums $S_{co2}+S_{hco3}$ and $S_{nh4}+S_{nh3}$, which removes the
+  stiff acid–base rates exactly (`acid_base = "sum"`).
 
-### 1. Positive, well-scaled outputs
-
-So far we said the network outputs $\hat{x}(t)$. More precisely, its last layer
-first produces a **raw**, unbounded vector $\text{raw}_\theta(t)$. The physical
-state is then formed from it as a **log-deviation from a prior**:
-
-$$
-\hat{x}(t) \;=\; x_\text{prior}\,\odot\, \exp\!\big(\text{raw}_\theta(t)\big).
-$$
-
-The final layer is **zero-initialised**, so at the start of training
-$\text{raw}_\theta \equiv 0$ and $\hat{x}(t) = x_\text{prior}$ exactly. The
-exponential guarantees $\hat{x}(t) > 0$ for all time (`raw` is clamped to
-$[-10, 10]$ for numerical safety).
-
-### 2. Relative physics residual
-
-Acid–base reactions in ADM1 run at rates $\sim 10^{8}$, while biomass changes
-over days. Normalising the residual by state magnitude would let the fast terms
-swamp the loss. Instead the scale $s$ from section 4 is not fixed: each equation
-is divided by its **own current rate** $\lvert f_i \rvert$ (floored so
-near-equilibrium states with $f\approx 0$ don't blow up). The result is a
-*relative* residual, so no single stiff equation dominates by sheer magnitude.
-
-### 3. Quasi-steady gas
-
-The four gas-phase pressures (especially the total pressure) are numerically
-delicate: tiny changes can tip the solution over. Rather than let the network
-predict them, it predicts **only the 37 liquid states**. The gas pressures are
-computed from gas–liquid equilibrium at every evaluation (`gas_equilibrium_torch`).
-The four gas ODEs are then satisfied automatically, so the physics loss only has
-to check the 37 liquid states.
-
-### 4. Prior anchoring and per-state weighting
-
-The prior term from section 4 pulls **all** states toward their physical prior at
-$t_0$. The data loss pulls the well-observed ones back off it, while the
-weakly-observed ones stay stuck there. Which states this affects therefore
-follows automatically from observability. To make the optimiser move such
-sluggish states instead of parking them at the prior, they can be **up-weighted**
-individually in $L_\text{phys}$: a hand-set weight vector, **not a learned
-parameter**. Which states to up-weight is your choice (domain knowledge /
-diagnosis), not something the training decides.
-
-The prior itself must be a **physically reachable state**. A componentwise
-statistic (say the per-state median over a training set) generally is not: taking
-each component's median independently breaks the identities that tie them
-together. On ADM1 that identity is the charge balance, and the resulting "average"
-state implies a pH far outside the physical range. Use a **medoid** — an actual
-observed state — instead; `PinnData` does this for you (section 6).
-
-### 5. Quasi-steady charge balance (`solve_cation=True`)
-
-ADM1 gets pH from electroneutrality:
-
-$$
-\text{fixed} = S_\text{cat} - S_\text{an} + (S_{\mathrm{NH_4}} - S_{\mathrm{NH_3}})  
-              - S_{\mathrm{HCO_3}} - \sum \text{VFA}^- ,  
-\qquad
-S_{\mathrm H} = \tfrac12\!\left(-\text{fixed} + \sqrt{\text{fixed}^2 + 4K_w}\right).
-$$
-
-At a normal operating point `fixed` is a difference of terms of order
-$0.1\!-\!0.2$ kmol m⁻³ that cancels down to $\sim\!10^{-6}$ — **5.3 decades of
-cancellation**. Since $S_\mathrm{H} \approx K_w/\text{fixed}$, we effectively have
-$\text{pH} \approx -\log_{10} K_w + \log_{10}(\text{fixed})$: perturb any one ion
-state by 1 % and `fixed` moves by orders of magnitude.
-
-That is the same knife-edge as the biogas map in section 5.3, and it has the same
-consequence — pH responds with $\sim\!5\cdot10^{4}\,\sigma$ to a 1 % state change,
-so its gradient dictates every optimiser step and the fit diverges.
-
-The fix mirrors the gas solve: **do not let the network guess the quantity the
-cancellation hangs on.** The network predicts **pH** directly (a well-scaled
-$\approx 7.5$ output whose sensitivity is 1:1) and $S_\text{cat}$ is solved from
-the charge balance in closed form:
-
-$$
-S_\mathrm{H} = 10^{-\text{pH}},\qquad
-\text{fixed} = \frac{K_w - S_\mathrm{H}^2}{S_\mathrm{H}},\qquad
-S_\text{cat} = \text{fixed} - (\text{remaining charge terms}).
-$$
-
-!!! note "What this trades away"
-    $S_\text{cat}$ stops being a differential state and becomes an algebraic one
-    — the model turns from an ODE into a **DAE**, its trivial dilution equation
-    replaced by the electroneutrality constraint. `PinnSmoother` therefore masks
-    it out of both the physics residual and the prior anchor. This is deliberate:
-    $S_\text{cat}$ is a bookkeeping charge rather than a measured species, and
-    enforcing its dilution equation is exactly what creates the ill-conditioning.
-    For the same reason the solved value may come out slightly negative — that is
-    a net anion excess, well within how ADM1 uses these two slots.
-
-### 6. Bounded residuals (`res_clip`)
-
-A squared residual has a gradient proportional to the residual, so one badly
-conditioned channel dictates the whole step. `res_clip` switches the residual to
-**Huber**: quadratic below the threshold $\delta$, linear above it, so the
-gradient is capped at $2\delta$ while staying non-zero.
-
-This is deliberately softer than a hard clamp (which zeroes the gradient beyond
-the threshold and leaves a channel that has already blown past it with no force
-pulling it back). It bounds the damage from an ill-conditioned channel but does
-**not** substitute for section 5.5 — it caps how far a bad step can go, not the
-conditioning that causes it.
+`trajectory_residual` verifies the physics against the simulator: the residual
+of the benchmark truth with the true parameters is at the finite-difference
+error level (tested in `tests/test_pinn_physics.py`).
 
 ---
 
-## 6. How it is implemented here
+## 4. The loss
 
-The implementation has **two layers**: a textbook template and the production
-estimator built on top of it.
+For a window $[0, t_{obs}]$ with sensor readings $y_k$ at hours $t_k$ and
+collocation points $\tau_m$ (random in $[0, t_{obs} + \text{horizon}]$):
 
-| Layer | File | Role |
+$$
+\mathcal L = \underbrace{\frac1K\sum_k \Big\lVert \frac{h(\hat x(t_k)) - y_k}{\sigma_y}\Big\rVert^2}_{\text{data}}
+\;+\; \lambda\ \underbrace{\frac1M\sum_m \Big\lVert \frac{\dot{\hat x}(\tau_m) - f(\hat x(\tau_m), u(\tau_m))}{\sigma_r}\Big\rVert^2}_{\text{physics}} .
+$$
+
+* $h$ is the differentiable measurement model (`MeasurementModel`: gas flows  
+  from the quasi-steady headspace, pH from the charge balance, TS from the
+  particulates), $\sigma_y$ the dataset's sensor noise.
+* $\dot{\hat x}$ is the exact time derivative of the network (autograd).
+* $\sigma_r$ is a **per-row residual scale** fitted on training data  
+  (`fit_scale`), either the typical size of the net rate (`"rate"`) or a
+  Jacobian-based scale (`"jacobian"`, the default for the PINN). Without it the
+  stiff rows dominate and the slow, informative rows are ignored.
+* $\lambda$ ramps up linearly over the first 20 % of the steps  
+  (`lambda_warmup_frac`); Adam with cosine decay, optional L-BFGS polish.
+
+Variants studied and kept as options in `TrainConfig`: training on the true
+states instead of measurements (`data_source`), an initial-condition prior from
+the plant warm-up (`ic_prior`), causal collocation weighting (`causal_eps`),
+time marching, an inverse-PINN mode that learns the kinetic factors
+(`estimate_kinetics`) and an additive learned correction of the physics residual
+(option `greybox`, `RateCorrection` in `pinn/train.py`).
+
+---
+
+## 5. Causal operation: the rolling window
+
+A trajectory network is a smoother: it sees the whole window. In operation it
+cannot see the future, so `pinn/rolling.py` runs it **causally**: every
+`cadence_hours` (24 h) the network is retrained on the last `window_days` of
+measurements, warm-started from the previous weights (`steps_warm = 200`
+instead of 3000 from scratch). The study's best window is 10 days, which is
+what the registry uses; longer windows and more frequent retraining do not
+help. Between two retrainings the estimate at the current hour is bridged,
+either by holding the last value (`"hold"`) or by integrating the nominal
+ADM1da forward from it with the known feed (`"adm1"`). Holding is 0.8 points
+better, because the nominal kinetics drift away from the true state within a
+day. The same chain also yields fixed-lag estimates (the value a later
+retraining assigns to an earlier hour, keys `"lag1"` and `"lag3"`), which are
+slightly more accurate but one or three days late.
+
+Cost: one 60-day series takes tens of minutes on a CPU, which is why the UKF
+remains the operational estimator and the PINN a study object.
+
+---
+
+## 6. What the structure study found
+
+Twenty test series, 60 days, benchmark metric (median-over-states NRMSE).
+Details and statistics are in the architecture report
+(`PyADM1ODE_estimate_local/experiments/pinn_architecture_study`). The structure
+study fits one network per series to the whole 60-day measurement record
+(offline) and scores all 60 days; the causal study scores from day 3 on,
+because the rolling PINN runs on the prior mean for its first days.
+
+| Setting | UKF | PINN v2 |
 | --- | --- | --- |
-| `ADM1PINN` + `PINNLoss` | `deep_learning/pinn.py` | The building blocks: the MLP $t \to x$ (`tanh`, configurable hidden layers, optional dropout) and a generic *data + physics* loss template. Readable reference implementation. |
-| `PinnSmoother` | `deep_learning/pinn_smoother.py` | The production estimator. Builds on `ADM1PINN` and adds the log-transform, the three-term loss, rate scaling, quasi-steady gas, forecasting, rolling updates and MC-Dropout uncertainty. |
+| offline, best structure (depth 4, width 128, tanh, 4 Fourier pairs), 60 d | 15.1 % | **18.3 %** |
+| offline, range over all tested structures, 60 d | 15.1 % | 18.3 – 24.4 % |
+| causal, 10-day window, daily retraining, hold, from day 3 | 14.2 % | **18.6 %** |
+| causal, same chain with one day lag, from day 3 | 14.2 % | 18.3 % |
 
-The differentiable physics pieces it wires together all come from the base
-`pyadm1` package:
+* **The only lever that helps is the Fourier time encoding** (main effect about  
+  −1 point). Depth, width, activation, layer norm, residual blocks, feed
+  history, per-state heads: inside the seed noise.
+* The offline gap to the UKF (3.3 points, $p = 0.064$) is a  
+  **model-error / identifiability** gap, not a capacity gap: the network cannot
+  learn the series' kinetics from five sensors, and the soft physics lets it
+  drift where the data do not pin it. Run causally, every scheme stays
+  significantly behind the UKF ($p \le 0.005$).
+* Fusing the PINN into the UKF as a pseudo-measurement or with a fixed gate  
+  (blocks F1–F4) gains about one point, not significant.
 
-| Symbol | Provided by |
-| --- | --- |
-| $f$ — ADM1 right-hand side | `pyadm1.core.adm1_torch.adm1da_rhs_torch` |
-| gas–liquid equilibrium | `pyadm1.core.adm1_torch.gas_equilibrium_torch` |
-| $h$ — measurement map | `deep_learning.observation_torch.TorchObservationModel` |
-| charge-balance inversion | `deep_learning.charge_balance.solve_cation_for_ph` |
-| feed / parameters | `Adm1TorchParams` — the network input stays **time only**; a feed that *changes* inside the window enters through `params_at` |
-
-### Feeding it: the dataset adapter
-
-`PinnData` (`deep_learning/data_adapter.py`) turns any dataset registered in
-`filter_tuning.datasets` into what both PINN variants need. Three guarantees
-matter for correctness:
-
-* **The same split as the filters.** Both go through  
-  `EstimatorDataset.split_indices` — stratified by the series label, grouped by
-  series. Same `(val_frac, seed)` ⇒ same series, which is what makes a network
-  and a filter comparable. Freeze it with `save_split()` / `split_file=`.  
-* **Train-only statistics.** Feature normalisation, `x_ref`, `x_prior` (as a  
-  medoid) and the per-state scale are estimated on the training series alone.  
-* **Feed-matched physics.** `smoother_inputs()` attaches a `params_at` closure  
-  over each series' own feed, so the ODE residual is evaluated against the plant
-  that produced the data. This matters more than it sounds: an unfed parameter
-  snapshot (`q_ad = 0`) models a *closed batch reactor*, and the influent term
-  $D_\text{in}\,s_\text{in}$ dominates the ADM1 right-hand side.
-
-```python
-from pyadm1ode_estimation.estimation.deep_learning import PinnData
-
-data = PinnData.build("benchmark", val_frac=0.2, seed=0)
-inputs = data.smoother_inputs("val", days=5.0)     # one payload per series
-```
-
-### Batch, not recursive
-
-Unlike the UKF (a recursive `StateEstimator` doing predict/update each step), the
-PINN is a **`BatchEstimator`**: fit the whole window once, then query it.
-
-```python
-from pyadm1ode_estimation.estimation.deep_learning import PinnSmoother
-
-it = inputs[0]
-smoother = PinnSmoother(
-    data.physics_params(), data.obs_model(), it.x_prior, it.x_scale,
-    quasi_steady_gas=True,   # section 5.3 — slave the gas pressures
-    solve_cation=True,       # section 5.5 — slave S_cation to a predicted pH
-    res_clip=3.0,            # section 5.6 — Huber threshold in sigma
-    params_at=it.params_at,  # the series' own, time-varying feed
-)
-smoother.fit(**it.fit_kwargs(), epochs=2000, lr=1e-3)
-traj = smoother.estimate(it.obs_times)                 # (T, 41) states + std
-```
-
-`estimate` returns a `TrajectoryEstimate` (`time`, `x_hat`, `std`), the shared
-output currency with the UKF, so the twin-experiment harness scores both
-estimator families the same way.
-
-`restore_best=True` (the default) returns the weights of the best-scoring epoch
-rather than the last ones. The collocation fit is **not monotone** — it routinely
-reaches its best trajectory and then walks away from it, so returning the final
-weights throws away the answer it already found. It also makes the fit
-monotone-safe: it can never return something worse than the prior.
-
-### Forecasting
-
-Because the collocation window `[t0, t1]` is independent of the measurement
-times, setting `t1` **past the last measurement** makes the ADM1 ODE carry the
-state into the data-free tail — a physics-driven forecast from the same fit.
-
-### Online operation
-
-`update(...)` warm-starts from the current weights **and** optimiser state for
-cheap incremental re-fits as new samples arrive:
-
-* **growing window:** keep the whole history, anchor stays at the original  
-  `t0`; or  
-* **sliding window:** a fixed horizon `t0 = t1 − window`, self-anchored at the  
-  network's own current estimate at the window start (bounds compute on long
-  runs).
-
-### Uncertainty
-
-Optional **MC-Dropout**: set `dropout > 0` and call `estimate(..., mc_samples=k)`
-to get the mean and standard deviation over `k` stochastic forward passes.
+The binding constraint is therefore the kinetic model error, not the network.
 
 ---
 
-## 7. Measured status
+## 7. Implementation map
 
-Numbers below are on the shipped benchmark's validation split (4 operating
-modes), 5-day windows, reproducible via `experiments/pinn_gate/`.
-
-**The optimisation is solved.** Data loss = mean squared standardised residual on
-the measured channels; the noise floor (what the *true* state scores) is 0.57.
-
-| Configuration | Median best data loss |
+| Module | Contents |
 | --- | --- |
-| baseline | 3520 |
-| + `res_clip` | 11.7 |
-| + `solve_cation` (section 5.5) | **0.562** |
+| `pinn/data.py` | `BenchmarkSeries` (built from the shared `Series` of `filter_tuning.datasets.load_benchmark`), feed lookup and history features, training-split priors |
+| `pinn/influent.py` | `InfluentModel`: feed → $(q_{ad}, s_{in})$, batched |
+| `pinn/physics.py` | `ADM1Physics`, closures, `PhysicsConfig`, `trajectory_residual`, `build_params` |
+| `pinn/measure.py` | `MeasurementModel`, `SensorNoise` from `meta.json` |
+| `pinn/model.py` | `TrajectoryNet`, `ArchConfig` |
+| `pinn/train.py` | `TrainConfig`, `train_trajectory`, metrics and report formatting |
+| `pinn/rolling.py` | `RollingConfig`, `run_rolling`, ADM1 bridging |
+| `pinn/kinetics.py` | learnable kinetic factors (inverse PINN) |
+| `estimators.py` | `"pinn"` in the [estimator registry](../usage/estimators.md): `PinnEstimator.run(series)` |
 
-The measurement fit now reaches its theoretical optimum. Before the charge-balance
-solve, training never improved the fit at all — the best value it ever reached was
-its value at epoch 0.
-
-**The state accuracy is not.** Median-over-41-states NRMSE against the trivial
-baseline of holding the prior constant:
-
-| | median NRMSE |
-| --- | --- |
-| hold `x_prior` (do nothing) | 25.1 % |
-| PINN A (best `rate_floor`) | 22.0 % — but only 2 of 4 modes |
-| hold the *true* $x(t_0)$ (reference) | 1.2 – 3.7 % |
-
-A `rate_floor` sweep shows no robust optimum. **Five sensors do not pin down 41
-states**, and the ADM1 term cannot close the gap because a per-window fit has no
-way to learn the true kinetics (the benchmark perturbs them lognormally per
-series, $\sigma = 0.25$). The remaining gap is **observability, not architecture**
-— which is why network width, depth and activation have not been tuned: they are
-demonstrably not the binding constraint.
-
-**Limits.** MC-Dropout uncertainty is not calibrated. A from-scratch fit costs
-~2.5 min per 5-day window, which caps how much hyperparameter search is affordable.
-
-**Where it sits.** The UKF (see [UKF in practice](../usage/ukf.md) and
-[SR-UKF performance](../development/ukf_performance.md)) is recursive and cheap
-per step. Note that on this metric the UKF is itself **worse than doing nothing in
-3 of 4 modes** (50.5 % vs. 34.2 % overall on the test split) — so report both
-baselines, or a result looks better than it is. The
-**[pre-trained observer](observer.md)** clears the same bar in all four modes,
-because it learns across series what a single-window fit cannot. A
-covariance-intersection **[hybrid](fusion.md)** can fuse estimators.
-
----
-
-## Source files
-
-* `pyadm1ode_estimation/estimation/deep_learning/pinn.py` — `ADM1PINN`, `PINNLoss`  
-* `pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py` — `PinnSmoother`  
-* `pyadm1ode_estimation/estimation/deep_learning/charge_balance.py` — `solve_cation_for_ph`, `apply_ph`  
-* `pyadm1ode_estimation/estimation/deep_learning/data_adapter.py` — `PinnData`, `FeatureSpec`  
-* `pyadm1ode_estimation/estimation/deep_learning/observation_torch.py` — `TorchObservationModel`  
-* `experiments/pinn_gate/` — the gate measurement and the `rate_floor` sweep  
+Experiments: `experiments/pinn_v2/` (architecture sweep, rolling sweep, fusion
+rules, lag report).
 
 ## References
 
 * Raissi, M., Perdikaris, P. & Karniadakis, G. E. (2019). *Physics-informed  
   neural networks.* Journal of Computational Physics 378:686–707.  
+* Wang, S., Sankaran, S. & Perdikaris, P. (2022). *Respecting causality is all  
+  you need for training physics-informed neural networks.* arXiv:2203.07404.  
 * ADM1da model and state indices: [ADM1da model](adm1.md).  
 
 ## API reference
 
-::: pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother
+::: pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics
     options:
       show_root_heading: true
       show_source: false
       heading_level: 3
 
-::: pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN
+::: pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet
+    options:
+      show_root_heading: true
+      show_source: false
+      heading_level: 3
+
+::: pyadm1ode_estimation.estimation.pinn.rolling.run_rolling
     options:
       show_root_heading: true
       show_source: false

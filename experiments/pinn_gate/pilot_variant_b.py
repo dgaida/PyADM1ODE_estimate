@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from pyadm1ode_estimation.estimation.deep_learning import Adm1Observer, PinnData
+from pyadm1ode_estimation.estimation.observer import Adm1Observer, PinnData
 
 
 def med_nrmse(pred: np.ndarray, truth: np.ndarray) -> float:

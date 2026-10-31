@@ -1,15 +1,15 @@
-# Der vortrainierte Observer
+# Der GRU-Observer (PINN B)
 
-Das [per-Window-PINN](pinn.md) fittet für jedes Fenster ein frisches Netz, aber
-es zahlt jedes Mal eine volle Optimierung (Sekunden bis Minuten). Der
-**amortisierte Observer** verlagert diese Kosten *offline*: Er wird einmal auf
-vielen simulierten Szenarien vortrainiert und liest den Zustand danach in einem
-einzigen Vorwärtspass aus. Wo der Smoother pro Fenster *optimiert*, *lernt* der
-Observer eine wiederverwendbare Abbildung vom Messstrom auf die
-Zustandstrajektorie.
+[PINN v2](pinn.md) fittet für jede Reihe ein frisches Netz und trainiert es
+täglich nach; es zahlt jedes Mal eine volle Optimierung. Der **amortisierte
+Observer** (PINN B) verlagert diese Kosten *offline*: Er wird einmal auf vielen
+simulierten Szenarien vortrainiert und liest den Zustand danach in einem einzigen
+Vorwärtspass aus. Wo PINN v2 pro Fenster *optimiert*, *lernt* der Observer eine
+wiederverwendbare Abbildung vom Messstrom auf die Zustandstrajektorie.
 
-Er teilt das Physik-Gerüst des Smoothers (Positivität über die Log-Transformation,
-quasi-stationäre Gasphase), nur Netz und Training unterscheiden sich.
+Er teilt das Physik-Gerüst von PINN v2 (Positivität über die
+Log-Transformation, quasi-stationäre Gasphase), nur Netz und Training
+unterscheiden sich.
 
 ---
 
@@ -24,7 +24,7 @@ $$
 \text{GRU}\ \longrightarrow\ \hat{x}(t)\ \ (41\text{ Zustände}).
 $$
 
-Zwei Dinge werden unverändert vom [Smoother](pinn.md) übernommen:
+Zwei Entwurfsentscheidungen teilt er mit [PINN v2](pinn.md):
 
 * **Positivität / Skalierung:** der Kopf sagt nur die **37 Flüssigzustände** als  
   Log-Abweichung von einer Referenz vorher, $\hat{x}_\text{liq} = x_\text{ref}
@@ -34,11 +34,12 @@ Zwei Dinge werden unverändert vom [Smoother](pinn.md) übernommen:
   der neueste Schritt ist damit eine echte **online gefilterte** Schätzung: das
   Netz läuft als Streaming-Filter (Abschnitt 3).
 
-Der zentrale Unterschied zum Smoother: Der Observer ist *auf die Messungen
-konditioniert*. Das Netz des Smoothers ist nur eine Funktion der Zeit (die Daten
-kommen über den Loss herein), der Observer nimmt den Messstrom als **Eingabe**.
-Genau das lässt ein einziges trainiertes Netz über Betriebspunkte hinweg
-generalisieren, statt es je Fenster neu zu fitten.
+Der zentrale Unterschied zu PINN v2: Der Observer ist *auf die Messungen
+konditioniert*. Das Netz von PINN v2 ist nur eine Funktion von Zeit und
+Fütterung (die Daten kommen über den Loss herein), der Observer nimmt den
+Messstrom als **Eingabe**. Genau das lässt ein einziges trainiertes Netz alle
+Reihen bedienen, statt es je Fenster neu zu fitten. Wie weit das über die
+Trainingsverteilung hinaus trägt, behandelt Abschnitt 5.
 
 ---
 
@@ -59,12 +60,12 @@ RMS-Größe normiert), der den *vollen* Zustand lehrt.
     zurueck und halbiert die Laufzeit bei identischem Ergebnis.
 
     Was **nicht** geholfen hat, ebenfalls gemessen: die Fenstermenge zu
-    vergroessern. Ueberlappende oder zufaellig platzierte Fenster
-    (320 -> 1120 -> 1600) senken den Validierungs-Loss leicht, verschlechtern
-    aber die Bewertung auf den vollen Serien (15,6 % -> 16,7 %). Sie liefern mehr
-    Gradientenschritte, keine zusaetzliche Information -- der Engpass sind die 80
-    Serien, nicht ihre Zerlegung. Besser: Kapazitaet senken und regularisieren
-    (`weight_decay`, `dropout`, kleineres `hidden`).
+    vergroessern. Ueberlappende oder zufaellig platzierte Fenster senken den
+    Validierungs-Loss, verschlechtern aber die Testbewertung (Abschnitt 5). Sie
+    liefern mehr Gradientenschritte, keine zusaetzliche Information -- der
+    Engpass sind die 80 Serien, nicht ihre Zerlegung. Von den Regularisierern
+    hat nur `dropout=0.1` zwischen den GRU-Schichten die Testbewertung
+    verbessert; kleineres `hidden`, Weight Decay und Eingangsrauschen nicht.
 
 Die Skala `s` wird ausschliesslich aus den **Trainings**-Sequenzen berechnet; sie
 vorher ueber den gesamten Satz zu bilden wuerde Validierungsstatistik in das Ziel
@@ -125,50 +126,184 @@ Fenster. Zwei Betriebsdetails:
   rekurrente Netz kann `NaN` nicht verarbeiten, daher wird er eingabeseitig auf
   den normierten Mittelwert (0) abgebildet und zielseitig aus dem Loss maskiert.
 
-**Unsicherheit** ist optionaler MC-Dropout, genau wie beim Smoother.
+**Unsicherheit** ist optionaler MC-Dropout (`mc_samples > 1` mit einem Dropout-trainierten Netz).
 
 ---
 
-## 4. Stärken und Grenzen gegenüber dem Smoother
+## 4. Stärken und Grenzen
 
-**Stärken:** Nahezu sofortige Inferenz nach den einmaligen Offline-Kosten, lernt
-die *volle* Zustands-Struktur aus dem Simulator (also stark selbst bei
-unbeobachteten Zuständen). Generalisiert über Betriebspunkte ohne per-Window-Refit.
+**Stärken:** Nahezu sofortige Inferenz nach den einmaligen Offline-Kosten
+(deutlich unter einer Sekunde je 60-Tage-Reihe, gegen Minuten für den UKF und
+einige zehn Minuten für PINN v2); lernt die *volle* Zustandsstruktur aus dem
+Simulator, ist also auch bei unbeobachteten Zuständen stark; ein Netz bedient
+alle Reihen. Auf dem Benchmark-Testsatz ist er der einzige gelernte Schätzer
+nahe am UKF (20 Reihen, 60 Tage, Median-NRMSE über die Zustände nach 48 h
+Burn-in):
 
-Auf dem Validierungs-Split des Benchmarks gemessen schlägt schon ein schlichter
-200-Epochen-Lauf ohne jedes Tuning **die Nichtstun-Referenz in allen vier
-Betriebsmodi** (15,6 % gegen 32,6 % Median-NRMSE), während der
-[Fenster-Smoother](pinn.md) nach vier Reparaturrunden zwei von vier schafft. Er
-kostet zudem ~1,7 s pro Epoche gegen ~2,5 min für ein *einzelnes*
-Smoother-Fenster — rund 70× günstiger pro Schritt, und genau das bringt eine
-echte Hyperparametersuche in Reichweite.
+| Schätzer | Fehler |
+| --- | --- |
+| UKF, 41 Zustände (Referenz) | 14,4 % |
+| PINN B wie veröffentlicht (ohne Dropout) | 15,1 % |
+| PINN B mit `dropout=0.1` (neuer Standard, Mittel über 3 Seeds) | 14,7 % |
+| PINN v2, kausal, 10-Tage-Fenster | 18,7 % |
 
-**Grenzen:** Braucht eine **repräsentative** Vortrainings-Verteilung. Trägt eine
-**Sim-zu-Real-Lücke**, die nur die self-supervised Anpassung schließt und die
+PINN B schlägt den UKF im Modus `stable_high` (12,9 % gegen 19,1 %), dem
+chronisch überlasteten Regime, in dem die Nominalkinetik des UKF am weitesten
+danebenliegt.
+
+**Grenzen:** Er ist an seine Trainingsverteilung gebunden: Auf verschobenen
+Anlagen verliert er mehr als der UKF (Abschnitt 5). Er trägt eine
+**Sim-zu-Real-Lücke**, die nur die self-supervised Anpassung schließt, und die
 schlecht konditionierte Biogas-Abbildung begrenzt weiterhin self-supervised
 Kaltstarts.
 
-Wie beide PINNs relativ zum UKF stehen und wie man sie kombiniert, siehe die
-[UKF ↔ PINN-Fusion](fusion.md).
+Zur Kombination mit dem UKF siehe die [UKF ↔ PINN-Fusion](fusion.md).
+
+---
+
+## 5. Generalisierung auf verschobene Anlagen
+
+Zwei Testsätze verschieben die Anlage, keiner wird im Training genutzt: Einer
+ersetzt Maissilage bei gleicher organischer Last durch Corn-Cob-Mix, der andere
+legt zusätzlich einen 3-Tage-Lastrhythmus darüber. Beide wurden nur für diese
+Studie erzeugt und liegen nicht im Repository. Bewertet wird der Median-NRMSE über die Zustände nach 48 h Burn-in; die Zeilen
+für PINN B sind Mittel über drei Seeds (`experiments/observer_generalisation/`).
+
+| Schätzer | Benchmark | Substratwechsel | Wechsel + Rhythmus |
+| --- | --- | --- | --- |
+| UKF, 41 Zustände | 14,4 % | 17,1 % | 17,7 % |
+| UKF, Säure- und Fermenterkern | 17,5 % | 20,1 % | 19,6 % |
+| PINN v2, kausal | 18,7 % | 23,0 % | 21,9 % |
+| PINN B, veröffentlichtes Rezept | 15,2 % | 19,3 % | 20,2 % |
+| PINN B, `dropout=0.1` (Standard) | 14,7 % | 18,9 % | 19,5 % |
+| PINN B, Ensemble aus 5 Seeds mit Dropout | **14,1 %** | 18,5 % | 19,2 % |
+
+PINN B verliert auf einer verschobenen Anlage 4 bis 5 Punkte, der UKF etwa 3. Die
+für den Wechselsatz veröffentlichten 18,4 % waren ein günstiger Seed; drei Seeds
+desselben Rezepts liegen im Mittel bei 19,3 %, bei einer Streuung von etwa
+±0,5 Punkten je Seed.
+
+**Was die Lücke nicht schließt.** Eingangsrauschen, Weight Decay, ein kleineres
+Netz, überlappende, zufällige oder kürzere Trainingsfenster und ihre
+Kombinationen lassen die Lücke bei 3,5 bis 5 Punkten. Dropout und das Ensemble
+senken alle drei Werte gemeinsam; die Lücke bleibt.
+
+**Substratbewusste Eingabe.** `FeatureSpec(organic_load=True, use_feed=False)`
+ersetzt die Volumina je Substrat durch die Zulauffrachten je Komponentengruppe,
+berechnet mit der Substratcharakterisierung der jeweiligen Anlage. Innerhalb der
+Trainingsverteilung ist das der beste Observer (14,0 % mit Dropout, unter dem
+UKF), er generalisiert aber schlechter: 19,2 % und 19,4 % auf den verschobenen
+Sätzen.
+
+**Verschobene Daten im Training.** 12 der 20 Corn-Cob-Reihen kommen in den
+Trainingspool, bewertet wird auf den anderen 8 (`coverage.py`, je drei Seeds):
+
+| Eingabe | Trainingspool | Benchmark | Zurückgehaltene Corn-Cob-Reihen | Wechsel + Rhythmus |
+| --- | --- | --- | --- | --- |
+| Rohfütterung | Benchmark | 14,7 % | 17,8 % | 19,5 % |
+| Rohfütterung | + 12 Corn-Cob-Reihen | 15,1 % | 17,8 % | 19,6 % |
+| organische Fracht | Benchmark | 14,0 % | 19,6 % | 19,4 % |
+| organische Fracht | + 12 Corn-Cob-Reihen | 15,5 % | 18,4 % | 20,0 % |
+
+Mit der Rohfütterung ändern die zusätzlichen Reihen nichts: Spalte 0 bedeutet in
+100 Reihen Mais und in 12 Corn-Cob-Mix, das Netz kann die Anlagen nicht
+unterscheiden. Mit der Frachteingabe helfen sie auf den zurückgehaltenen
+Corn-Cob-Reihen, aber weniger, als die Rohfütterung ohne sie erreicht, und sie
+kosten Genauigkeit auf der ursprünglichen Anlage.
+
+**Wo der Fehler wächst.** Auf den verschobenen Sätzen steigt der Fehler von
+PINN B am stärksten bei den schnellen Partikulärfraktionen, den
+Propionatabbauern und dem Anionenpool — Zuständen, die der Substratwechsel
+verschiebt und die fünf Sensoren kaum sehen. Beim UKF steigt vor allem der
+Acetatfehler. Der UKF bekommt die Substratmischung über sein Modell mitgeteilt,
+der Observer muss die Zusammensetzung aus dem Sensorverlauf erschließen und
+bildet einen ungewohnten Verlauf auf die Zustände ab, die er aus dem Training
+kennt.
+
+**Folgerung.** PINN B ist innerhalb seiner Trainingsverteilung ein starker
+Schätzer, und die günstigen Gewinne dort sind Dropout und ein Seed-Ensemble.
+Außerhalb ist der UKF robuster. Für eine neue Anlage muss der Observer auf
+Simulationen genau dieser Anlage trainiert werden; bei abweichender Kinetik ist
+der UKF mit kalibriertem Modell der robustere Weg.
+
+---
+
+## 6. Kinetik als Eingang
+
+PINN B sieht nie, welche Kinetik eine Reihe hat, kalibrierte Kinetik kann ihm
+also nicht helfen. `FeatureSpec(kinetic_keys=...)` ändert das: Je genannter
+Kinetikkonstante kommt eine Eingangsspalte mit dem Logarithmus ihres Faktors
+gegenüber dem Nominalwert hinzu, konstant über die ganze Reihe.
+
+* **Im Training** stehen dort die wahren Faktoren des Generators für jede
+  simulierte Reihe. `ObserverEstimator.train(..., kinetic_noise=0.07)` stört sie
+  mit einem Zufallswert je Trainingssequenz, damit das Netz lernt, Kinetik zu
+  nutzen, die nur auf Kalibriergenauigkeit bekannt ist.
+* **In der Anwendung** wird die Kinetik vorgegeben:
+  `est.run(series, kinetics={"k_m_ac": 0.8, ...})`. Nicht genannte Schlüssel
+  gelten als nominal, `{}` bedeutet nominale Kinetik. Ein kinetikbewusster
+  Observer verweigert den Lauf ohne ausdrücklich übergebene Kinetik, damit die
+  Generatorwahrheit einer Benchmark-Reihe nie unbemerkt hineinrutscht.
+
+Eingänge sind die zehn Konstanten, die die Sensoren über ein 20-Tage-Fenster am
+stärksten bewegen, gescreent auf acht Trainingsreihen
+(`experiments/final_test/screen_kinetics.py`): `k_dis_PS`, `k_m_ac`, `k_m_pro`, `k_dis_PF`, `k_hyd_ch`, `k_dec_ac`, `k_dec_su`, `K_S_ac`, `k_dec_pro`, `K_S_pro`.
+
+Vergleich auf den 20 Validierungsreihen, beide als Ensemble aus 5 Seeds mit
+gleichem Rezept und gleichen Seeds, Median-NRMSE nach 48 h (die Testsätze bleiben
+für den finalen Test unberührt;
+`experiments/observer_generalisation/kinetic_inputs.py`):
+
+| Vorgegebene Kinetik | Kinetikblind | 10 Kinetik-Eingänge |
+| --- | --- | --- |
+| keine, Nominalwerte | 14,7 % | 17,2 % |
+| wahre Faktoren | 14,7 % | 12,4 % |
+| wahr × exp(N(0; 0,07)) | 14,7 % | 12,9 % |
+| wahr × exp(N(0; 0,15)) | 14,7 % | 14,0 % |
+
+Zur Einordnung: Der UKF mit nominaler Kinetik erreicht auf denselben Reihen
+16,3 %. Fünf statt zehn Eingänge ergeben 13,2 % bei σ = 0,07. Mit allen 26
+Konstanten exakt bekannt, was keine Kalibrierung schafft, erreicht der Observer
+7,7 %.
+
+* **Der größte Teil des Observer-Fehlers ist unbekannte Kinetik.** Kennt er sie
+  ganz, halbiert sich der Fehler.
+* **Mit kalibrierter Kinetik ist er deutlich besser.** Bei der Genauigkeit, die
+  die Kinetikkalibrierungsstudie erreicht, σ ≈ 0,07, ist der kinetikbewusste
+  Observer 1,9 Punkte besser (p = 0,005). Bei σ = 0,15 schrumpft der Gewinn auf
+  0,8 Punkte und ist nicht mehr signifikant.
+* **Ohne Kalibrierung ist er schlechter.** Bekommt er „nominal“, vertraut er
+  diesem Eingang, statt die Kinetik wie der kinetikblinde Observer aus dem
+  Sensorverlauf zu erschließen, und verliert 2,5 Punkte.
+
+Die Entscheidungsregel stand vor dem Lauf fest: besser mit Kalibrierung bei
+σ = 0,07 und ohne Kalibrierung höchstens 0,3 Punkte schlechter. Der zweite Teil
+ist verletzt, der kinetikbewusste Observer ersetzt den kinetikblinden also
+nicht. Er wird mit zehn Eingängen und `kinetic_noise=0.07` eingesetzt, sobald
+kalibrierte Kinetik vorliegt; sonst der kinetikblinde. Die Checkpoints werden
+nicht mitgeliefert; `kinetic_inputs.py` trainiert sie neu.
 
 ---
 
 ## Quelldateien
 
-* `pyadm1ode_estimation/estimation/deep_learning/observer.py` — `Adm1Observer`  
-* `pyadm1ode_estimation/estimation/deep_learning/observer_data.py` — `generate_observer_dataset`, `ObserverDataset`, `MeasurementDataset`  
-* `pyadm1ode_estimation/estimation/deep_learning/observer_train.py` — `pretrain_observer`, `pretrain_observer_selfsup`, `pretrain_observer_sim2real`, `finetune_observer`  
-* `pyadm1ode_estimation/estimation/deep_learning/online_observer.py` — `SlidingWindowObserver`  
+* `pyadm1ode_estimation/estimation/observer/model.py` — `Adm1Observer`  
+* `pyadm1ode_estimation/estimation/observer/datasets.py` — `generate_observer_dataset`, `ObserverDataset`, `MeasurementDataset`  
+* `pyadm1ode_estimation/estimation/observer/train.py` — `pretrain_observer`, `pretrain_observer_selfsup`, `pretrain_observer_sim2real`, `finetune_observer`  
+* `pyadm1ode_estimation/estimation/observer/online.py` — `SlidingWindowObserver`
+* `pyadm1ode_estimation/estimation/observer/adapter.py` — `PinnData`, `FeatureSpec` (inkl. `organic_load`, `kinetic_keys`), `kinetic_log_factors`  
+* `pyadm1ode_estimation/estimation/estimators.py` — `ObserverEstimator` (trainieren, speichern, laden, `for_dataset`)
+* `experiments/observer_generalisation/` — Rezept-Sweep, Seed-Ensemble, Abdeckungstest, Kinetik-Eingänge  
 
 ## API-Referenz
 
-::: pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer
+::: pyadm1ode_estimation.estimation.observer.model.Adm1Observer
     options:
       show_root_heading: true
       show_source: false
       heading_level: 3
 
-::: pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver
+::: pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver
     options:
       show_root_heading: true
       show_source: false

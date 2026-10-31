@@ -1,7 +1,7 @@
 """Filter tuning & calibration (dataset-agnostic).
 
 Tunes the noise / uncertainty parameters (Q, R, σ) of the model-based **filters** (UKF
-variants) — distinct from ``estimation.deep_learning``, which *trains* neural estimators.
+variants) — distinct from ``estimation.observer``, which *trains* neural estimators.
 Separates three concerns so any filter can be tuned on any dataset:
 
 * :mod:`datasets`       — load ANY dataset into ``Episode`` objects + train/val/test splits.

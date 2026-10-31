@@ -8,16 +8,16 @@ torch = pytest.importorskip("torch")
 from pyadm1 import Feedstock
 from pyadm1.components.biological import Digester
 
-from pyadm1ode_estimation.estimation.deep_learning.observation_torch import (
+from pyadm1ode_estimation.estimation.observation_torch import (
     TorchObservationModel,
 )
-from pyadm1ode_estimation.estimation.deep_learning.observer import Adm1Observer
-from pyadm1ode_estimation.estimation.deep_learning.observer_data import (
+from pyadm1ode_estimation.estimation.observer.model import Adm1Observer
+from pyadm1ode_estimation.estimation.observer.datasets import (
     MeasurementDataset,
     ObserverDataset,
     generate_observer_dataset,
 )
-from pyadm1ode_estimation.estimation.deep_learning.observer_train import (
+from pyadm1ode_estimation.estimation.observer.train import (
     finetune_observer,
     observer_predict,
     per_state_nrmse,
@@ -549,7 +549,7 @@ def test_pretrain_early_stopping_halts_and_is_flagged():
 
 def test_pretrain_noise_augmentation_perturbs_only_the_sensor_columns():
     """Noise belongs on the measurements; the substrate feed is a known input."""
-    from pyadm1ode_estimation.estimation.deep_learning.observer_train import (
+    from pyadm1ode_estimation.estimation.observer.train import (
         _noise_scales,
     )
 
@@ -563,7 +563,7 @@ def test_pretrain_noise_augmentation_perturbs_only_the_sensor_columns():
 
 
 def test_pretrain_noise_std_length_is_checked():
-    from pyadm1ode_estimation.estimation.deep_learning.observer_train import (
+    from pyadm1ode_estimation.estimation.observer.train import (
         _noise_scales,
     )
 
@@ -573,7 +573,7 @@ def test_pretrain_noise_std_length_is_checked():
 
 
 def test_pretrain_burnin_excludes_the_leading_steps():
-    from pyadm1ode_estimation.estimation.deep_learning.observer_train import (
+    from pyadm1ode_estimation.estimation.observer.train import (
         _scaled_state_loss,
     )
 
@@ -583,3 +583,16 @@ def test_pretrain_burnin_excludes_the_leading_steps():
     scale = torch.ones(3)
     assert float(_scaled_state_loss(x, y, scale, burnin=0)) > 0.0
     assert float(_scaled_state_loss(x, y, scale, burnin=2)) == pytest.approx(0.0)
+
+
+def test_sequence_noise_is_validated_and_runs():
+    """Per-sequence input noise: wrong width raises, the right width trains."""
+    from pyadm1ode_estimation.estimation.observer import pretrain_observer
+
+    obs, ds = _observer_and_dataset(n=4, hidden=8)
+    with pytest.raises(ValueError, match="one entry per feature"):
+        pretrain_observer(obs, ds, epochs=1, sequence_noise_std=[0.1])
+    res = pretrain_observer(
+        obs, ds, epochs=1, sequence_noise_std=[0.1] * ds.features.shape[-1]
+    )
+    assert len(res.history["train"]) == 1

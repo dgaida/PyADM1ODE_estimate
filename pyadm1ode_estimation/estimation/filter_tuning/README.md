@@ -2,7 +2,7 @@
 
 Dataset-agnostic tooling to tune the noise / uncertainty parameters (**Q, R, σ**) of our
 model-based **filters** (UKF variants, and a differentiable filter). This is distinct from
-`estimation.deep_learning`, which *trains* neural estimators — here we **calibrate/tune
+`estimation.observer`, which *trains* neural estimators — here we **calibrate/tune
 filters**. Everything is split into three concerns so any filter can be tuned on any dataset:
 
 | File | Responsibility |

@@ -2,7 +2,7 @@
 
 Der [UKF](../usage/ukf.md) und die PINN-Familie haben **komplementäre** Stärken:
 Der UKF ist gut gestellt und gut kalibriert auf den pH-/Ladungsbilanz-Zuständen,
-das PINN ([Smoother](pinn.md) oder [amortisierter Observer](observer.md)) ist
+das PINN ([PINN v2](pinn.md) oder [GRU-Observer](observer.md)) ist
 stark auf den biogastreibenden Zuständen und prognostiziert natürlich. Die Fusion
 kombiniert ihre beiden Zustandstrajektorien, sodass das Ergebnis das Beste aus
 beiden behält.
@@ -51,7 +51,7 @@ eine ganze Trajektorie auf einmal.
 CI je Zeitschritt zweier `(T, n)`-Schätzungen, das den fusionierten Mittelwert,
 die fusionierte Std und das gewählte $\omega$ je Schritt zurückgibt.
 
-`HybridEstimator` verpackt das im [`BatchEstimator`](pinn.md)-Vertrag. Baue ihn
+`HybridEstimator` verpackt das im `BatchEstimator`-Vertrag (`estimation/base.py`). Baue ihn
 aus den beiden Teilschätzungen, und `estimate()` gibt ihre CI-Fusion als
 `TrajectoryEstimate` zurück:
 

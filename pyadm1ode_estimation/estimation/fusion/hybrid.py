@@ -1,7 +1,7 @@
 """Variant C — PINN↔UKF hybrid via covariance-intersection fusion.
 
 Each estimator plays to its strength: the UKF is well-posed and calibrated on
-the charge/pH states, the PINN (per-window smoother or amortised observer) is
+the charge/pH states, the PINN (PINN v2 or the GRU observer) is
 strong on the biogas-driving states. Covariance Intersection (CI) fuses their
 per-state estimates *conservatively* — without assuming the two are
 independent — so the combined estimate is at least as informative as either.

@@ -23,7 +23,10 @@ Welcome to the **pyadm1ode_estimation** repository. This file contains specific 
 - `pyadm1ode_estimation/estimation/process_model.py`: ADM1 process model wrapping pyadm1 for sigma-point propagation.  
 - `pyadm1ode_estimation/estimation/state_vector.py` / `observation_model.py`: Channel declarations for state and measurements.  
 - `pyadm1ode_estimation/estimation/twin.py`: Helpers for synthetic-truth twin experiments.  
-- `pyadm1ode_estimation/estimation/deep_learning/pinn.py`: Physics-informed state estimation.  
+- `pyadm1ode_estimation/estimation/estimators.py`: Registry over all estimators (`ukf`, `pinn`, `observer`); every estimator takes a shared `Series` and returns a `TrajectoryEstimate`.
+- `pyadm1ode_estimation/estimation/pinn/`: PINN v2, the collocation trajectory PINN (physics residual, closures, rolling window).
+- `pyadm1ode_estimation/estimation/observer/`: PINN B, the amortised GRU observer, plus the dataset adapter `PinnData`.
+- `pyadm1ode_estimation/estimation/filter_tuning/datasets.py`: the one dataset loader every estimator uses.
 - `pyadm1ode_estimation/artifacts/calibration_artifact.py`: YAML handoff format from calibration to estimation (calibrated kinetic params, substrate fractions, initial state).  
 - `examples/`: End-to-end twin experiment scripts.  
 - `docs/de/theory/pinn.md`: Detailed explanation of the PINN approach.  

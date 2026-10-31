@@ -48,7 +48,7 @@ class EstimationStep:
 class TrajectoryEstimate:
     """Output of a batch/offline estimator over a whole window.
 
-    The shared currency between recursive filters and batch smoothers: a
+    The shared currency between recursive filters and batch estimators: a
     posterior trajectory with a per-state uncertainty band, so the twin-
     experiment harness (coverage, plots, error metrics) can evaluate both
     estimator families the same way.
@@ -66,7 +66,7 @@ class TrajectoryEstimate:
 
 
 class BatchEstimator(Protocol):
-    """Common interface for offline/batch estimators (e.g. a PINN smoother).
+    """Common interface for offline/batch estimators (e.g. a PINN fitted over a window).
 
     Unlike :class:`StateEstimator`, which runs a recursive predict/update
     loop, a batch estimator is *fitted* to a whole window of (sparse)

@@ -73,3 +73,11 @@ experiments/**/results/
 *.synctex.gz
 *.toc
 *.log
+
+# Experiment and test results: report them in the docs, do not commit them
+results_*/
+datasets/**/ukf_*reference.npz
+datasets/**/pinn_trajectories.npz
+# Shifted test sets of the generalisation studies: local only
+datasets/benchmark_ccm/
+datasets/benchmark_hard/

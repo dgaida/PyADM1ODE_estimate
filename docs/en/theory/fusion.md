@@ -2,7 +2,7 @@
 
 The [UKF](../usage/ukf.md) and the PINN family have **complementary** strengths:
 the UKF is well-posed and well-calibrated on the pH / charge-balance states, the
-PINN ([smoother](pinn.md) or [amortised observer](observer.md)) is strong on the
+PINN ([PINN v2](pinn.md) or [GRU observer](observer.md)) is strong on the
 biogas-driving states and forecasts naturally. The fusion combines their two
 state trajectories so the result keeps the best of each.
 
@@ -49,7 +49,7 @@ trajectory at once.
 per-time-step CI of two `(T, n)` estimates, returning the fused mean, fused std,
 and the chosen $\omega$ per step.
 
-`HybridEstimator` wraps it in the [`BatchEstimator`](pinn.md) contract. Build it
+`HybridEstimator` wraps it in the `BatchEstimator` contract (`estimation/base.py`). Build it
 from the two sub-estimates, and `estimate()` returns their CI fusion as a
 `TrajectoryEstimate`:
 

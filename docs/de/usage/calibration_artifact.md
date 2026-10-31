@@ -4,6 +4,12 @@ Das `CalibrationArtifact` ist die **Schnittstelle zwischen Kalibrierung und Sch�
 Es ist eine versionierte YAML-Datei, die Calibration schreibt und Estimation
 beim Hochfahren des Live-Filters einliest.
 
+Woher das Artefakt kommt, beschreibt die Doku von PyADM1ODE_calibration: Die
+[Optimierungsschleife](https://dgaida.github.io/PyADM1ODE_calibration/latest/architecture/#die-optimierungsschleife)
+stellt Modellparameter ein, simuliert das Anlagenmodell, vergleicht es mit den
+Sensormessungen und stellt nach, bis die Abweichung klein genug ist. Das Ergebnis
+ist das angepasste Modell, das dieses Artefakt übergibt.
+
 ## Workflow
 
 ```text
@@ -103,7 +109,7 @@ print(f"Übersprungen: {len(diag['skipped'])} Parameter")
 ## Designentscheidungen
 
 | Entscheidung | Warum |
-|---|---|
+| --- | --- |
 | `schema_version` Pflicht | Unbekannte Versionen → `ValueError`, kein Silent-Mis-Read |
 | `plant_id` + `run_id` Pflicht | Audit-Trail bei mehreren parallelen Kalibrierungen |
 | Sektionen optional | Partielle Calibrations (nur kinetic) erlaubt |

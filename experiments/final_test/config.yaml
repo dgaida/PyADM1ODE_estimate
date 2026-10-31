@@ -1,0 +1,76 @@
+# Final comparison test of the state estimators — frozen configuration.
+#
+# Every result file stores the SHA-256 of this file. run.py refuses to mix results
+# of different configurations, so change nothing here once the main run started
+# (or start a new results directory). Plan: PyADM1ODE_estimate_local/finaler_test/plan.md
+version: 1
+results_dir: results_final
+
+datasets:
+  benchmark: datasets/benchmark
+  benchmark_ccm: datasets/benchmark_ccm
+  benchmark_hard: datasets/benchmark_hard
+
+# Scored hours [start, end) for every test and condition (days 20 to 60).
+window_hours: [480, 1440]
+
+# Test A: calibrate the kinetics of each test series from its own measurements.
+calibration:
+  screening: results_final/screening_train.json   # top_k kinetics, screened on the training split
+  # Start state: the nominal full UKF's estimate at this hour (measurements of hours 0-48
+  # only); the true initial state is never used. Residuals are scored on [fit_start, fit_end].
+  fit_hours: [48, 480]
+  method: powell
+  budget: 300            # forward simulations per series
+  log_bound: 1.3862943611198906   # search box ln(factor) in [-ln 4, ln 4]
+  xtol: 0.001
+  ftol: 0.0001
+
+# Test B: kinetics handed over as an artifact built from the generator truth.
+test_b:
+  levels: [ident, real, voll]   # nominal is the shared "nominal" condition
+  # real: true factor x exp(N(0, sigma_j)), sigma_j = median |ln error_j| / 0.6745
+  # over all Test A calibrations (all three test sets), one draw per series.
+  seed: 20261019
+
+# Estimator variants. Observers are 5-seed ensembles (mean and spread of the members).
+variants:
+  U1: {kind: ukf, variant: full, prune: true}
+  U2: {kind: ukf, variant: adcore, prune: true}
+  P1: {kind: pinn}
+  B1: {kind: observer, checkpoints: "results_observer/ensemble_dropout_{seed}.pt", seeds: [10, 11, 12, 13, 14]}
+  B2: {kind: observer, checkpoints: "results_observer/kinetic/b2_k10_n07_{seed}.pt", seeds: [10, 11, 12, 13, 14]}
+  R1: {kind: open_loop}
+
+# Which variant runs in which condition on which test sets (B1 is kinetics-blind:
+# its trajectories are the same in every condition and are computed once, as nominal).
+conditions:
+  nominal: {variants: [U1, U2, P1, B1, B2, R1], datasets: all}
+  A_cal:   {variants: [U1, U2, P1, B2, R1], datasets: all}
+  B_ident: {variants: [U1, P1, B2, R1], datasets: all, extra: {U2: [benchmark]}}
+  B_real:  {variants: [U1, P1, B2, R1], datasets: all, extra: {U2: [benchmark]}}
+  B_voll:  {variants: [U1, P1, B2, R1], datasets: all, extra: {U2: [benchmark]}}
+
+# Fusions, formed at scoring time from stored trajectories.
+fusion:
+  weight_ukf: 0.5
+  F1: [U1, B1]
+  F2: [U1, B2]
+  # sigma_F = s_b * sqrt(w^2 sigma_U^2 + (1-w)^2 sigma_B^2), s_b per state block from the
+  # validation split (U1 stored validation run, observers on the validation series).
+  scale_fit: validation
+
+metrics:
+  exclude_from_geometric: [S_CATION, S_H2, P_H2]   # J_38: numerically empty states
+  transient_hours: 48
+  failure_last_days: 5
+  coverage_levels: [0.5, 0.68, 0.9, 0.95]
+  observability_tiers: [0.5, 0.9]    # median_i RMSE_U1 / RMSE_R1 on validation
+
+statistics:
+  alpha: 0.05
+  rope_points: 0.5           # practical equivalence for the primary metric [percentage points]
+  margin_log: 0.09531017980432493   # ln 1.10, non-inferiority margin of the relative robustness
+  bootstrap: 10000
+  bootstrap_seed: 7
+  candidates_best: [U1, U2, P1, B2, F2]

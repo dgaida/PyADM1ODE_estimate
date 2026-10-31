@@ -5,17 +5,17 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from pyadm1ode_estimation.estimation.deep_learning.observation_torch import (
+from pyadm1ode_estimation.estimation.observation_torch import (
     TorchObservationModel,
 )
-from pyadm1ode_estimation.estimation.deep_learning.observer import Adm1Observer
-from pyadm1ode_estimation.estimation.deep_learning.observer_data import (
+from pyadm1ode_estimation.estimation.observer.model import Adm1Observer
+from pyadm1ode_estimation.estimation.observer.datasets import (
     generate_observer_dataset,
 )
-from pyadm1ode_estimation.estimation.deep_learning.observer_train import (
+from pyadm1ode_estimation.estimation.observer.train import (
     pretrain_observer,
 )
-from pyadm1ode_estimation.estimation.deep_learning.online_observer import (
+from pyadm1ode_estimation.estimation.observer.online import (
     OnlineEstimate,
     SlidingWindowObserver,
 )

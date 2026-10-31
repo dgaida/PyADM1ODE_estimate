@@ -37,14 +37,17 @@ PyADM1ODE_estimation/
 │   │   ├── twin.py             # Twin-experiment helpers
 │   │   ├── filters/            # sr_ukf.py, constrained_ukf.py, parallel_ukf.py
 │   │   ├── filter_tuning/      # Tune Q/R/P0/sigma of the filters (see its README)
-│   │   ├── deep_learning/      # PINN smoother, GRU observer
+│   │   ├── pinn/               # PINN v2: collocation trajectory network, rolling window
+│   │   ├── observer/           # PINN B: GRU observer + dataset adapter
+│   │   ├── estimators.py       # Registry: ukf | pinn | observer
+│   │   ├── reference/          # Shipped UKF theta + observer checkpoint
 │   │   └── fusion/             # Fusion algorithms (Covariance Intersection)
 │   ├── artifacts/              # Handoff artifacts (calibration → estimation)
 │   ├── example_plants/         # Reference plant definitions
 │   ├── io/                     # Sensor definitions and sources
 │   └── utils/                  # Utility functions
-├── datasets/benchmark/         # The state-estimation benchmark (train/test + tooling)
-├── experiments/                # Standalone studies (observability, PINN gate, twin)
+├── datasets/                   # benchmark (train/test + tooling)
+├── experiments/                # Standalone studies (observability, PINN v2, observer, twin)
 ├── docs/                       # Documentation (MkDocs, bilingual)
 ├── tests/                      # Unit and integration tests
 ├── README.md

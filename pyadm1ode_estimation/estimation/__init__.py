@@ -27,6 +27,12 @@ Layers
   via custom extractors once lab data becomes available.
 * :mod:`.filters` — concrete implementations (UKF for Phase 1).
 * :mod:`.twin` — helpers for synthetic-truth twin experiments.
+* :mod:`.estimators` — one registry over every estimator (``ukf``,
+  ``pinn``, ``observer``); each takes a shared
+  ``filter_tuning.datasets.Series`` and returns a ``TrajectoryEstimate``.
+* :mod:`.pinn` — PINN v2, the collocation trajectory PINN (torch).
+* :mod:`.observer` — PINN B, the amortised GRU observer (torch).
+* :mod:`.fusion` — covariance intersection of two trajectory estimates.
 """
 
 from .base import EstimationStep, StateEstimator

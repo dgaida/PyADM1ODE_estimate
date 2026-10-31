@@ -17,7 +17,13 @@ Automatisch generierte API-Dokumentation via `mkdocstrings`.
       (Adapter zu PyADM1ODE-Sensor-Klassen)  
     * `twin` — Twin-Experiment-Helfer (`propagate_truth`, `run_filter`,  
       `coverage_within_2sigma`)  
-    * `filters.sr_ukf` — `UnscentedKalmanFilter` (Square-Root UKF)  
+    * `filters.sr_ukf` — `UnscentedKalmanFilter` (Square-Root UKF)
+    * `estimators` — Registry: `build_estimator`, `run_estimator`, `score`,
+      `UkfEstimator`, `PinnEstimator`, `ObserverEstimator`
+    * `pinn` — PINN v2: `ADM1Physics`, `TrajectoryNet`, `run_rolling`
+    * `observer` — GRU-Observer: `Adm1Observer`, `PinnData`,
+      `pretrain_observer`, `SlidingWindowObserver`
+    * `fusion` — `fuse_ci_diagonal`, `HybridEstimator`
 * **`pyadm1ode_estimation.example_plants`** — Referenz-Anlagen  
     * `simple` — `build_simple_plant()` (1 Fermenter + Storage + BHKW)  
     * `multi_stage` — `build_multi_stage_plant()`  

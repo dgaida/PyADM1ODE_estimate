@@ -7,7 +7,15 @@ Bausteine sind:
 * :func:`adm1da_full_spec` — Factory für den vollen 41-State ADM1da-Vektor  
 * :class:`UnscentedKalmanFilter` — Square-Root-UKF (Wan & Van der Merwe 2001)  
 * :class:`MeasurementCalendar` — Sample-Rate-Verwaltung pro Sensor  
-* :class:`SensorAdapter` — Anschluss an die PyADM1ODE-Sensor-Klassen  
+* :class:`SensorAdapter` — Anschluss an die PyADM1ODE-Sensor-Klassen
+
+![Kalman-Filter: vorhersagen, vergleichen, korrigieren, jede Stunde](../../assets/slides/folie_schaetzung_kalman.svg)
+
+*Der Filterzyklus im Überblick: Jede Stunde wird das Anlagenmodell einen Schritt
+weitergerechnet (vorhersagen), seine erwarteten Sensorwerte werden mit den
+Messungen verglichen (vergleichen), und der Zustand wird im Verhältnis des
+Vertrauens in Modell und Sensor nachgezogen (korrigieren). Der UKF rechnet dafür
+83 Sigma-Punkte.*
 
 ## State-Vektor deklarieren
 
@@ -189,7 +197,7 @@ for t, y_dict, gate_dict in measurement_stream:
 ## Square-Root-UKF
 
 Der `UnscentedKalmanFilter` propagiert den Cholesky-Faktor `S` (mit
-`P = S·Sᵀ`) statt der vollen Kovarianz `P`. 
+`P = S·Sᵀ`) statt der vollen Kovarianz `P`.
 
 Effekte:
 

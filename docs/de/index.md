@@ -31,28 +31,29 @@ Live-Sensoren ──────────────────────
 
 ## Hauptmerkmale
 
-* 🎯 **Mechanistisch und datengetrieben** — UKF auf dem vollen 41-State ADM1da  
-  plus geplante Deep-Learning- und Fusion-Schichten.  
+* 🎯 **Mechanistisch und datengetrieben** — UKF auf dem vollen 41-State ADM1da
+  und zwei gelernte Schätzer (PINN v2, GRU-Observer) hinter einer Registry.
 * 🔌 **Sensor-tolerant** — Channel-Gating für sparsame Lab-Messungen,  
   OU-Drift für augmentierte Eingangsschätzung.  
 * 📊 **Diagnostisch** — NIS-Monitoring je Schritt, Innovation pro Channel,  
   Joseph-Form Kovarianz-Update für lange Läufe.
 
-## Drei Schätzansätze
+## Schätzansätze
 
 | Ansatz | Status | Arbeitspaket |
 |---|---|---|
 | **UKF** — mechanistisch | produktiv | AP 4.2 |
-| **Deep Learning Ensemble** | Skelett | AP 4.3 |
-| **Fusion** (Covariance Intersection) | Platzhalter | AP 4.4 |
+| **PINN v2** — Kollokations-Trajektoriennetz | Forschung | AP 4.3 |
+| **GRU-Observer (PINN B)** — amortisiert, einmal trainiert | Forschung | AP 4.3 |
+| **Fusion** (Covariance Intersection) | experimentell | AP 4.4 |
 
 ## Inhaltsverzeichnis
 
 * [Erste Schritte](getting-started.md) — Schneller Einstieg.  
 * [Installation](installation.md) — Setup für verschiedene Umgebungen.  
-* [Nutzung](usage/index.md) — UKF konfigurieren, Kalibrierungs-Artefakt einlesen.  
+* [Nutzung](usage/index.md) — UKF konfigurieren, Kalibrierungs-Artefakt einlesen, Schätzer wählen.  
 * [Observability](observability/index.md) — Welche Zustände sind aus welchen Sensoren schätzbar?  
-* [Theorie](theory/index.md) — ADM1da-Modell, PINN-Konzept.  
+* [Theorie](theory/index.md) — ADM1da-Modell, PINN v2, GRU-Observer, Fusion.  
 * [Beispiele](examples/index.md) — End-to-End-Beispiele (Twin, echte Anlage).  
 * [API-Referenz](api/index.md) — Auto-generiert via mkdocstrings.  
 

@@ -10,9 +10,11 @@ Practical guides on how to use the repository in real operation.
 * [Twin experiments](twin_experiments.md) — end-to-end validation  
   against a known truth; the bundled `run_twin_experiment.py` and
   interpretation of the diagnostic plots.  
-* [Calibration artifact](calibration_artifact.md) — the YAML handoff  
+* [Calibration artifact](calibration_artifact.md) — the YAML handoff
   format between calibration and estimation, and how the filter applies
   it at startup.
+* [Estimator registry](estimators.md) — one interface for the UKF, PINN v2 and
+  the GRU observer: build by name, run on a series, score, command line.
 
 ## Big picture
 

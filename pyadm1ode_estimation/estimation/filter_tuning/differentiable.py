@@ -26,7 +26,7 @@ import numpy as np
 from pyadm1.core.adm1 import STATE_SIZE
 from pyadm1.core.adm1_torch import Adm1TorchParams, adm1da_rhs_torch
 
-from ..deep_learning.observation_torch import TorchObservationModel
+from ..observation_torch import TorchObservationModel
 from ..quickstart import build_filter_components
 from .filter_runners import (
     _propagate_open_loop,

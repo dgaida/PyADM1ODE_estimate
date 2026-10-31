@@ -84,6 +84,7 @@ def build_multi_stage_plant(
     total_simtime: int = 365,
     nominal_daily_dosing_m3: float = _NOMINAL_DAILY_DOSING_M3,
     plant_name: str = "Multi-Stage Cascade Plant",
+    substrate_mix: dict[str, float] | None = None,
 ) -> BiogasPlant:
     """Construct the three-stage cascade example plant.
 
@@ -99,6 +100,12 @@ def build_multi_stage_plant(
             used to seed the inoculated initial state. Defaults to a
             mid-sized agricultural baseline.
         plant_name: Human-readable plant identifier.
+        substrate_mix: Substrate library id to nominal fraction, replacing
+            :data:`_SUBSTRATE_MIX`. The fractions seed the inoculum and set
+            the nominal feed, so a caller that changes the mix also changes
+            the plant's healthy operating point. Used to build a benchmark
+            variant on a feed the estimators have not been trained on;
+            defaults to the standard five-substrate mix.
 
     Returns:
         An initialized :class:`pyadm1.BiogasPlant` ready for
@@ -116,7 +123,11 @@ def build_multi_stage_plant(
         PlantConfigurator,
     )
 
-    substrate_ids = list(_SUBSTRATE_MIX.keys())
+    mix = _SUBSTRATE_MIX if substrate_mix is None else dict(substrate_mix)
+    if len(mix) > _MAX_SUBSTRATE_SLOTS:
+        raise ValueError(f"substrate_mix has {len(mix)} entries, the feedstock has {_MAX_SUBSTRATE_SLOTS} slots")
+
+    substrate_ids = list(mix.keys())
     feedstock = Feedstock(
         substrate_ids,
         feeding_freq=feeding_freq,
@@ -124,9 +135,7 @@ def build_multi_stage_plant(
     )
 
     # Nominal feed vector for the primary stage, padded to 10 slots.
-    q_primary = [
-        fraction * nominal_daily_dosing_m3 for fraction in _SUBSTRATE_MIX.values()
-    ]
+    q_primary = [fraction * nominal_daily_dosing_m3 for fraction in mix.values()]
     q_primary = q_primary + [0.0] * (_MAX_SUBSTRATE_SLOTS - len(q_primary))
     q_passthrough = [0.0] * _MAX_SUBSTRATE_SLOTS
 

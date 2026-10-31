@@ -80,6 +80,22 @@ class EstimatorDataset:
         return sorted({s.label for s in self.pool})
 
     # -- episode construction -------------------------------------------
+    def to_episode(
+        self,
+        s: Series,
+        days: float | None = None,
+        burnin_days: float | None = None,
+        name: str = "",
+    ) -> Episode:
+        """Wrap one series as the :class:`Episode` the filter runners consume.
+
+        ``days`` truncates the series (``None`` = full length); ``burnin_days``
+        defaults to the dataset's ``meta["burnin_days"]``.
+        """
+        if burnin_days is None:
+            burnin_days = float(self.meta.get("burnin_days", 0.0))
+        return self._to_episode(s, days, burnin_days, name or s.label)
+
     def _to_episode(
         self, s: Series, days: float | None, burnin_days: float, name: str
     ) -> Episode:
@@ -202,91 +218,93 @@ class EstimatorDataset:
 # --------------------------------------------------------------------------
 # Loaders (one per dataset format).  Register new datasets here.
 # --------------------------------------------------------------------------
-def load_benchmark(path: str | Path | None = None) -> EstimatorDataset:
-    """Load the ADM1 benchmark (``train.npz`` + ``test.npz`` + ``meta.json``)."""
+#: Per-series arrays copied into :attr:`Series.aux` when the split file has them.
+#: ``feed_true`` / ``kinetic_factors`` are *generator truth* (never an estimator input);
+#: ``fostac`` is the hourly lab titration; ``ukf_x_hat`` / ``ukf_std`` the shipped
+#: reference filter on the test split.
+BENCHMARK_AUX_KEYS: tuple[str, ...] = (
+    "feed_true",
+    "kinetic_factors",
+    "fostac",
+    "ukf_x_hat",
+    "ukf_std",
+)
+
+
+def _benchmark_split(d: Path, split: str) -> dict:
+    """Arrays of one split, each read from the compressed npz exactly once.
+
+    A dataset variant that ships its UKF reference next to ``test.npz``
+    (``ukf_pending`` = True, embedded arrays all-NaN) gets that file's arrays
+    spliced in, so every consumer sees one consistent ``ukf_x_hat`` / ``ukf_std``.
+    """
+    z = np.load(d / f"{split}.npz", allow_pickle=True)
+    keys = (
+        "measurements",
+        "feed_noisy",
+        "time",
+        "states",
+        "switch_days",
+        "regime",
+        "seed",
+        "kinetic_keys",
+    ) + BENCHMARK_AUX_KEYS
+    out = {k: z[k] for k in keys if k in z.files}
+    ref_file = d / "ukf_full_reference.npz"
+    if (
+        split == "test"
+        and ref_file.exists()
+        and "ukf_x_hat" in out
+        and np.isnan(np.asarray(out["ukf_x_hat"][0], dtype=float)).all()
+    ):
+        ref = np.load(ref_file, allow_pickle=True)
+        out["ukf_x_hat"], out["ukf_std"] = ref["ukf_x_hat"], ref["ukf_std"]
+    return out
+
+
+def _benchmark_series(d: dict, i: int) -> Series:
+    aux = {k: np.asarray(d[k][i], float) for k in BENCHMARK_AUX_KEYS if k in d}
+    if "kinetic_keys" in d:
+        aux["kinetic_keys"] = [str(k) for k in d["kinetic_keys"]]
+    return Series(
+        measurements=np.asarray(d["measurements"][i], float),
+        feed=np.asarray(d["feed_noisy"][i], float),
+        time=np.asarray(d["time"][i], float),
+        truth=np.asarray(d["states"][i], float),
+        switch_days=np.asarray(d["switch_days"][i], float),
+        label=str(d["regime"][i]) if "regime" in d else "",
+        seed=int(d["seed"][i]) if "seed" in d else None,
+        aux=aux,
+    )
+
+
+def load_benchmark(
+    path: str | Path | None = None, splits: tuple[str, ...] = ("train", "test")
+) -> EstimatorDataset:
+    """Load the ADM1 benchmark (``train.npz`` + ``test.npz`` + ``meta.json``).
+
+    Args:
+        path: Dataset directory (default: the shipped benchmark).
+        splits: Which split files to read; a test-only dataset without
+            ``train.npz`` or a consumer that only needs the test set passes
+            ``("test",)`` and gets an empty ``pool``.
+    """
     d = Path(path) if path else DEFAULT_BENCHMARK_DIR
     meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
-    tr = np.load(d / "train.npz", allow_pickle=True)
-    te = np.load(d / "test.npz", allow_pickle=True)
 
     # Read every array from the (compressed) npz EXACTLY ONCE. Indexing `tr["states"][i]`
     # inside a loop re-decompresses the whole ~47 MB array on every iteration and, worse,
     # the returned row is a *view* that keeps its freshly decompressed base alive — 100
     # rows then retain 100 separate full arrays (~5.8 GB observed). Pulling the arrays out
     # first keeps one base per field and makes loading ~100x faster.
-    def _grab(z, keys):
-        return {k: z[k] for k in keys if k in z.files}
+    def _rows(split: str) -> list[Series]:
+        if split not in splits or not (d / f"{split}.npz").exists():
+            return []
+        arrays = _benchmark_split(d, split)
+        return [_benchmark_series(arrays, i) for i in range(len(arrays["time"]))]
 
-    trd = _grab(
-        tr,
-        (
-            "measurements",
-            "feed_noisy",
-            "time",
-            "states",
-            "switch_days",
-            "regime",
-            "seed",
-            "fostac",
-        ),
-    )
-    ted = _grab(
-        te,
-        (
-            "measurements",
-            "feed_noisy",
-            "time",
-            "states",
-            "switch_days",
-            "regime",
-            "seed",
-            "ukf_x_hat",
-            "ukf_std",
-            "fostac",
-        ),
-    )
-
-    def _reg(d, i):
-        return str(d["regime"][i]) if "regime" in d else ""
-
-    def _seed(d, i):
-        return int(d["seed"][i]) if "seed" in d else None
-
-    pool = [
-        Series(
-            measurements=trd["measurements"][i],
-            feed=trd["feed_noisy"][i],
-            time=trd["time"][i],
-            truth=trd["states"][i],
-            switch_days=trd["switch_days"][i],
-            label=_reg(trd, i),
-            seed=_seed(trd, i),
-            aux=(
-                {"fostac": np.asarray(trd["fostac"][i], float)}
-                if "fostac" in trd
-                else {}
-            ),
-        )
-        for i in range(len(trd["time"]))
-    ]
-    test = [
-        Series(
-            measurements=np.asarray(ted["measurements"][i], float),
-            feed=np.asarray(ted["feed_noisy"][i], float),
-            time=np.asarray(ted["time"][i], float),
-            truth=np.asarray(ted["states"][i], float),
-            switch_days=np.asarray(ted["switch_days"][i], float),
-            label=_reg(ted, i),
-            seed=_seed(ted, i),
-            aux={
-                k: np.asarray(ted[k][i], float)
-                for k in ("ukf_x_hat", "ukf_std", "fostac")
-                if k in ted
-            },
-        )
-        for i in range(len(ted["time"]))
-    ]
-    return EstimatorDataset(name="benchmark", meta=meta, pool=pool, test=test)
+    # The directory name doubles as the dataset name ("benchmark", ...).
+    return EstimatorDataset(name=d.name, meta=meta, pool=_rows("train"), test=_rows("test"))
 
 
 #: name -> loader.  Extend with other datasets that yield the same Series structure.
@@ -304,7 +322,9 @@ def get_dataset(name_or_path: str | Path = "benchmark") -> EstimatorDataset:
     p = Path(name_or_path)
     if p.exists() and p.is_dir():
         # infer format: a benchmark dir has train.npz + meta.json
-        if (p / "train.npz").exists() and (p / "meta.json").exists():
+        if (p / "meta.json").exists() and (
+            (p / "train.npz").exists() or (p / "test.npz").exists()
+        ):
             return load_benchmark(p)
         raise ValueError(f"cannot infer dataset format for directory {p}")
     return load_dataset(str(name_or_path))

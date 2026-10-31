@@ -4,6 +4,12 @@ The `CalibrationArtifact` is the **interface between calibration and estimation*
 It is a versioned YAML file that calibration writes and estimation reads
 when the live filter starts up.
 
+Where the artifact comes from is described in the PyADM1ODE_calibration docs: the
+[optimization loop](https://dgaida.github.io/PyADM1ODE_calibration/latest/en/architecture/#the-optimization-loop)
+sets model parameters, simulates the plant model, compares it with the sensor
+measurements and adjusts the parameters until the deviation is small enough. The
+result is the calibrated model that this artifact hands over.
+
 ## Workflow
 
 ```text
@@ -103,7 +109,7 @@ print(f"Skipped: {len(diag['skipped'])} parameters")
 ## Design decisions
 
 | Decision | Why |
-|---|---|
+| --- | --- |
 | `schema_version` mandatory | Unknown versions → `ValueError`, no silent mis-read |
 | `plant_id` + `run_id` mandatory | Audit trail for multiple parallel calibrations |
 | Sections optional | Partial calibrations (kinetic only) allowed |

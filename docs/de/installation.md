@@ -27,7 +27,7 @@ Damit sind die Kern-Abhängigkeiten installiert: `numpy`, `scipy`, `pandas`,
 
 ## Optionale Komponenten
 
-### Deep-Learning-Komponenten (PINN, Ensemble)
+### Deep-Learning-Komponenten (PINN v2, GRU-Observer)
 
 ```bash
 pip install -e ".[deep_learning]"

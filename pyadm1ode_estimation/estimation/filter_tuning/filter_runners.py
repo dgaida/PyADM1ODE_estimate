@@ -31,6 +31,7 @@ import pandas as pd
 from pyadm1.core.adm1 import STATE_SIZE
 
 from ...example_plants import build_multi_stage_plant
+from ...example_plants.multi_stage import _SUBSTRATE_MIX as _DEFAULT_MIX
 from ..observation_model import ObservationChannel
 from ..quickstart import build_filter_components, build_ukf
 from ..specs import BLOCK_INDICES, InputSpec
@@ -116,13 +117,104 @@ def baseline_flows(meta: dict, substrates: list[InputSpec]) -> np.ndarray:
     return nominal * (total / max(nominal.sum(), 1e-9))
 
 
-def build_plant(meta: dict, digester_id: str = "primary"):
-    """Example plant with the dataset's operating point (k_dec_ac) applied."""
-    plant = build_multi_stage_plant()
+def build_plant(meta: dict, digester_id: str = "primary", *, apply_operating_point: bool = True):
+    """Example plant with the dataset's operating point and substrates applied.
+
+    The substrate mix comes from ``meta`` rather than from the plant's default. A
+    dataset generated on a different feed would otherwise be filtered with a process
+    model that converts the reported flows through the wrong characterisation, and the
+    resulting error would look like an estimator weakness instead of a mismatch that
+    was introduced here. Which substrates are dosed is a known input in this benchmark,
+    so telling the filter is the honest setup; what is *not* re-fitted for a new
+    dataset is Q, R and the kinetics.
+
+    Falls back to the plant's own mix when ``meta`` predates the ``library_id`` field.
+
+    Args:
+        meta: The dataset metadata.
+        digester_id: Component whose kinetics carry the operating point.
+        apply_operating_point: Write ``k_dec_ac`` from ``meta``. The PINN adapter
+            passes ``False``: its published results were produced against the plant's
+            own decay constant, and correcting that here would silently change numbers
+            that are already in the report. It is a real model error, worth fixing on
+            purpose rather than as a side effect of a substrate swap.
+    """
+    flows = {
+        v["library_id"]: float(v["nominal_flow_m3_per_d"])
+        for v in sorted(meta.get("substrates", {}).values(), key=lambda v: v["index"])
+        if v.get("library_id")
+    }
+    total = sum(flows.values())
+    mix = {k: v / total for k, v in flows.items()} if total > 0 else None
+
+    # Only override when the dataset really uses a different feed. The plant's own
+    # fractions sum to 1.0001 and are multiplied by 23.4 rather than by the 23.41 the
+    # meta flows add up to, so re-deriving them shifts the seeded inoculum by ~3e-3
+    # even when the substrates are the same -- enough to move published results for a
+    # change that was meant to leave them alone.
+    if mix is not None and set(mix) == set(_DEFAULT_MIX) and all(
+        abs(mix[k] - _DEFAULT_MIX[k]) < 1e-3 for k in mix
+    ):
+        mix = None
+
+    plant = build_multi_stage_plant(substrate_mix=mix)
     kdec = meta.get("operating_point", {}).get("k_dec_ac")
-    if kdec is not None:
+    if apply_operating_point and kdec is not None:
         plant.components[digester_id].adm1._kinetic["k_dec_ac"] = float(kdec)
     return plant
+
+
+#: Components the benchmark sensors depend on. The cascade is one-directional
+#: (primary -> secondary -> storage, gas -> CHP -> heating), so everything else
+#: cannot influence an observed quantity; see :func:`prune_to_primary`.
+PRIMARY_COMPONENTS = frozenset({"primary", "primary_storage"})
+
+
+def prune_to_primary(plant, keep=PRIMARY_COMPONENTS):
+    """Drop every component that cannot influence the primary digester's sensors.
+
+    ``ADM1ProcessModel.step`` advances the whole plant for every sigma point, and
+    the downstream digesters dominate the stiff solver. The kinetics-calibration
+    study verified that the pruned plant gives bit-identical primary observables
+    (``PyADM1ODE_calibration/experiments/kinetics_calibration/test_fastsim.py``);
+    the final test checks the same for the filter against its stored references.
+
+    Args:
+        plant: A built ``BiogasPlant``; modified in place and returned.
+        keep: Component ids to keep.
+    """
+    for cid in list(plant.components):
+        if cid not in keep:
+            del plant.components[cid]
+    plant.connections = [
+        c for c in plant.connections if c.from_component in keep and c.to_component in keep
+    ]
+    for comp in plant.components.values():
+        comp.inputs = [i for i in getattr(comp, "inputs", []) if i in keep]
+        comp.outputs = [o for o in getattr(comp, "outputs", []) if o in keep]
+    return plant
+
+
+def apply_kinetic_factors(plant, factors: dict | None, digester_id: str = "primary") -> list[str]:
+    """Multiply the digester's kinetic constants by ``factors`` (``key -> factor``).
+
+    The factors are relative to the plant's nominal values, the convention of the
+    benchmark's ``kinetic_factors`` and of the calibration (log-factor search).
+
+    Returns:
+        The keys that were applied.
+
+    Raises:
+        KeyError: for a key the digester does not have.
+    """
+    if not factors:
+        return []
+    kinetic = plant.components[digester_id].adm1._kinetic
+    for key, f in factors.items():
+        if key not in kinetic:
+            raise KeyError(f"unknown kinetic constant {key!r}")
+        kinetic[key] = float(kinetic[key]) * float(f)
+    return sorted(factors)
 
 
 def _apply_theta(spec, obs, theta: dict) -> None:
@@ -200,9 +292,12 @@ class UkfRunner:
         warmup_days: float | None = None,
         fostac_every_days: float | None = None,
         fostac_noise: tuple[float, float] | None = None,
+        prune: bool = False,
     ):
         self.meta = meta
         self.variant = variant
+        # Simulate only the components the sensors depend on (see prune_to_primary).
+        self.prune = bool(prune)
         # Lab titration: None disables it entirely, a number is the sampling interval in
         # days (7 = weekly, 1 = daily, dt_hours/24 = every step).
         self.fostac_every_days = fostac_every_days
@@ -228,12 +323,18 @@ class UkfRunner:
 
     def __call__(self, theta: dict, ep) -> tuple[np.ndarray, np.ndarray]:
         theta = theta or {}
+        # Kinetics of this plant (``key -> factor``), e.g. from a calibration artifact.
+        # Applied before the warm-up so warm-up, open loop and filter share them.
+        kinetics = ep.obs.get("kinetics")
         meas = np.asarray(ep.obs["measurements"], float)
         feed = np.asarray(ep.obs["feed_noisy"], float)
         time = np.asarray(ep.obs["time"], float)
         n_steps = len(time) - 1
 
         plant = build_plant(self.meta, self.did)
+        if self.prune:
+            prune_to_primary(plant)
+        apply_kinetic_factors(plant, kinetics, self.did)
         wp, wobs, wspec = build_filter_components(
             plant,
             digester_id=self.did,
@@ -346,6 +447,7 @@ def make_ukf_runner(
     warmup_days: float | None = None,
     fostac_every_days: float | None = None,
     fostac_noise: tuple[float, float] | None = None,
+    prune: bool = False,
 ) -> UkfRunner:
     return UkfRunner(
         meta,
@@ -354,6 +456,7 @@ def make_ukf_runner(
         warmup_days,
         fostac_every_days=fostac_every_days,
         fostac_noise=fostac_noise,
+        prune=prune,
     )
 
 

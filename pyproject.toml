@@ -42,6 +42,10 @@ docs = [
 where = ["."]
 include = ["pyadm1ode_estimation*"]
 
+[tool.setuptools.package-data]
+# Shipped model parameters of the reference estimators.
+"pyadm1ode_estimation.estimation.reference" = ["*.json", "*.pt"]
+
 [tool.pytest.ini_options]
 markers = [
     "slow: integration tests that spin up worker pools or take >5 s",

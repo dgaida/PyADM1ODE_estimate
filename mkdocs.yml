@@ -53,6 +53,26 @@ plugins:
         - locale: en
           name: English
           build: true
+          nav_translations:
+            Erste Schritte: Getting started
+            Nutzung: Usage
+            Übersicht: Overview
+            UKF im Einsatz: UKF in practice
+            Twin-Experimente: Twin experiments
+            Kalibrierungs-Artefakt: Calibration artifact
+            Schätzer-Registry: Estimator registry
+            Literaturüberblick: Literature review
+            Sensor-Zustand-Abhängigkeiten: Sensor-state dependencies
+            Theorie: Theory
+            ADM1da-Modell: ADM1da model
+            GRU-Observer (PINN B): GRU observer (PINN B)
+            UKF↔PINN-Fusion: UKF↔PINN fusion
+            Beispiele: Examples
+            API-Referenz: API reference
+            Entwicklung: Development
+            SR-UKF Performance: SR-UKF performance
+            Realistische Testbedingungen: Realistic test conditions
+            Fehlerbehebung: Troubleshooting
   - mkdocstrings:
       handlers:
         python:
@@ -119,6 +139,7 @@ nav:
       - UKF im Einsatz: usage/ukf.md
       - Twin-Experimente: usage/twin_experiments.md
       - Kalibrierungs-Artefakt: usage/calibration_artifact.md
+      - Schätzer-Registry: usage/estimators.md
   - Observability:
       - Übersicht: observability/index.md
       - Literaturüberblick: observability/literature_review.md
@@ -126,8 +147,8 @@ nav:
   - Theorie:
       - Übersicht: theory/index.md
       - ADM1da-Modell: theory/adm1.md
-      - PINN: theory/pinn.md
-      - Vortrainierter Observer: theory/observer.md
+      - PINN v2: theory/pinn.md
+      - GRU-Observer (PINN B): theory/observer.md
       - UKF↔PINN-Fusion: theory/fusion.md
   - Beispiele:
       - Übersicht: examples/index.md

@@ -27,7 +27,7 @@ This installs the core dependencies: `numpy`, `scipy`, `pandas`,
 
 ## Optional components
 
-### Deep learning (PINN, ensemble)
+### Deep learning (PINN v2, GRU observer)
 
 ```bash
 pip install -e ".[deep_learning]"

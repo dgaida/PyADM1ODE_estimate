@@ -8,7 +8,7 @@ torch = pytest.importorskip("torch")
 from pyadm1.core.adm1 import ADM1, calc_total_solids
 from pyadm1.core.adm1_torch import Adm1TorchParams, calc_gas_torch, ph_torch, ts_torch
 
-from pyadm1ode_estimation.estimation.deep_learning.observation_torch import (
+from pyadm1ode_estimation.estimation.observation_torch import (
     SUPPORTED_CHANNELS,
     TorchObservationModel,
 )

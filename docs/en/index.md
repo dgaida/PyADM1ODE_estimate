@@ -30,28 +30,29 @@ Live sensors ──────────────────────�
 
 ## Key features
 
-* 🎯 **Mechanistic and data-driven** — UKF on the full 41-state ADM1da plus  
-  planned deep-learning and fusion layers.  
+* 🎯 **Mechanistic and data-driven** — UKF on the full 41-state ADM1da and two
+  learned estimators (PINN v2, GRU observer) behind one registry.
 * 🔌 **Sensor-tolerant** — channel gating for sparse lab measurements,  
   OU drift for augmented input estimation.  
 * 📊 **Diagnostic** — per-step NIS monitoring, per-channel innovation,  
   Joseph-form covariance update for long runs.
 
-## Three estimation approaches
+## Estimation approaches
 
 | Approach | Status | Work package |
 |---|---|---|
 | **UKF** — mechanistic | production | AP 4.2 |
-| **Deep Learning Ensemble** | skeleton | AP 4.3 |
-| **Fusion** (Covariance Intersection) | placeholder | AP 4.4 |
+| **PINN v2** — collocation trajectory network | research | AP 4.3 |
+| **GRU observer (PINN B)** — amortised, trained once | research | AP 4.3 |
+| **Fusion** (Covariance Intersection) | experimental | AP 4.4 |
 
 ## Table of contents
 
 * [Getting started](getting-started.md) — quick onboarding.  
 * [Installation](installation.md) — setup for different environments.  
-* [Usage](usage/index.md) — configure the UKF, load the calibration artifact.  
+* [Usage](usage/index.md) — configure the UKF, load the calibration artifact, pick an estimator.  
 * [Observability](observability/index.md) — which states can be estimated from which sensors?  
-* [Theory](theory/index.md) — ADM1da model, PINN concept.  
+* [Theory](theory/index.md) — ADM1da model, PINN v2, GRU observer, fusion.  
 * [Examples](examples/index.md) — end-to-end examples (twin, real plant).  
 * [API reference](api/index.md) — auto-generated via mkdocstrings.  
 
