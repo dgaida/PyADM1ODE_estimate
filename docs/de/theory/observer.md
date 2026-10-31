@@ -235,11 +235,11 @@ also nicht helfen. `FeatureSpec(kinetic_keys=...)` ändert das: Je genannter
 Kinetikkonstante kommt eine Eingangsspalte mit dem Logarithmus ihres Faktors
 gegenüber dem Nominalwert hinzu, konstant über die ganze Reihe.
 
-* **Im Training** stehen dort die wahren Faktoren des Generators für jede
+* **Im Training** stehen dort die wahren Faktoren des Generators für jede  
   simulierte Reihe. `ObserverEstimator.train(..., kinetic_noise=0.07)` stört sie
   mit einem Zufallswert je Trainingssequenz, damit das Netz lernt, Kinetik zu
-  nutzen, die nur auf Kalibriergenauigkeit bekannt ist.
-* **In der Anwendung** wird die Kinetik vorgegeben:
+  nutzen, die nur auf Kalibriergenauigkeit bekannt ist.  
+* **In der Anwendung** wird die Kinetik vorgegeben:  
   `est.run(series, kinetics={"k_m_ac": 0.8, ...})`. Nicht genannte Schlüssel
   gelten als nominal, `{}` bedeutet nominale Kinetik. Ein kinetikbewusster
   Observer verweigert den Lauf ohne ausdrücklich übergebene Kinetik, damit die
@@ -266,13 +266,13 @@ Zur Einordnung: Der UKF mit nominaler Kinetik erreicht auf denselben Reihen
 Konstanten exakt bekannt, was keine Kalibrierung schafft, erreicht der Observer
 7,7 %.
 
-* **Der größte Teil des Observer-Fehlers ist unbekannte Kinetik.** Kennt er sie
-  ganz, halbiert sich der Fehler.
-* **Mit kalibrierter Kinetik ist er deutlich besser.** Bei der Genauigkeit, die
+* **Der größte Teil des Observer-Fehlers ist unbekannte Kinetik.** Kennt er sie  
+  ganz, halbiert sich der Fehler.  
+* **Mit kalibrierter Kinetik ist er deutlich besser.** Bei der Genauigkeit, die  
   die Kinetikkalibrierungsstudie erreicht, σ ≈ 0,07, ist der kinetikbewusste
   Observer 1,9 Punkte besser (p = 0,005). Bei σ = 0,15 schrumpft der Gewinn auf
-  0,8 Punkte und ist nicht mehr signifikant.
-* **Ohne Kalibrierung ist er schlechter.** Bekommt er „nominal“, vertraut er
+  0,8 Punkte und ist nicht mehr signifikant.  
+* **Ohne Kalibrierung ist er schlechter.** Bekommt er „nominal“, vertraut er  
   diesem Eingang, statt die Kinetik wie der kinetikblinde Observer aus dem
   Sensorverlauf zu erschließen, und verliert 2,5 Punkte.
 
@@ -290,9 +290,9 @@ nicht mitgeliefert; `kinetic_inputs.py` trainiert sie neu.
 * `pyadm1ode_estimation/estimation/observer/model.py` — `Adm1Observer`  
 * `pyadm1ode_estimation/estimation/observer/datasets.py` — `generate_observer_dataset`, `ObserverDataset`, `MeasurementDataset`  
 * `pyadm1ode_estimation/estimation/observer/train.py` — `pretrain_observer`, `pretrain_observer_selfsup`, `pretrain_observer_sim2real`, `finetune_observer`  
-* `pyadm1ode_estimation/estimation/observer/online.py` — `SlidingWindowObserver`
+* `pyadm1ode_estimation/estimation/observer/online.py` — `SlidingWindowObserver`  
 * `pyadm1ode_estimation/estimation/observer/adapter.py` — `PinnData`, `FeatureSpec` (inkl. `organic_load`, `kinetic_keys`), `kinetic_log_factors`  
-* `pyadm1ode_estimation/estimation/estimators.py` — `ObserverEstimator` (trainieren, speichern, laden, `for_dataset`)
+* `pyadm1ode_estimation/estimation/estimators.py` — `ObserverEstimator` (trainieren, speichern, laden, `for_dataset`)  
 * `experiments/observer_generalisation/` — Rezept-Sweep, Seed-Ensemble, Abdeckungstest, Kinetik-Eingänge  
 
 ## API-Referenz

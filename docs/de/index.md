@@ -31,8 +31,8 @@ Live-Sensoren ──────────────────────
 
 ## Hauptmerkmale
 
-* 🎯 **Mechanistisch und datengetrieben** — UKF auf dem vollen 41-State ADM1da
-  und zwei gelernte Schätzer (PINN v2, GRU-Observer) hinter einer Registry.
+* 🎯 **Mechanistisch und datengetrieben** — UKF auf dem vollen 41-State ADM1da  
+  und zwei gelernte Schätzer (PINN v2, GRU-Observer) hinter einer Registry.  
 * 🔌 **Sensor-tolerant** — Channel-Gating für sparsame Lab-Messungen,  
   OU-Drift für augmentierte Eingangsschätzung.  
 * 📊 **Diagnostisch** — NIS-Monitoring je Schritt, Innovation pro Channel,  

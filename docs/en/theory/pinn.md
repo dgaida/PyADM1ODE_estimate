@@ -34,7 +34,7 @@ Two properties follow:
 
 * **Soft physics.** The equations are a penalty, so the network can trade  
   model error against data fit. That is a strength when the model is wrong and a
-  weakness when the data are too few to pin the state down.
+  weakness when the data are too few to pin the state down.  
 * **Per-series fit.** Nothing is learned *across* series. Whatever the network  
   knows about kinetics it must infer from the window it sees. The benchmark
   perturbs 26 kinetic constants per series ($\sigma = 0.25$, lognormal), and a
@@ -54,13 +54,13 @@ $$
 
 * $\mu, \sigma$ — per-state mean / std of $\log x$ on the **training split**  
   (`train_split_log_stats`), so the output normalisation never sees the
-  evaluated series' truth. The exponential keeps every state positive.
+  evaluated series' truth. The exponential keeps every state positive.  
 * $\tilde t$ — time scaled to the window, optionally expanded into $K$  
   deterministic Fourier pairs $(\sin 2\pi k \tilde t, \cos 2\pi k \tilde t)$
   (`ArchConfig.fourier_features`). This is the one structural knob that
-  measurably helped (section 6).
+  measurably helped (section 6).  
 * $\phi(u, t)$ — the current feed, or the current feed plus daily / weekly  
-  history means (`feed_mode = "current" | "hist7" | "hist30"`).
+  history means (`feed_mode = "current" | "hist7" | "hist30"`).  
 * Body: `depth` tanh layers of `width` units; options for layer norm, residual  
   blocks, the "modified MLP" and per-state output heads exist and were tested.
 
@@ -87,10 +87,10 @@ estimators.
   with plain array algebra. Its `"nominal_mix"` mode reproduces how the
   benchmark truth was generated (composition from the nominal mix, total flow
   from the feed); `"blend"` is the physically correct flow-weighted blend for
-  plants whose composition really varies.
+  plants whose composition really varies.  
 * `build_params` snapshots the plant's parameters, optionally with the series'  
   true kinetic factors (for verification only — a field PINN has the nominal
-  model).
+  model).  
 * The residual rows are the core states except the fast dissolved gases  
   $S_{h2}, S_{ch4}$; the rows of $S_{co2}$ and $S_{nh4}$ are formed as the
   conserved sums $S_{co2}+S_{hco3}$ and $S_{nh4}+S_{nh3}$, which removes the
@@ -114,12 +114,12 @@ $$
 
 * $h$ is the differentiable measurement model (`MeasurementModel`: gas flows  
   from the quasi-steady headspace, pH from the charge balance, TS from the
-  particulates), $\sigma_y$ the dataset's sensor noise.
-* $\dot{\hat x}$ is the exact time derivative of the network (autograd).
+  particulates), $\sigma_y$ the dataset's sensor noise.  
+* $\dot{\hat x}$ is the exact time derivative of the network (autograd).  
 * $\sigma_r$ is a **per-row residual scale** fitted on training data  
   (`fit_scale`), either the typical size of the net rate (`"rate"`) or a
   Jacobian-based scale (`"jacobian"`, the default for the PINN). Without it the
-  stiff rows dominate and the slow, informative rows are ignored.
+  stiff rows dominate and the slow, informative rows are ignored.  
 * $\lambda$ ramps up linearly over the first 20 % of the steps  
   (`lambda_warmup_frac`); Adam with cosine decay, optional L-BFGS polish.
 
@@ -171,12 +171,12 @@ because the rolling PINN runs on the prior mean for its first days.
 
 * **The only lever that helps is the Fourier time encoding** (main effect about  
   −1 point). Depth, width, activation, layer norm, residual blocks, feed
-  history, per-state heads: inside the seed noise.
+  history, per-state heads: inside the seed noise.  
 * The offline gap to the UKF (3.3 points, $p = 0.064$) is a  
   **model-error / identifiability** gap, not a capacity gap: the network cannot
   learn the series' kinetics from five sensors, and the soft physics lets it
   drift where the data do not pin it. Run causally, every scheme stays
-  significantly behind the UKF ($p \le 0.005$).
+  significantly behind the UKF ($p \le 0.005$).  
 * Fusing the PINN into the UKF as a pseudo-measurement or with a fixed gate  
   (blocks F1–F4) gains about one point, not significant.
 

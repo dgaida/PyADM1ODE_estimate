@@ -6,7 +6,7 @@ covers the **current** API (refactor 2026); the building blocks are:
 * :func:`adm1da_full_spec` — factory for the full 41-state ADM1da vector  
 * :class:`UnscentedKalmanFilter` — Square-Root UKF (Wan & Van der Merwe 2001)  
 * :class:`MeasurementCalendar` — per-sensor sample-rate management  
-* :class:`SensorAdapter` — bridge to the PyADM1ODE sensor classes
+* :class:`SensorAdapter` — bridge to the PyADM1ODE sensor classes  
 
 ![Kalman filter: predict, compare, correct every hour](../../assets/slides/folie_schaetzung_kalman.svg)
 

@@ -223,11 +223,11 @@ help it. `FeatureSpec(kinetic_keys=...)` changes that: it appends one input
 column per named kinetic constant, holding the log of its factor relative to the
 nominal value, constant over the whole series.
 
-* **Training** uses the generator's true factors of each simulated series.
+* **Training** uses the generator's true factors of each simulated series.  
   `ObserverEstimator.train(..., kinetic_noise=0.07)` perturbs them by one draw
   per training sequence, so the network learns to use kinetics that are known
-  only to calibration accuracy.
-* **Inference** takes the kinetics as given:
+  only to calibration accuracy.  
+* **Inference** takes the kinetics as given:  
   `est.run(series, kinetics={"k_m_ac": 0.8, ...})`. Keys that are not given count
   as nominal, and `{}` means nominal kinetics. A kinetics-aware observer refuses
   to run without explicit kinetics, so the generator truth a benchmark series
@@ -252,13 +252,13 @@ For orientation: the UKF with nominal kinetics reaches 16.3 % on the same series
 Five inputs instead of ten give 13.2 % at σ = 0.07. With all 26 constants known
 exactly, which no calibration achieves, the observer reaches 7.7 %.
 
-* **Most of the observer's error is unknown kinetics.** Knowing all of them
-  halves it.
-* **With calibrated kinetics it is clearly better.** At the accuracy the kinetics
+* **Most of the observer's error is unknown kinetics.** Knowing all of them  
+  halves it.  
+* **With calibrated kinetics it is clearly better.** At the accuracy the kinetics  
   calibration study reaches, σ ≈ 0.07, the kinetics-aware observer is 1.9 points
   better (p = 0.005). At σ = 0.15 the gain shrinks to 0.8 points and is no longer
-  significant.
-* **Without calibration it is worse.** Told "nominal", it trusts that input
+  significant.  
+* **Without calibration it is worse.** Told "nominal", it trusts that input  
   instead of inferring the kinetics from the sensor history as the kinetics-blind
   observer does, and loses 2.5 points.
 
@@ -276,9 +276,9 @@ shipped; `kinetic_inputs.py` retrains them.
 * `pyadm1ode_estimation/estimation/observer/model.py` — `Adm1Observer`  
 * `pyadm1ode_estimation/estimation/observer/datasets.py` — `generate_observer_dataset`, `ObserverDataset`, `MeasurementDataset`  
 * `pyadm1ode_estimation/estimation/observer/train.py` — `pretrain_observer`, `pretrain_observer_selfsup`, `pretrain_observer_sim2real`, `finetune_observer`  
-* `pyadm1ode_estimation/estimation/observer/online.py` — `SlidingWindowObserver`
+* `pyadm1ode_estimation/estimation/observer/online.py` — `SlidingWindowObserver`  
 * `pyadm1ode_estimation/estimation/observer/adapter.py` — `PinnData`, `FeatureSpec` (incl. `organic_load`, `kinetic_keys`), `kinetic_log_factors`  
-* `pyadm1ode_estimation/estimation/estimators.py` — `ObserverEstimator` (train, save, load, `for_dataset`)
+* `pyadm1ode_estimation/estimation/estimators.py` — `ObserverEstimator` (train, save, load, `for_dataset`)  
 * `experiments/observer_generalisation/` — recipe sweep, seed ensemble, coverage test, kinetic inputs  
 
 ## API reference
