@@ -11,10 +11,10 @@ Praktische Anleitungen, wie das Repo im realen Betrieb genutzt wird.
 * [Twin-Experimente](twin_experiments.md) — End-to-End-Validierung gegen  
   eine bekannte Wahrheit. Das vorgefertigte `run_twin_experiment.py`
   und Interpretation der Diagnose-Plots.  
-* [Kalibrierungs-Artefakt](calibration_artifact.md) — Wie das YAML-Format
+* [Kalibrierungs-Artefakt](calibration_artifact.md) — Wie das YAML-Format  
   zwischen Kalibrierung und Schätzung aussieht und wie der Filter es
-  beim Hochfahren aufträgt.
-* [Schätzer-Registry](estimators.md) — eine Schnittstelle für UKF, PINN v2 und
+  beim Hochfahren aufträgt.  
+* [Schätzer-Registry](estimators.md) — eine Schnittstelle für UKF, PINN v2 und  
   GRU-Observer: per Name bauen, auf einer Reihe laufen lassen, bewerten,
   Kommandozeile.
 

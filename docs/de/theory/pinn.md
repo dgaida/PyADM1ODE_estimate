@@ -37,7 +37,7 @@ Daraus folgen zwei Eigenschaften:
 * **Weiche Physik.** Die Gleichungen sind ein Strafterm, das Netz kann also  
   Modellfehler gegen Datenanpassung abwägen. Das ist eine Stärke, wenn das
   Modell falsch ist, und eine Schwäche, wenn die Daten den Zustand nicht
-  festlegen.
+  festlegen.  
 * **Fit je Reihe.** Über Reihen hinweg wird nichts gelernt. Was das Netz über  
   die Kinetik weiß, muss es aus dem Fenster ableiten, das es sieht. Der
   Benchmark stört 26 Kinetikkonstanten je Reihe ($\sigma = 0{,}25$, lognormal),
@@ -58,13 +58,13 @@ $$
 * $\mu, \sigma$ — Mittelwert und Streuung von $\log x$ je Zustand auf dem  
   **Trainings-Split** (`train_split_log_stats`), die Ausgabenormierung sieht
   also nie die Wahrheit der bewerteten Reihe. Die Exponentialfunktion hält
-  jeden Zustand positiv.
+  jeden Zustand positiv.  
 * $\tilde t$ — auf das Fenster skalierte Zeit, optional in $K$ deterministische  
   Fourier-Paare $(\sin 2\pi k \tilde t, \cos 2\pi k \tilde t)$ entwickelt
   (`ArchConfig.fourier_features`). Das ist der einzige Strukturhebel, der
-  messbar geholfen hat (Abschnitt 6).
+  messbar geholfen hat (Abschnitt 6).  
 * $\phi(u, t)$ — die aktuelle Fütterung oder zusätzlich Tages- bzw.  
-  Wochenmittel der Vergangenheit (`feed_mode = "current" | "hist7" | "hist30"`).
+  Wochenmittel der Vergangenheit (`feed_mode = "current" | "hist7" | "hist30"`).  
 * Rumpf: `depth` tanh-Schichten mit je `width` Neuronen; Layer-Norm,  
   Residualblöcke, das „modified MLP“ und Ausgabeköpfe je Zustand sind als
   Optionen vorhanden und getestet.
@@ -93,10 +93,10 @@ Implementierung der Gleichungen bedient also alle Schätzer.
   Array-Algebra $(q_{ad}, s_{in})$. Der Modus `"nominal_mix"` bildet nach, wie
   die Benchmark-Wahrheit erzeugt wurde (Zusammensetzung aus der Nominalmischung,
   Gesamtfluss aus der Fütterung); `"blend"` ist die physikalisch richtige
-  flussgewichtete Mischung für Anlagen mit wirklich wechselnder Zusammensetzung.
+  flussgewichtete Mischung für Anlagen mit wirklich wechselnder Zusammensetzung.  
 * `build_params` friert die Anlagenparameter ein, optional mit den wahren  
   Kinetikfaktoren der Reihe (nur zur Verifikation — ein PINN im Feld hat das
-  Nominalmodell).
+  Nominalmodell).  
 * Die Residuumszeilen sind die Kernzustände ohne die schnellen gelösten Gase  
   $S_{h2}, S_{ch4}$; die Zeilen von $S_{co2}$ und $S_{nh4}$ werden als
   Erhaltungssummen $S_{co2}+S_{hco3}$ und $S_{nh4}+S_{nh3}$ gebildet, was die
@@ -120,12 +120,12 @@ $$
 
 * $h$ ist das differenzierbare Messmodell (`MeasurementModel`: Gasflüsse aus dem  
   quasi-stationären Gasraum, pH aus der Ladungsbilanz, TS aus den
-  Partikulärfraktionen), $\sigma_y$ das Sensorrauschen des Datensatzes.
-* $\dot{\hat x}$ ist die exakte Zeitableitung des Netzes (Autograd).
+  Partikulärfraktionen), $\sigma_y$ das Sensorrauschen des Datensatzes.  
+* $\dot{\hat x}$ ist die exakte Zeitableitung des Netzes (Autograd).  
 * $\sigma_r$ ist eine **Residuumsskala je Zeile**, auf Trainingsdaten gefittet  
   (`fit_scale`), entweder die typische Größe der Nettorate (`"rate"`) oder eine
   Jacobi-basierte Skala (`"jacobian"`, Standard beim PINN). Ohne sie dominieren
-  die steifen Zeilen und die langsamen, informativen Zeilen gehen unter.
+  die steifen Zeilen und die langsamen, informativen Zeilen gehen unter.  
 * $\lambda$ steigt in den ersten 20 % der Schritte linear an  
   (`lambda_warmup_frac`); Adam mit Kosinus-Abfall, optional L-BFGS zum Schluss.
 
@@ -179,12 +179,12 @@ das gleitende PINN in den ersten Tagen auf der Prior-Mitte läuft.
 * **Der einzige Hebel, der hilft, ist die Fourier-Zeitkodierung**  
   (Haupteffekt etwa −1 Punkt). Tiefe, Breite, Aktivierung, Layer-Norm,
   Residualblöcke, Fütterungshistorie, Ausgabeköpfe je Zustand: innerhalb des
-  Seed-Rauschens.
+  Seed-Rauschens.  
 * Der Offline-Abstand zum UKF (3,3 Punkte, $p = 0{,}064$) ist eine Lücke aus  
   **Modellfehler und Identifizierbarkeit**, keine Kapazitätslücke: Das Netz
   kann die Kinetik der Reihe nicht aus fünf Sensoren lernen, und die weiche
   Physik lässt es dort driften, wo die Daten es nicht festhalten. Kausal
-  betrieben bleibt jedes Schema signifikant hinter dem UKF ($p \le 0{,}005$).
+  betrieben bleibt jedes Schema signifikant hinter dem UKF ($p \le 0{,}005$).  
 * Das PINN als Pseudomessung oder mit festem Gate in den UKF zu fusionieren  
   (Blöcke F1–F4) bringt etwa einen Punkt, nicht signifikant.
 

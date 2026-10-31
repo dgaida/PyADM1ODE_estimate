@@ -30,8 +30,8 @@ Live sensors ──────────────────────�
 
 ## Key features
 
-* 🎯 **Mechanistic and data-driven** — UKF on the full 41-state ADM1da and two
-  learned estimators (PINN v2, GRU observer) behind one registry.
+* 🎯 **Mechanistic and data-driven** — UKF on the full 41-state ADM1da and two  
+  learned estimators (PINN v2, GRU observer) behind one registry.  
 * 🔌 **Sensor-tolerant** — channel gating for sparse lab measurements,  
   OU drift for augmented input estimation.  
 * 📊 **Diagnostic** — per-step NIS monitoring, per-channel innovation,  
