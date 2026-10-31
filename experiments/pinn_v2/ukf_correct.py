@@ -353,9 +353,7 @@ def main() -> None:
         nargs="*",
         default=["f1_trajectories", "f1_trajectories_seed1", "f1_trajectories_seed2"],
     )
-    ap.add_argument(
-        "--theta", default=str(REFERENCE_DIR / "cmaes_full_winner.json")
-    )
+    ap.add_argument("--theta", default=str(REFERENCE_DIR / "cmaes_full_winner.json"))
     ap.add_argument(
         "--max-hours",
         type=int,

@@ -11,12 +11,12 @@ from pyadm1.components.biological import Digester
 from pyadm1ode_estimation.estimation.observation_torch import (
     TorchObservationModel,
 )
-from pyadm1ode_estimation.estimation.observer.model import Adm1Observer
 from pyadm1ode_estimation.estimation.observer.datasets import (
     MeasurementDataset,
     ObserverDataset,
     generate_observer_dataset,
 )
+from pyadm1ode_estimation.estimation.observer.model import Adm1Observer
 from pyadm1ode_estimation.estimation.observer.train import (
     finetune_observer,
     observer_predict,

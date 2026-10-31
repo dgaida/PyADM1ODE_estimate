@@ -12,9 +12,8 @@ import time
 import warnings
 from functools import lru_cache
 
-import numpy as np
-
 import common as C
+import numpy as np
 
 
 def init_worker() -> None:
@@ -69,7 +68,9 @@ def run_traj(cond: str, ds: str, variant: str, i: int) -> str:
         if spec["kind"] == "ukf":
             from pyadm1ode_estimation.estimation.estimators import UkfEstimator
 
-            tr = UkfEstimator(data, spec["variant"], prune=bool(spec.get("prune", False))).run(s, i, kinetics=kin)
+            tr = UkfEstimator(
+                data, spec["variant"], prune=bool(spec.get("prune", False))
+            ).run(s, i, kinetics=kin)
             x, std = tr.x_hat, tr.std
         elif spec["kind"] == "pinn":
             from pyadm1ode_estimation.estimation.estimators import PinnEstimator
@@ -89,13 +90,31 @@ def run_traj(cond: str, ds: str, variant: str, i: int) -> str:
             path,
             x_hat=x.astype(np.float32),
             std=np.asarray(std, float).astype(np.float32),
-            meta=_meta(cond=cond, ds=ds, variant=variant, i=i, wall_s=time.perf_counter() - t0,
-                       kinetics=kin, finite=finite, score=_window_score(x, np.asarray(s.truth, float)) if finite else None),
+            meta=_meta(
+                cond=cond,
+                ds=ds,
+                variant=variant,
+                i=i,
+                wall_s=time.perf_counter() - t0,
+                kinetics=kin,
+                finite=finite,
+                score=_window_score(x, np.asarray(s.truth, float)) if finite else None,
+            ),
         )
         return "ok"
-    except Exception as exc:  # noqa: BLE001 - a failing series is a result (T4), not a crash
-        C.record_failure(path, exc, {"cond": cond, "ds": ds, "variant": variant, "i": i,
-                                     "wall_s": time.perf_counter() - t0})
+    # a failing series is a result (T4), not a crash
+    except Exception as exc:  # noqa: BLE001
+        C.record_failure(
+            path,
+            exc,
+            {
+                "cond": cond,
+                "ds": ds,
+                "variant": variant,
+                "i": i,
+                "wall_s": time.perf_counter() - t0,
+            },
+        )
         return "failed"
 
 
@@ -108,7 +127,9 @@ def _members(variant: str, ds: str):
 
     spec = C.config()["variants"][variant]
     return [
-        ObserverEstimator.load(C.REPO / spec["checkpoints"].format(seed=sd), C.dataset(ds))
+        ObserverEstimator.load(
+            C.REPO / spec["checkpoints"].format(seed=sd), C.dataset(ds)
+        )
         for sd in spec["seeds"]
     ]
 
@@ -131,14 +152,23 @@ def run_observer(cond: str, ds: str, variant: str) -> str:
                 path,
                 x_hat=xs.mean(axis=0).astype(np.float32),
                 std=xs.std(axis=0).astype(np.float32),
-                meta=_meta(cond=cond, ds=ds, variant=variant, i=i, wall_s=time.perf_counter() - t0,
-                           kinetics=kin, finite=bool(np.all(np.isfinite(xs))),
-                           member_scores=[_window_score(x, truth) for x in xs],
-                           score=_window_score(xs.mean(axis=0), truth)),
+                meta=_meta(
+                    cond=cond,
+                    ds=ds,
+                    variant=variant,
+                    i=i,
+                    wall_s=time.perf_counter() - t0,
+                    kinetics=kin,
+                    finite=bool(np.all(np.isfinite(xs))),
+                    member_scores=[_window_score(x, truth) for x in xs],
+                    score=_window_score(xs.mean(axis=0), truth),
+                ),
             )
             status = "ok"
         except Exception as exc:  # noqa: BLE001
-            C.record_failure(path, exc, {"cond": cond, "ds": ds, "variant": variant, "i": i})
+            C.record_failure(
+                path, exc, {"cond": cond, "ds": ds, "variant": variant, "i": i}
+            )
             status = "failed"
     return status
 
@@ -161,23 +191,49 @@ def run_calibration(ds: str, i: int) -> str:
     try:
         u1 = C.load_traj("nominal", ds, "U1", i)
         if u1 is not None and np.all(np.isfinite(u1["x_hat"][h0])):
-            x_start, start_source = np.asarray(u1["x_hat"][h0], float), f"nominal U1 estimate at hour {h0}"
+            x_start, start_source = (
+                np.asarray(u1["x_hat"][h0], float),
+                f"nominal U1 estimate at hour {h0}",
+            )
         else:  # the nominal filter failed on this series: fall back to the warm-up state
-            x_start, start_source = ForwardModel.build(data.meta).warmup_state(), "warm-up state (U1 failed)"
+            x_start, start_source = (
+                ForwardModel.build(data.meta).warmup_state(),
+                "warm-up state (U1 failed)",
+            )
         keys = C.calibration_keys()
         res = calibrate(
-            data.meta, s.measurements, s.feed, x_start, keys, (h0, h1),
-            budget=int(cfg["budget"]), log_bound=float(cfg["log_bound"]),
-            xtol=float(cfg["xtol"]), ftol=float(cfg["ftol"]),
+            data.meta,
+            s.measurements,
+            s.feed,
+            x_start,
+            keys,
+            (h0, h1),
+            budget=int(cfg["budget"]),
+            log_bound=float(cfg["log_bound"]),
+            xtol=float(cfg["xtol"]),
+            ftol=float(cfg["ftol"]),
         )
         truth = C.true_factors(ds, i)  # diagnostics only, after the fit
-        res["log_error"] = {k: float(np.log(res["factors"][k] / truth[k])) for k in keys}
+        res["log_error"] = {
+            k: float(np.log(res["factors"][k] / truth[k])) for k in keys
+        }
         res["log_error_nominal"] = {k: float(-np.log(truth[k])) for k in keys}
-        C.atomic_write_json(path, {"config_hash": C.config_hash(), "ds": ds, "i": i,
-                                   "start_source": start_source, "keys": keys, **res})
+        C.atomic_write_json(
+            path,
+            {
+                "config_hash": C.config_hash(),
+                "ds": ds,
+                "i": i,
+                "start_source": start_source,
+                "keys": keys,
+                **res,
+            },
+        )
         return "ok"
     except Exception as exc:  # noqa: BLE001
-        C.record_failure(path, exc, {"ds": ds, "i": i, "wall_s": time.perf_counter() - t0})
+        C.record_failure(
+            path, exc, {"ds": ds, "i": i, "wall_s": time.perf_counter() - t0}
+        )
         return "failed"
 
 
@@ -202,8 +258,12 @@ def run_val_open_loop(i: int) -> str:
         _, val = val_series()
         s = val[i]
         x = open_loop(C.dataset("benchmark").meta, np.asarray(s.feed, float), {})
-        C.atomic_savez(path, x_hat=x.astype(np.float32), std=np.zeros_like(x, dtype=np.float32),
-                       meta=_meta(cond="val", ds="benchmark_val", variant="R1", i=i))
+        C.atomic_savez(
+            path,
+            x_hat=x.astype(np.float32),
+            std=np.zeros_like(x, dtype=np.float32),
+            meta=_meta(cond="val", ds="benchmark_val", variant="R1", i=i),
+        )
         return "ok"
     except Exception as exc:  # noqa: BLE001
         C.record_failure(path, exc, {"i": i})

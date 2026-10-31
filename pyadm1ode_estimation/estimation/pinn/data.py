@@ -46,10 +46,14 @@ class BenchmarkSeries:
         ``kinetic_keys`` in ``s.aux`` (any benchmark split has them).
         """
         missing = [
-            k for k in ("feed_true", "kinetic_factors", "kinetic_keys") if k not in s.aux
+            k
+            for k in ("feed_true", "kinetic_factors", "kinetic_keys")
+            if k not in s.aux
         ]
         if missing:
-            raise KeyError(f"series lacks generator truth {missing}; not a benchmark split?")
+            raise KeyError(
+                f"series lacks generator truth {missing}; not a benchmark split?"
+            )
         return cls(
             index=index,
             split=split,

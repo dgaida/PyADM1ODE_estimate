@@ -48,7 +48,9 @@ class RollingConfig:
     lr_warm: float = 5.0e-4
     lags_days: tuple[float, ...] = (1.0, 3.0)
     min_window_days: float = 1.0  # before that, no retraining (prior mean is used)
-    adm1_bridge: bool = True  # also integrate the "adm1" bridging (costly; "hold" does not need it)
+    adm1_bridge: bool = (
+        True  # also integrate the "adm1" bridging (costly; "hold" does not need it)
+    )
 
     @property
     def name(self) -> str:

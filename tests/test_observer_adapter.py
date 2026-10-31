@@ -16,15 +16,15 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
+from pyadm1ode_estimation.estimation.filter_tuning.datasets import (
+    EstimatorDataset,
+    Series,
+)
 from pyadm1ode_estimation.estimation.observer.adapter import (
     FeatureSpec,
     PinnData,
     SplitRecord,
     parse_noise_spec,
-)
-from pyadm1ode_estimation.estimation.filter_tuning.datasets import (
-    EstimatorDataset,
-    Series,
 )
 
 N_STATE = 7
@@ -426,7 +426,9 @@ def test_benchmark_time_varying_feed_reaches_the_rhs():
     s = d.series("val")[0]
     p = d.feed_params_at(s)(np.linspace(float(s.time[0]), float(s.time[120]), 8))
     x = torch_.tensor(
-        np.tile(np.asarray(s.truth, float)[0], (8, 1)), dtype=torch_.float64, requires_grad=True
+        np.tile(np.asarray(s.truth, float)[0], (8, 1)),
+        dtype=torch_.float64,
+        requires_grad=True,
     )
     f = adm1da_rhs_torch(x, p)
     assert f.shape == (8, 41) and bool(torch_.isfinite(f).all())
@@ -480,18 +482,27 @@ def _with_kinetics(s: Series, keys, factors) -> Series:
     import dataclasses
 
     return dataclasses.replace(
-        s, aux={**s.aux, "kinetic_keys": list(keys), "kinetic_factors": np.asarray(factors, float)}
+        s,
+        aux={
+            **s.aux,
+            "kinetic_keys": list(keys),
+            "kinetic_factors": np.asarray(factors, float),
+        },
     )
 
 
 def test_kinetic_columns_come_from_the_generator_truth():
     from pyadm1ode_estimation.estimation.observer.adapter import kinetic_log_factors
 
-    s = _with_kinetics(_series(np.random.default_rng(1), "calm", 0), ["k_m_ac", "k_dis_PS"], [2.0, 0.5])
+    s = _with_kinetics(
+        _series(np.random.default_rng(1), "calm", 0), ["k_m_ac", "k_dis_PS"], [2.0, 0.5]
+    )
     spec = FeatureSpec(kinetic_keys=("k_dis_PS", "k_m_ac", "k_m_pro"))
     x, names = spec.build(s, {"sensor_names": ["Q_gas", "pH", "TS"], "meta": {}})
     assert names[-3:] == ["logk_k_dis_PS", "logk_k_m_ac", "logk_k_m_pro"]
-    np.testing.assert_allclose(x[:, -3:], np.tile([np.log(0.5), np.log(2.0), 0.0], (T, 1)))
+    np.testing.assert_allclose(
+        x[:, -3:], np.tile([np.log(0.5), np.log(2.0), 0.0], (T, 1))
+    )
     np.testing.assert_allclose(kinetic_log_factors(s, ["k_m_ac"]), [np.log(2.0)])
 
 
@@ -508,16 +519,23 @@ def test_given_kinetics_override_the_truth_and_default_to_nominal():
 def test_kinetic_columns_need_given_kinetics_or_the_truth():
     s = _series(np.random.default_rng(3), "calm", 0)
     with pytest.raises(KeyError):
-        FeatureSpec(kinetic_keys=("k_m_ac",)).build(s, {"sensor_names": ["a", "b", "c"], "meta": {}})
+        FeatureSpec(kinetic_keys=("k_m_ac",)).build(
+            s, {"sensor_names": ["a", "b", "c"], "meta": {}}
+        )
 
 
 def test_kinetic_columns_are_constant_and_normalised_on_train():
     ds = _dataset()
     rng = np.random.default_rng(4)
-    pool = [_with_kinetics(s, ["k_m_ac"], [float(np.exp(rng.normal(0, 0.25)))]) for s in ds.pool]
+    pool = [
+        _with_kinetics(s, ["k_m_ac"], [float(np.exp(rng.normal(0, 0.25)))])
+        for s in ds.pool
+    ]
     test = [_with_kinetics(s, ["k_m_ac"], [1.0]) for s in ds.test]
     ds2 = EstimatorDataset(name="kin", meta=ds.meta, pool=pool, test=test)
-    d = PinnData.build(ds2, val_frac=0.2, seed=0, feature_spec=FeatureSpec(kinetic_keys=("k_m_ac",)))
+    d = PinnData.build(
+        ds2, val_frac=0.2, seed=0, feature_spec=FeatureSpec(kinetic_keys=("k_m_ac",))
+    )
     assert d.feature_names[-1] == "logk_k_m_ac"
     f = d.features("train")
     assert np.allclose(f[:, :, -1], f[:, :1, -1])  # constant over time within a series

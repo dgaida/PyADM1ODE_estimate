@@ -25,7 +25,11 @@ from pathlib import Path
 
 import numpy as np
 
-from pyadm1ode_estimation.estimation.estimators import DEFAULT_BURNIN_STEPS, ObserverEstimator, score
+from pyadm1ode_estimation.estimation.estimators import (
+    DEFAULT_BURNIN_STEPS,
+    ObserverEstimator,
+    score,
+)
 from pyadm1ode_estimation.estimation.filter_tuning.datasets import get_dataset
 from pyadm1ode_estimation.estimation.observer import FeatureSpec, PinnData
 
@@ -53,11 +57,19 @@ VARIANTS: dict[str, dict] = {
     "small": {"hidden": 32},
     "short_window": {"window": 168},
     "combined": {"noise_aug": 1.0, "weight_decay": 1.0e-4, "n_random": 8},
-    "combined_dropout": {"noise_aug": 1.0, "weight_decay": 1.0e-4, "n_random": 8, "dropout": 0.1},
+    "combined_dropout": {
+        "noise_aug": 1.0,
+        "weight_decay": 1.0e-4,
+        "n_random": 8,
+        "dropout": 0.1,
+    },
     # substrate-agnostic inputs: influent loads instead of / beside per-substrate volumes
     "load": {"features": {"organic_load": True, "use_feed": False}},
     "load_feed": {"features": {"organic_load": True}},
-    "load_dropout": {"features": {"organic_load": True, "use_feed": False}, "dropout": 0.1},
+    "load_dropout": {
+        "features": {"organic_load": True, "use_feed": False},
+        "dropout": 0.1,
+    },
 }
 
 
@@ -70,19 +82,26 @@ def evaluate(est: ObserverEstimator, datasets: dict, burnin: int) -> dict:
     """Per test set: mean score, per-mode means and the per-series scores."""
     out = {}
     for name, ds in datasets.items():
-        e = est.for_dataset(ds)  # meta-dependent features use the target plant's substrates
+        e = est.for_dataset(
+            ds
+        )  # meta-dependent features use the target plant's substrates
         per = [score(e.run(s, i), s, burnin) for i, s in enumerate(ds.test)]
         labels = [s.label for s in ds.test]
         out[name] = {
             "mean": float(np.mean(per)),
-            "per_mode": {m: float(np.mean([p for p, l in zip(per, labels) if l == m])) for m in sorted(set(labels))},
+            "per_mode": {
+                m: float(np.mean([p for p, l in zip(per, labels) if l == m]))
+                for m in sorted(set(labels))
+            },
             "per_series": per,
         }
     return out
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--variants", nargs="*", default=list(VARIANTS))
     ap.add_argument("--seeds", nargs="*", type=int, default=[0, 1, 2])
     ap.add_argument("--epochs", type=int, default=200)
@@ -108,7 +127,10 @@ def main() -> int:
         key = json.dumps(features, sort_keys=True)
         if key not in data_cache:
             data_cache[key] = PinnData.build(
-                datasets["benchmark"], val_frac=0.2, seed=0, feature_spec=FeatureSpec(**features)
+                datasets["benchmark"],
+                val_frac=0.2,
+                seed=0,
+                feature_spec=FeatureSpec(**features),
             )
             print(data_cache[key].summary(), flush=True)
         return data_cache[key]

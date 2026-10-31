@@ -93,7 +93,9 @@ def reference_theta(variant: str = "full") -> tuple[dict, float | None]:
     """``(theta, fostac_every_days)`` of the CMA-ES reference run, or ``({}, None)``."""
     path = REFERENCE_DIR / f"cmaes_{variant}_winner.json"
     if not path.exists():
-        warnings.warn(f"no reference theta at {path}; using the untuned filter", stacklevel=2)
+        warnings.warn(
+            f"no reference theta at {path}; using the untuned filter", stacklevel=2
+        )
         return {}, None
     winner = json.loads(path.read_text(encoding="utf-8"))
     return dict(winner.get("theta", {})), winner.get("fostac_every_days")
@@ -139,7 +141,9 @@ class UkfEstimator:
 
     def episode(self, series: Series, index: int = 0, kinetics: dict | None = None):
         """The filter episode of ``series``, carrying the plant ``kinetics`` if given."""
-        ep = self.dataset.to_episode(series, burnin_days=0.0, name=f"{series.label}#{index}")
+        ep = self.dataset.to_episode(
+            series, burnin_days=0.0, name=f"{series.label}#{index}"
+        )
         if kinetics:
             ep.obs["kinetics"] = dict(kinetics)
         return ep
@@ -152,15 +156,23 @@ class UkfEstimator:
         xh, sd = self._runner(self.theta, ep)
         return TrajectoryEstimate(time=np.asarray(series.time, float), x_hat=xh, std=sd)
 
-    def run_many(self, series: list[Series], jobs: int = 1) -> list[TrajectoryEstimate | None]:
+    def run_many(
+        self, series: list[Series], jobs: int = 1
+    ) -> list[TrajectoryEstimate | None]:
         """All series, ``jobs`` processes; ``None`` where the filter diverged."""
-        eps = [self.dataset.to_episode(s, burnin_days=0.0, name=f"{s.label}#{i}") for i, s in enumerate(series)]
+        eps = [
+            self.dataset.to_episode(s, burnin_days=0.0, name=f"{s.label}#{i}")
+            for i, s in enumerate(series)
+        ]
         out = collect_parallel(self._runner, eps, self.theta, jobs=jobs)
         return [
-            None if r is None else TrajectoryEstimate(np.asarray(s.time, float), r[1], r[2])
+            (
+                None
+                if r is None
+                else TrajectoryEstimate(np.asarray(s.time, float), r[1], r[2])
+            )
             for s, r in zip(series, out)
         ]
-
 
 
 # ---------------------------------------------------------------------------
@@ -237,10 +249,14 @@ class PinnEstimator:
             bs = dataclasses.replace(bs, kinetic_factors=factors)
             cfg = dataclasses.replace(cfg, use_series_kinetics=True)
         elif cfg.use_series_kinetics:
-            raise ValueError("use_series_kinetics would read the generator truth; pass kinetics")
+            raise ValueError(
+                "use_series_kinetics would read the generator truth; pass kinetics"
+            )
         roll = self.roll
         if self.bridge != "adm1" and getattr(roll, "adm1_bridge", True):
-            roll = dataclasses.replace(roll, adm1_bridge=False)  # not needed, saves time
+            roll = dataclasses.replace(
+                roll, adm1_bridge=False
+            )  # not needed, saves time
         res = run_rolling(
             bs,
             self.arch,
@@ -252,7 +268,9 @@ class PinnEstimator:
             verbose=self.verbose,
         )
         traj = np.asarray(res.trajectories[self.bridge], float)
-        return TrajectoryEstimate(np.asarray(series.time, float), traj, np.zeros_like(traj))
+        return TrajectoryEstimate(
+            np.asarray(series.time, float), traj, np.zeros_like(traj)
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -321,7 +339,9 @@ class ObserverEstimator:
                     "this observer takes kinetic inputs; pass kinetics={...} "
                     "(an empty dict means nominal kinetics)"
                 )
-            series = dataclasses.replace(series, aux={**series.aux, "kinetics": dict(kinetics)})
+            series = dataclasses.replace(
+                series, aux={**series.aux, "kinetics": dict(kinetics)}
+            )
         self.net.eval()
         with torch.no_grad():
             u = torch.tensor(self.features(series)[None], dtype=self.net._dtype)
@@ -373,7 +393,9 @@ class ObserverEstimator:
         from .observer import Adm1Observer, pretrain_observer
 
         torch.manual_seed(seed)
-        tr = data.observer_dataset("train", window=window, stride=stride, n_random=n_random, seed=seed)
+        tr = data.observer_dataset(
+            "train", window=window, stride=stride, n_random=n_random, seed=seed
+        )
         va = data.observer_dataset("val", window=window, stride=stride)
         net = Adm1Observer(
             tr.params,
@@ -388,11 +410,17 @@ class ObserverEstimator:
             noise_std = (np.asarray(data.sensor_sigma, float) * noise_aug).tolist()
         seq_noise = None
         if kinetic_noise > 0.0:
-            kin_cols = [j for j, n in enumerate(data.feature_names) if n.startswith("logk_")]
+            kin_cols = [
+                j for j, n in enumerate(data.feature_names) if n.startswith("logk_")
+            ]
             if not kin_cols:
-                raise ValueError("kinetic_noise needs a feature layout with kinetic_keys")
+                raise ValueError(
+                    "kinetic_noise needs a feature layout with kinetic_keys"
+                )
             seq_noise = np.zeros(len(data.feature_names))
-            seq_noise[kin_cols] = kinetic_noise / np.asarray(data.feat_std, float)[kin_cols]
+            seq_noise[kin_cols] = (
+                kinetic_noise / np.asarray(data.feat_std, float)[kin_cols]
+            )
         res = pretrain_observer(
             net,
             tr,
@@ -444,9 +472,15 @@ class ObserverEstimator:
     def save(self, path: str | Path) -> Path:
         import torch
 
-        spec = {k: v for k, v in asdict(self.feature_spec).items() if k not in ("extra", "extra_names")}
+        spec = {
+            k: v
+            for k, v in asdict(self.feature_spec).items()
+            if k not in ("extra", "extra_names")
+        }
         if getattr(self.feature_spec, "extra", None) is not None:
-            raise ValueError("a FeatureSpec with a custom 'extra' callable cannot be saved")
+            raise ValueError(
+                "a FeatureSpec with a custom 'extra' callable cannot be saved"
+            )
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(
@@ -469,7 +503,9 @@ class ObserverEstimator:
         return path
 
     @classmethod
-    def load(cls, path: str | Path, dataset: EstimatorDataset | None = None) -> ObserverEstimator:
+    def load(
+        cls, path: str | Path, dataset: EstimatorDataset | None = None
+    ) -> ObserverEstimator:
         """Rebuild from :meth:`save`; ``dataset`` supplies the ``meta`` of the feature context."""
         import torch
 
@@ -564,7 +600,8 @@ def run_estimator(
         t0 = _time.perf_counter()
         try:
             tr = est.run(rows[i], i)
-        except Exception as exc:  # noqa: BLE001 - one divergent series must not end the sweep
+        # one divergent series must not end the sweep
+        except Exception as exc:  # noqa: BLE001
             warnings.warn(f"{name} failed on series {i}: {exc}", stacklevel=2)
             tr = None
         out.append(
@@ -598,9 +635,13 @@ def save_runs(path: str | Path, records: list[dict], name: str) -> Path:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("estimator", choices=ESTIMATOR_NAMES)
-    ap.add_argument("--dataset", default="benchmark", help="registered name or dataset directory")
+    ap.add_argument(
+        "--dataset", default="benchmark", help="registered name or dataset directory"
+    )
     ap.add_argument("--split", default="test", choices=("test", "pool"))
     ap.add_argument("--series", nargs="*", type=int, default=None)
     ap.add_argument("--variant", default="full", help="UKF variant (full | adcore)")
@@ -616,7 +657,13 @@ def main(argv=None) -> int:
     if a.checkpoint and a.estimator == "observer":
         options["checkpoint"] = a.checkpoint
     recs = run_estimator(
-        a.estimator, a.dataset, a.split, a.series, burnin_steps=a.burnin, jobs=a.jobs, **options
+        a.estimator,
+        a.dataset,
+        a.split,
+        a.series,
+        burnin_steps=a.burnin,
+        jobs=a.jobs,
+        **options,
     )
     print(f"{'series':>6}  {'label':<14}{'score':>8}  {'s':>7}")
     for r in recs:
@@ -624,7 +671,9 @@ def main(argv=None) -> int:
         print(f"{r['index']:>6}  {r['label']:<14}{s:>8}  {r['seconds']:7.0f}")
     ok = [r["score"] for r in recs if r["score"] is not None]
     if ok:
-        print(f"\n{a.estimator}: mean {100 * float(np.mean(ok)):.1f} % over {len(ok)} series")
+        print(
+            f"\n{a.estimator}: mean {100 * float(np.mean(ok)):.1f} % over {len(ok)} series"
+        )
     if a.out:
         print("wrote", save_runs(a.out, recs, a.estimator))
     return 0

@@ -304,7 +304,9 @@ def load_benchmark(
         return [_benchmark_series(arrays, i) for i in range(len(arrays["time"]))]
 
     # The directory name doubles as the dataset name ("benchmark", ...).
-    return EstimatorDataset(name=d.name, meta=meta, pool=_rows("train"), test=_rows("test"))
+    return EstimatorDataset(
+        name=d.name, meta=meta, pool=_rows("train"), test=_rows("test")
+    )
 
 
 #: name -> loader.  Extend with other datasets that yield the same Series structure.

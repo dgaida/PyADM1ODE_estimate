@@ -36,6 +36,8 @@ docs = [
     "mkdocs-mermaid2-plugin",
     "mike",
     "pymdown-extensions",
+    # mkdocstrings 1.0.6, the last release for Python 3.10, fails with pymdown-extensions 12.
+    "pymdown-extensions<12; python_version < '3.11'",
 ]
 
 [tool.setuptools.packages.find]

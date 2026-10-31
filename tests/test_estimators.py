@@ -17,7 +17,6 @@ from pyadm1ode_estimation.estimation.estimators import (
     ESTIMATOR_NAMES,
     ObserverEstimator,
     PinnEstimator,
-    UkfEstimator,
     build_estimator,
     reference_theta,
     save_runs,
@@ -30,7 +29,8 @@ from pyadm1ode_estimation.estimation.filter_tuning.datasets import (
 )
 
 needs_benchmark = pytest.mark.skipif(
-    not (DEFAULT_BENCHMARK_DIR / "train.npz").exists(), reason="benchmark dataset not present"
+    not (DEFAULT_BENCHMARK_DIR / "train.npz").exists(),
+    reason="benchmark dataset not present",
 )
 
 
@@ -40,7 +40,9 @@ def test_score_is_the_median_nrmse_after_burnin():
     pred = truth.copy()
     pred[:, 0] *= 1.1  # one state 10 % off
     pred[:10] = 0.0  # garbage before the burn-in must not count
-    s = Series(np.zeros((100, 1)), np.zeros((100, 1)), np.arange(100.0), truth, np.zeros(0))
+    s = Series(
+        np.zeros((100, 1)), np.zeros((100, 1)), np.arange(100.0), truth, np.zeros(0)
+    )
     traj = TrajectoryEstimate(np.arange(100.0), pred, np.zeros_like(pred))
     assert score(traj, s, burnin_steps=10) == pytest.approx(0.0)
     pred[:, :3] *= 1.1
@@ -89,7 +91,9 @@ def test_observer_estimator_train_save_load_run(tmp_path):
 
     ds = load_benchmark()
     data = PinnData.build(ds, val_frac=0.2, seed=0, per_group_train=1, per_group_val=1)
-    est, res = ObserverEstimator.train(data, epochs=2, patience=None, noise_aug=1.0, n_random=2, hidden=8)
+    est, res = ObserverEstimator.train(
+        data, epochs=2, patience=None, noise_aug=1.0, n_random=2, hidden=8
+    )
     assert est.recipe["noise_aug"] == 1.0 and res.best_epoch in (0, 1)
     traj = est.run(ds.test[0])
     assert traj.x_hat.shape == (len(ds.test[0].time), 41)
@@ -102,7 +106,11 @@ def test_observer_estimator_train_save_load_run(tmp_path):
     if hard.exists():
         h = get_dataset(hard)
         assert np.isfinite(score(again.run(h.test[0]), h.test[0]))
-    out = save_runs(tmp_path / "run.npz", [{"index": 0, "label": "x", "score": 0.1, "traj": traj}], "observer")
+    out = save_runs(
+        tmp_path / "run.npz",
+        [{"index": 0, "label": "x", "score": 0.1, "traj": traj}],
+        "observer",
+    )
     z = np.load(out, allow_pickle=True)
     assert str(z["estimator"]) == "observer" and z["x_hat"][0].shape == traj.x_hat.shape
 
@@ -130,7 +138,8 @@ def test_organic_load_feature_is_substrate_aware():
         ccm_meta = json.loads((ccm_dir / "meta.json").read_text(encoding="utf-8"))
         same_flows = s.feed[:5]
         assert not np.allclose(
-            organic_load_features(same_flows, ds.meta), organic_load_features(same_flows, ccm_meta)
+            organic_load_features(same_flows, ds.meta),
+            organic_load_features(same_flows, ccm_meta),
         )
 
 
@@ -159,11 +168,17 @@ def test_kinetics_aware_observer_needs_explicit_kinetics(tmp_path):
     ds = load_benchmark()
     keys = ("k_m_ac", "k_dis_PS")
     data = PinnData.build(
-        ds, val_frac=0.2, seed=0, per_group_train=1, per_group_val=1,
+        ds,
+        val_frac=0.2,
+        seed=0,
+        per_group_train=1,
+        per_group_val=1,
         feature_spec=FeatureSpec(kinetic_keys=keys),
     )
     assert data.feature_names[-2:] == ["logk_k_m_ac", "logk_k_dis_PS"]
-    est, _ = ObserverEstimator.train(data, epochs=2, patience=None, hidden=8, kinetic_noise=0.07)
+    est, _ = ObserverEstimator.train(
+        data, epochs=2, patience=None, hidden=8, kinetic_noise=0.07
+    )
     assert est.kinetic_keys == keys and est.recipe["kinetic_noise"] == 0.07
     s = ds.test[0]
     with pytest.raises(ValueError, match="kinetic inputs"):
@@ -177,6 +192,10 @@ def test_kinetics_aware_observer_needs_explicit_kinetics(tmp_path):
     # a kinetics-blind observer ignores the argument
     blind, _ = ObserverEstimator.train(
         PinnData.build(ds, val_frac=0.2, seed=0, per_group_train=1, per_group_val=1),
-        epochs=1, patience=None, hidden=8,
+        epochs=1,
+        patience=None,
+        hidden=8,
     )
-    np.testing.assert_allclose(blind.run(s).x_hat, blind.run(s, kinetics={"k_m_ac": 0.5}).x_hat)
+    np.testing.assert_allclose(
+        blind.run(s).x_hat, blind.run(s, kinetics={"k_m_ac": 0.5}).x_hat
+    )

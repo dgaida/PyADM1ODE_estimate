@@ -117,7 +117,9 @@ def baseline_flows(meta: dict, substrates: list[InputSpec]) -> np.ndarray:
     return nominal * (total / max(nominal.sum(), 1e-9))
 
 
-def build_plant(meta: dict, digester_id: str = "primary", *, apply_operating_point: bool = True):
+def build_plant(
+    meta: dict, digester_id: str = "primary", *, apply_operating_point: bool = True
+):
     """Example plant with the dataset's operating point and substrates applied.
 
     The substrate mix comes from ``meta`` rather than from the plant's default. A
@@ -152,8 +154,10 @@ def build_plant(meta: dict, digester_id: str = "primary", *, apply_operating_poi
     # meta flows add up to, so re-deriving them shifts the seeded inoculum by ~3e-3
     # even when the substrates are the same -- enough to move published results for a
     # change that was meant to leave them alone.
-    if mix is not None and set(mix) == set(_DEFAULT_MIX) and all(
-        abs(mix[k] - _DEFAULT_MIX[k]) < 1e-3 for k in mix
+    if (
+        mix is not None
+        and set(mix) == set(_DEFAULT_MIX)
+        and all(abs(mix[k] - _DEFAULT_MIX[k]) < 1e-3 for k in mix)
     ):
         mix = None
 
@@ -187,7 +191,9 @@ def prune_to_primary(plant, keep=PRIMARY_COMPONENTS):
         if cid not in keep:
             del plant.components[cid]
     plant.connections = [
-        c for c in plant.connections if c.from_component in keep and c.to_component in keep
+        c
+        for c in plant.connections
+        if c.from_component in keep and c.to_component in keep
     ]
     for comp in plant.components.values():
         comp.inputs = [i for i in getattr(comp, "inputs", []) if i in keep]
@@ -195,7 +201,9 @@ def prune_to_primary(plant, keep=PRIMARY_COMPONENTS):
     return plant
 
 
-def apply_kinetic_factors(plant, factors: dict | None, digester_id: str = "primary") -> list[str]:
+def apply_kinetic_factors(
+    plant, factors: dict | None, digester_id: str = "primary"
+) -> list[str]:
     """Multiply the digester's kinetic constants by ``factors`` (``key -> factor``).
 
     The factors are relative to the plant's nominal values, the convention of the

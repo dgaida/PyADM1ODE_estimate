@@ -29,8 +29,8 @@ import torch
 from pyadm1.core.adm1_torch import Adm1TorchParams, adm1da_rhs_torch
 
 from ..observation_torch import TorchObservationModel
-from .model import Adm1Observer
 from .datasets import MeasurementDataset, ObserverDataset
+from .model import Adm1Observer
 
 _N_LIQUID = 37
 
@@ -228,7 +228,9 @@ def pretrain_observer(
         noise = noise.to(dtype=dtype)
     seq_noise = None
     if sequence_noise_std is not None:
-        seq_noise = torch.as_tensor(np.asarray(sequence_noise_std, dtype=float), dtype=dtype)
+        seq_noise = torch.as_tensor(
+            np.asarray(sequence_noise_std, dtype=float), dtype=dtype
+        )
         if seq_noise.shape != (dataset.features.shape[-1],):
             raise ValueError(
                 f"sequence_noise_std must have one entry per feature "
@@ -252,7 +254,9 @@ def pretrain_observer(
             if noise is not None:
                 xb = xb + noise * torch.randn_like(xb)
             if seq_noise is not None:
-                xb = xb + seq_noise * torch.randn(xb.shape[0], 1, xb.shape[2], dtype=dtype)
+                xb = xb + seq_noise * torch.randn(
+                    xb.shape[0], 1, xb.shape[2], dtype=dtype
+                )
             opt.zero_grad()
             loss = _scaled_state_loss(observer(xb), yb, scale, burnin)
             loss.backward()

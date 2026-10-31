@@ -52,7 +52,9 @@ class ForwardModel:
             substrates=substrates_from_meta(meta),
             sensors=[s.lower() for s in meta["sensors"]],
         )
-        nominal = {k: float(v) for k, v in plant.components[DIGESTER].adm1._kinetic.items()}
+        nominal = {
+            k: float(v) for k, v in plant.components[DIGESTER].adm1._kinetic.items()
+        }
         return cls(meta, plant, process, obs, spec, nominal)
 
     def set_factors(self, factors: dict[str, float] | None) -> None:
@@ -60,7 +62,9 @@ class ForwardModel:
         kinetic.update(self.nominal)
         apply_kinetic_factors(self.plant, factors or {}, DIGESTER)
 
-    def simulate(self, x0_adm1: np.ndarray, feed: np.ndarray, n_steps: int, dt_hours: float = 1.0):
+    def simulate(
+        self, x0_adm1: np.ndarray, feed: np.ndarray, n_steps: int, dt_hours: float = 1.0
+    ):
         """``(states (n+1, 41), observations (n+1, n_sensor))`` under the imposed feed."""
         dt = dt_hours / 24.0
         adm1_pos = self.spec.kind_indices("adm1")
@@ -74,7 +78,9 @@ class ForwardModel:
                 x[i_aug] = feed[min(k, len(feed) - 1), j]
             states[k] = x[adm1_pos]
             self.process.refresh_outputs(x, equilibration_dt=dt)
-            obs_rows[k] = [float(c.extractor(self.process.plant, x)) for c in self.obs.channels]
+            obs_rows[k] = [
+                float(c.extractor(self.process.plant, x)) for c in self.obs.channels
+            ]
             if k < n_steps:
                 x = self.process.step(x, dt)
         return states, obs_rows
@@ -104,7 +110,9 @@ def sensor_sigma(meta: dict, meas: np.ndarray) -> np.ndarray:
     return np.maximum(sig, 1e-9)
 
 
-def open_loop(meta: dict, feed: np.ndarray, factors: dict[str, float] | None) -> np.ndarray:
+def open_loop(
+    meta: dict, feed: np.ndarray, factors: dict[str, float] | None
+) -> np.ndarray:
     """R1: the ADM1 with the given kinetics, warm-up start, recorded feed, no correction."""
     fm = ForwardModel.build(meta)
     fm.set_factors(factors)
@@ -149,7 +157,8 @@ def calibrate(
             val = float(np.mean(((obs - meas) / sig) ** 2))
             if not np.isfinite(val):
                 val = 1e12
-        except Exception:  # noqa: BLE001 - an unsolvable parameter set scores as invalid
+        # an unsolvable parameter set scores as invalid
+        except Exception:  # noqa: BLE001
             val = 1e12
         if val < state["best"]:
             state["best"], state["best_theta"] = val, np.array(theta, float)

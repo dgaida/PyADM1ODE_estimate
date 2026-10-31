@@ -23,7 +23,11 @@ CASES = (
     ("benchmark_ccm, shipped UKF", "benchmark_ccm", ""),
     ("benchmark_hard, shipped UKF", "benchmark_hard", ""),
     ("benchmark, re-run UKF (no correction)", "benchmark", "_none"),
-    ("benchmark, UKF corrected by the PINN (F3 periodic_u0.2)", "benchmark", "_periodic_u0.2"),
+    (
+        "benchmark, UKF corrected by the PINN (F3 periodic_u0.2)",
+        "benchmark",
+        "_periodic_u0.2",
+    ),
 )
 
 
@@ -35,7 +39,9 @@ def load(dataset: str, traj: str, suffix: str) -> dict | None:
 def main() -> None:
     out = {}
     for title, dataset, suffix in CASES:
-        print(f"\n{title}   (NRMSE after day 3 [%]; in brackets: series better than the UKF, Wilcoxon p vs UKF)")
+        print(
+            f"\n{title}   (NRMSE after day 3 [%]; in brackets: series better than the UKF, Wilcoxon p vs UKF)"
+        )
         print(f"{'rule':12s}" + "".join(f"{'lag ' + lab:>24s}" for _, lab in LAGS))
         tabs = {traj: load(dataset, traj, suffix) for traj, _ in LAGS}
         out[title] = {}
@@ -49,10 +55,16 @@ def main() -> None:
                     continue
                 r = t[rule]
                 out[title][rule][lab] = r["nrmse_after3d"]
-                extra = "" if rule == "ukf" else f" ({r['better_than_ukf']:2d}/20, p={r['p_vs_ukf']:.2f})"
+                extra = (
+                    ""
+                    if rule == "ukf"
+                    else f" ({r['better_than_ukf']:2d}/20, p={r['p_vs_ukf']:.2f})"
+                )
                 row += f"{r['nrmse_after3d']:8.2f}{extra:>16s}"
             print(row)
-    (RESULTS / "f4_lag_summary.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
+    (RESULTS / "f4_lag_summary.json").write_text(
+        json.dumps(out, indent=1), encoding="utf-8"
+    )
 
 
 if __name__ == "__main__":

@@ -40,7 +40,10 @@ BURNIN_STEPS = 48
 SOURCES: dict[str, tuple[Path, str]] = {
     "UKF voll": (REPO / "results_ukf/cmaes_full_reference.npz", "ukf_x_hat"),
     "UKF (A+D)": (REPO / "results_ukf/cmaes_adcore_reference.npz", "ukf_x_hat"),
-    "PINN v2": (REPO / "experiments/pinn_v2/results/f1_trajectories/W10_C24_S200", "hold"),
+    "PINN v2": (
+        REPO / "experiments/pinn_v2/results/f1_trajectories/W10_C24_S200",
+        "hold",
+    ),
     "PINN B": (
         REPO / "experiments/output/pinn_gate/test_trajectories_b.npz",
         "pinn_b_x_hat",
@@ -70,7 +73,9 @@ def sources_for(dataset: str) -> dict[str, tuple[Path, str]]:
     d = REPO / "datasets" / dataset
     out = {name: (d / f, k) for name, (f, k) in VARIANT_FILES.items()}
     out["PINN v2"] = (
-        REPO / "experiments/pinn_v2/results" / f"f1_trajectories_{dataset.removeprefix('benchmark_')}"
+        REPO
+        / "experiments/pinn_v2/results"
+        / f"f1_trajectories_{dataset.removeprefix('benchmark_')}"
         / "W10_C24_S200",
         "hold",
     )

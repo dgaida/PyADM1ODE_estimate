@@ -241,7 +241,10 @@ _INFLUENT_MODEL_CACHE: dict[str, Any] = {}
 def _influent_model(meta: dict):
     """Flow-weighted influent model of the dataset's substrates (cached per mix)."""
     key = json.dumps(
-        [v.get("library_id") for v in sorted(meta["substrates"].values(), key=lambda v: v["index"])]
+        [
+            v.get("library_id")
+            for v in sorted(meta["substrates"].values(), key=lambda v: v["index"])
+        ]
     )
     hit = _INFLUENT_MODEL_CACHE.get(key)
     if hit is None:
@@ -262,7 +265,9 @@ def organic_load_features(feed: np.ndarray, meta: dict) -> np.ndarray:
     characterisation, so the same flows of a different substrate give different
     loads.
     """
-    q_ad, s_in = _influent_model(meta)(np.clip(np.asarray(feed, dtype=float), 0.0, None))
+    q_ad, s_in = _influent_model(meta)(
+        np.clip(np.asarray(feed, dtype=float), 0.0, None)
+    )
     load = q_ad[:, None] * s_in  # (T, 37) kg/d
     cols = [load[:, list(idx)].sum(axis=1) for idx in ORGANIC_LOAD_GROUPS.values()]
     return np.log1p(np.stack(cols, axis=1))

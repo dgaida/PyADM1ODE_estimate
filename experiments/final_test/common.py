@@ -14,7 +14,7 @@ import os
 import time
 import traceback
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cache, lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -66,7 +66,7 @@ def condition_jobs() -> list[tuple[str, str, str]]:
 # ---------------------------------------------------------------------------
 # Data
 # ---------------------------------------------------------------------------
-@lru_cache(maxsize=None)
+@cache
 def dataset(name: str):
     from pyadm1ode_estimation.estimation.filter_tuning.datasets import get_dataset
 
@@ -83,13 +83,18 @@ def kinetic_keys_all(name: str) -> list[str]:
 
 @lru_cache(maxsize=1)
 def calibration_keys() -> list[str]:
-    rep = json.loads((REPO / config()["calibration"]["screening"]).read_text(encoding="utf-8"))
+    rep = json.loads(
+        (REPO / config()["calibration"]["screening"]).read_text(encoding="utf-8")
+    )
     return list(rep["top_k"])
 
 
 def true_factors(name: str, i: int) -> dict[str, float]:
     s = dataset(name).test[i]
-    return {str(k): float(f) for k, f in zip(s.aux["kinetic_keys"], s.aux["kinetic_factors"])}
+    return {
+        str(k): float(f)
+        for k, f in zip(s.aux["kinetic_keys"], s.aux["kinetic_factors"])
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -213,12 +218,19 @@ def kinetics_for(cond: str, ds: str, i: int) -> dict[str, float]:
     if cond == "B_real":
         sig = read_json(sigma_real_path())
         check_hash(sig["config_hash"], sigma_real_path())
-        rng = np.random.default_rng([int(config()["test_b"]["seed"]), dataset_names().index(ds), i])
-        return {k: truth[k] * float(np.exp(rng.normal(0.0, float(sig["sigma"][k])))) for k in keys}
+        rng = np.random.default_rng(
+            [int(config()["test_b"]["seed"]), dataset_names().index(ds), i]
+        )
+        return {
+            k: truth[k] * float(np.exp(rng.normal(0.0, float(sig["sigma"][k]))))
+            for k in keys
+        }
     raise KeyError(cond)
 
 
-def write_artifact(cond: str, ds: str, i: int, factors: dict[str, float], notes: str) -> Path:
+def write_artifact(
+    cond: str, ds: str, i: int, factors: dict[str, float], notes: str
+) -> Path:
     """The kinetics of one series as a ``CalibrationArtifact`` (absolute constants)."""
     from pyadm1ode_estimation.artifacts.calibration_artifact import (
         CalibrationArtifact,
@@ -232,7 +244,11 @@ def write_artifact(cond: str, ds: str, i: int, factors: dict[str, float], notes:
             plant_id=f"{ds}#{i}",
             calibration_run_id=f"final_test/{cond}",
             timestamp=time.strftime("%Y-%m-%dT%H:%M:%S"),
-            fitted_against=list(config()["metrics"].get("sensors", ["Q_gas", "Q_ch4", "Q_co2", "pH", "TS"])),
+            fitted_against=list(
+                config()["metrics"].get(
+                    "sensors", ["Q_gas", "Q_ch4", "Q_co2", "pH", "TS"]
+                )
+            ),
             notes=notes,
         ),
         kinetic={"primary": {k: float(nominal[k] * f) for k, f in factors.items()}},
@@ -245,7 +261,7 @@ def write_artifact(cond: str, ds: str, i: int, factors: dict[str, float], notes:
     return p
 
 
-@lru_cache(maxsize=None)
+@cache
 def nominal_kinetics(ds: str) -> dict[str, float]:
     from pyadm1ode_estimation.estimation.filter_tuning.filter_runners import build_plant
 

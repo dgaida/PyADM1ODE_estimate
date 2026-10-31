@@ -302,11 +302,9 @@ def main() -> None:
         {k: round(v, 2) for k, v in block_weights.items()},
     )
     print(
-        "mean consistency (24 h chi2 per channel):  UKF %.2f   PINN %.2f"
-        % (
-            np.mean([c[WARM:].mean() for c in cU]),
-            np.mean([c[WARM:].mean() for c in cP]),
-        )
+        "mean consistency (24 h chi2 per channel):  "
+        f"UKF {np.mean([c[WARM:].mean() for c in cU]):.2f}   "
+        f"PINN {np.mean([c[WARM:].mean() for c in cP]):.2f}"
     )
     out = RESULTS / (
         a.out

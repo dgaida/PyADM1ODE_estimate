@@ -15,12 +15,19 @@ from pyadm1ode_estimation.estimation.filter_tuning.datasets import (
 from pyadm1ode_estimation.estimation.pinn.data import BenchmarkSeries, load_series
 
 needs_benchmark = pytest.mark.skipif(
-    not (DEFAULT_BENCHMARK_DIR / "test.npz").exists(), reason="benchmark dataset not present"
+    not (DEFAULT_BENCHMARK_DIR / "test.npz").exists(),
+    reason="benchmark dataset not present",
 )
 
 
 def test_from_series_requires_the_generator_truth():
-    s = Series(np.zeros((3, 1)), np.zeros((3, 2)), np.arange(3.0), np.zeros((3, 41)), np.zeros(0))
+    s = Series(
+        np.zeros((3, 1)),
+        np.zeros((3, 2)),
+        np.arange(3.0),
+        np.zeros((3, 41)),
+        np.zeros(0),
+    )
     with pytest.raises(KeyError):
         BenchmarkSeries.from_series(s, 0, "test")
     s.aux = {
@@ -41,7 +48,13 @@ def test_test_split_only_and_aux_contents():
     assert ds.pool == [] and len(ds.test) == 20 and ds.name == "benchmark"
     aux = ds.test[0].aux
     assert set(BENCHMARK_AUX_KEYS) | {"kinetic_keys"} >= set(aux)
-    assert {"feed_true", "kinetic_factors", "kinetic_keys", "ukf_x_hat", "ukf_std"} <= set(aux)
+    assert {
+        "feed_true",
+        "kinetic_factors",
+        "kinetic_keys",
+        "ukf_x_hat",
+        "ukf_std",
+    } <= set(aux)
     assert aux["feed_true"].shape == ds.test[0].feed.shape
     assert not np.isnan(aux["ukf_x_hat"]).any()
 
@@ -53,8 +66,12 @@ def test_pinn_loader_matches_the_raw_file():
     assert s.index == 3 and s.regime == str(z["regime"][3])
     np.testing.assert_array_equal(s.states, np.asarray(z["states"][3], float))
     np.testing.assert_array_equal(s.feed_true, np.asarray(z["feed_true"][3], float))
-    np.testing.assert_array_equal(s.measurements, np.asarray(z["measurements"][3], float))
-    np.testing.assert_array_equal(s.kinetic_factors, np.asarray(z["kinetic_factors"][3], float))
+    np.testing.assert_array_equal(
+        s.measurements, np.asarray(z["measurements"][3], float)
+    )
+    np.testing.assert_array_equal(
+        s.kinetic_factors, np.asarray(z["kinetic_factors"][3], float)
+    )
     with pytest.raises(ValueError):
         load_series("val")
 

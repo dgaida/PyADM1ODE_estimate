@@ -23,7 +23,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          # 3.11+: the last mkdocstrings release for 3.10 (1.0.6) breaks with pymdown-extensions 12.
+          python-version: "3.11"
           cache: "pip"
 
       - name: Install dependencies

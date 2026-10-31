@@ -125,7 +125,9 @@ def build_multi_stage_plant(
 
     mix = _SUBSTRATE_MIX if substrate_mix is None else dict(substrate_mix)
     if len(mix) > _MAX_SUBSTRATE_SLOTS:
-        raise ValueError(f"substrate_mix has {len(mix)} entries, the feedstock has {_MAX_SUBSTRATE_SLOTS} slots")
+        raise ValueError(
+            f"substrate_mix has {len(mix)} entries, the feedstock has {_MAX_SUBSTRATE_SLOTS} slots"
+        )
 
     substrate_ids = list(mix.keys())
     feedstock = Feedstock(

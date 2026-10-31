@@ -32,7 +32,9 @@ from pathlib import Path
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[2]
-DEFAULT_STUDY = REPO.parent / "PyADM1ODE_calibration" / "experiments" / "kinetics_calibration"
+DEFAULT_STUDY = (
+    REPO.parent / "PyADM1ODE_calibration" / "experiments" / "kinetics_calibration"
+)
 DEFAULT_DATA = REPO / "datasets" / "benchmark"
 OUT = REPO / "results_final" / "screening_train.json"
 
@@ -91,37 +93,65 @@ def training_series(data_dir: Path, per_mode: int) -> list[dict]:
     return out
 
 
-def pool(per_series: list[dict], window: str, keys: list[str]) -> tuple[dict, list[str]]:
+def pool(
+    per_series: list[dict], window: str, keys: list[str]
+) -> tuple[dict, list[str]]:
     """Geometric mean of ``delta_msqr`` over series at one window length."""
     pooled = {
-        k: float(np.exp(np.mean([np.log(max(r["windows"][window]["delta_msqr"][k], 1e-12)) for r in per_series])))
+        k: float(
+            np.exp(
+                np.mean(
+                    [
+                        np.log(max(r["windows"][window]["delta_msqr"][k], 1e-12))
+                        for r in per_series
+                    ]
+                )
+            )
+        )
         for k in keys
     }
     return pooled, sorted(pooled, key=lambda k: -pooled[k])
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--study", default=str(DEFAULT_STUDY), help="kinetics_calibration folder")
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    ap.add_argument(
+        "--study", default=str(DEFAULT_STUDY), help="kinetics_calibration folder"
+    )
     ap.add_argument("--data", default=str(DEFAULT_DATA))
     ap.add_argument("--per-mode", type=int, default=2)
     ap.add_argument("--around", default="nominal", choices=("nominal", "truth"))
-    ap.add_argument("--window", default="20", help="window [d] that defines top_k (the Test A calibration window)")
+    ap.add_argument(
+        "--window",
+        default="20",
+        help="window [d] that defines top_k (the Test A calibration window)",
+    )
     ap.add_argument("--k", type=int, default=10)
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--out", default=str(OUT))
     a = ap.parse_args()
 
     series = training_series(Path(a.data), a.per_mode)
-    print(f"screening {len(series)} training series ({a.around}), {a.workers} workers", flush=True)
+    print(
+        f"screening {len(series)} training series ({a.around}), {a.workers} workers",
+        flush=True,
+    )
     t0 = time.time()
     reports = []
     with ProcessPoolExecutor(max_workers=a.workers) as ex:
-        futs = {ex.submit(_screen, (s, a.study, a.data, a.around, 60.0)): s["pool_index"] for s in series}
+        futs = {
+            ex.submit(_screen, (s, a.study, a.data, a.around, 60.0)): s["pool_index"]
+            for s in series
+        }
         for fut in as_completed(futs):
             rep = fut.result()
             reports.append(rep)
-            print(f"  series {rep['pool_index']:3d} ({rep['regime']}) done  [{time.time() - t0:.0f}s]", flush=True)
+            print(
+                f"  series {rep['pool_index']:3d} ({rep['regime']}) done  [{time.time() - t0:.0f}s]",
+                flush=True,
+            )
     reports.sort(key=lambda r: r["pool_index"])
     keys = list(reports[0]["keys"])
     pooled = {}
@@ -143,7 +173,12 @@ def main() -> int:
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"\nwrote {out}  ({time.time() - t0:.0f}s)")
     for w, p in pooled.items():
-        print(f"  {w:>3} d: " + ", ".join(f"{k} {p['delta_msqr_geomean'][k]:.2f}" for k in p["ranking"][:12]))
+        print(
+            f"  {w:>3} d: "
+            + ", ".join(
+                f"{k} {p['delta_msqr_geomean'][k]:.2f}" for k in p["ranking"][:12]
+            )
+        )
     print("top_k:", top_k)
     return 0
 

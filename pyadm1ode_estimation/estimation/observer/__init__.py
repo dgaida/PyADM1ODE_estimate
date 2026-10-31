@@ -2,19 +2,20 @@
 the dataset adapter shared with the filters.
 """
 
+from ..observation_torch import TorchObservationModel
 from .adapter import (
     FeatureSpec,
     PinnData,
     SplitRecord,
     parse_noise_spec,
 )
-from ..observation_torch import TorchObservationModel
-from .model import Adm1Observer
 from .datasets import (
     MeasurementDataset,
     ObserverDataset,
     generate_observer_dataset,
 )
+from .model import Adm1Observer
+from .online import OnlineEstimate, SlidingWindowObserver
 from .train import (
     PretrainResult,
     SelfSupPretrainResult,
@@ -25,7 +26,6 @@ from .train import (
     pretrain_observer_selfsup,
     pretrain_observer_sim2real,
 )
-from .online import OnlineEstimate, SlidingWindowObserver
 
 __all__ = [
     "Adm1Observer",

@@ -19,8 +19,8 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import common as C  # noqa: E402
-import jobs as J  # noqa: E402
+import common as C
+import jobs as J
 
 
 def one(args) -> str:
@@ -35,12 +35,31 @@ def one(args) -> str:
     s = C.dataset(ds).test[i]
     h0, h1 = cfg["fit_hours"]
     keys = C.calibration_keys()
-    res = calibrate(C.dataset(ds).meta, s.measurements, s.feed, np.asarray(s.truth, float)[h0], keys, (h0, h1),
-                    budget=int(cfg["budget"]), log_bound=float(cfg["log_bound"]), xtol=float(cfg["xtol"]), ftol=float(cfg["ftol"]))
+    res = calibrate(
+        C.dataset(ds).meta,
+        s.measurements,
+        s.feed,
+        np.asarray(s.truth, float)[h0],
+        keys,
+        (h0, h1),
+        budget=int(cfg["budget"]),
+        log_bound=float(cfg["log_bound"]),
+        xtol=float(cfg["xtol"]),
+        ftol=float(cfg["ftol"]),
+    )
     truth = C.true_factors(ds, i)
     res["log_error"] = {k: float(np.log(res["factors"][k] / truth[k])) for k in keys}
     res["log_error_nominal"] = {k: float(-np.log(truth[k])) for k in keys}
-    C.atomic_write_json(out, {"diagnostic": "true state at hour 48 as start", "ds": ds, "i": i, "keys": keys, **res})
+    C.atomic_write_json(
+        out,
+        {
+            "diagnostic": "true state at hour 48 as start",
+            "ds": ds,
+            "i": i,
+            "keys": keys,
+            **res,
+        },
+    )
     return f"ok {ds} {i}"
 
 
