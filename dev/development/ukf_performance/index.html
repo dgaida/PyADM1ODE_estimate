@@ -29,7 +29,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -37,10 +37,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -772,6 +772,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/estimators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schätzer-Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1048,7 +1076,7 @@
   <span class="md-ellipsis">
     
   
-    PINN
+    PINN v2
   
 
     
@@ -1076,7 +1104,7 @@
   <span class="md-ellipsis">
     
   
-    Vortrainierter Observer
+    GRU-Observer (PINN B)
   
 
     
@@ -2561,8 +2589,8 @@ embarrassingly parallel Sigma-Propagation wandert in Worker.</p>
 bit-identisch.</strong> Mean-Trajektorien-Differenz vs. seriell: exakt
 0 σ auf jedem Kanal. Mean NIS = 7.08 für alle Varianten.</p>
 <p>Sub-lineare Skalierung erwartbar (Amdahl):<br />
-<em> Pool-Spawn-Overhead (~2-3 s pro Worker bei Windows-spawn)<br />
-</em> Linalg-Pfad bleibt sequenziell und wird relativ größer mit mehr Workern<br />
+* Pool-Spawn-Overhead (~2-3 s pro Worker bei Windows-spawn)<br />
+* Linalg-Pfad bleibt sequenziell und wird relativ größer mit mehr Workern<br />
 * Über 4 physische Cores hinaus (vermutlich Hyperthreads in diesem Setup)<br />
   geht der Gewinn deutlich zurück</p>
 <p>Für deinen typischen Twin-Workflow (5 Tage × 24 h = 120 Schritte)
@@ -2610,13 +2638,13 @@ wird im Update statt über die Kalman-Verstärkung durch ein
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>\quad \text{s.t.} \quad x_{\text{lo}} \le \chi \le x_{\text{hi}}
 </span></code></pre></div>
 <p>Implementierungs-Choices:<br />
-<em> <code>h</code> linearisiert über LS-Fit von den <code>2n+1</code> propagierten Sigma-Punkten<br />
+* <code>h</code> linearisiert über LS-Fit von den <code>2n+1</code> propagierten Sigma-Punkten<br />
   und ihren bereits gecachten h-Werten (keine extra Plant-Auswertung)<br />
-</em> Per-Sigma-QP über <code>scipy.optimize.minimize(method="trust-constr")</code><br />
+* Per-Sigma-QP über <code>scipy.optimize.minimize(method="trust-constr")</code><br />
   mit analytischem Gradient + Hessian<br />
-<em> Posterior in Square-Root-Form nach Hellmann eq. 11:<br />
+* Posterior in Square-Root-Form nach Hellmann eq. 11:<br />
 <code>P = Σ Wᶜ (χᶜ - x̂)(χᶜ - x̂)^⊤ + Q + K R Kᵀ</code><br />
-</em> 4 Unit-Tests pinnen Korrektheit: bei weiten Bounds &amp; linearem h<br />
+* 4 Unit-Tests pinnen Korrektheit: bei weiten Bounds &amp; linearem h<br />
   reproduziert <code>cUKF ≡ UKF</code> zu <code>atol=1e-6</code>; bei engen Bounds wird die
   Schranke respektiert; smoke test auf der ADM1-Plant läuft durch.</p>
 <h4 id="empirisches-ergebnis-24h-twin-simple-plant-n43">Empirisches Ergebnis (24h-Twin, simple plant, n=43)<a class="headerlink" href="#empirisches-ergebnis-24h-twin-simple-plant-n43" title="Permanent link">&para;</a></h4>
@@ -2768,10 +2796,10 @@ Zustandsbereichen).</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
       
         <script src="../../javascripts/mathjax.js"></script>
       

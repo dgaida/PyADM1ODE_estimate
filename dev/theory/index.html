@@ -29,7 +29,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -37,10 +37,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -772,6 +772,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/estimators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schätzer-Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1120,7 +1148,7 @@
   <span class="md-ellipsis">
     
   
-    PINN
+    PINN v2
   
 
     
@@ -1148,7 +1176,7 @@
   <span class="md-ellipsis">
     
   
-    Vortrainierter Observer
+    GRU-Observer (PINN B)
   
 
     
@@ -1794,14 +1822,19 @@
 <ul>
 <li><a href="adm1/">ADM1da-Modell</a> — Beschreibung des verwendeten 41-State-Modells<br />
   (Schlattmann 2011, agrar-erweitertes ADM1) und der zentralen Zustandsindizes.  </li>
-<li><a href="pinn/">PINN</a> — der per-Window-PINN-Smoother: von der Intuition für<br />
-  Einsteiger über die Loss-Mathematik und die ADM1-spezifischen Kniffe bis zur
-  Implementierung (<code>pinn.py</code>, <code>pinn_smoother.py</code>).  </li>
-<li><a href="observer/">Vortrainierter Observer</a> — der amortisierte GRU-Observer: offline<br />
+<li><a href="pinn/">PINN v2</a> — das Kollokations-Trajektorien-PINN: Netz, Closures,<br />
+  Physik-Residuum, kausaler Rolling-Window-Betrieb und die Ergebnisse der
+  Strukturstudie (<code>estimation/pinn/</code>).  </li>
+<li>
+<p><a href="observer/">GRU-Observer (PINN B)</a> — der amortisierte Observer: offline<br />
   auf vielen simulierten Szenarien vortrainiert, dann nahezu sofortige
-  Online-Inferenz mit self-supervised Feinabstimmung.  </li>
-<li><a href="fusion/">UKF ↔ PINN-Fusion</a> — Kombination einer UKF- und einer<br />
-  PINN-Schätzung per Kovarianzschnitt.</li>
+  Online-Inferenz mit self-supervised Feinabstimmung; wie gut er auf
+  verschobene Datensätze generalisiert.</p>
+</li>
+<li>
+<p><a href="fusion/">UKF ↔ PINN-Fusion</a> — Kombination einer UKF- und einer<br />
+  PINN-Schätzung per Kovarianzschnitt.</p>
+</li>
 </ul>
 <h2 id="hintergrund-lekture">Hintergrund-Lektüre<a class="headerlink" href="#hintergrund-lekture" title="Permanent link">&para;</a></h2>
 <p>Die formale Observability-Analyse ADM1-basierter Modelle ist in
@@ -1867,10 +1900,10 @@ dokumentiert.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
       
         <script src="../javascripts/mathjax.js"></script>
       

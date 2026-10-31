@@ -29,18 +29,18 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
-        <title>Vortrainierter Observer - PyADM1ODE Estimate</title>
+        <title>GRU observer (PINN B) - PyADM1ODE Estimate</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-pre-trained-observer" class="md-skip">
+        <a href="#the-gru-observer-pinn-b" class="md-skip">
           Skip to content
         </a>
       
@@ -126,7 +126,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Vortrainierter Observer
+              GRU observer (PINN B)
             
           </span>
         </div>
@@ -295,7 +295,7 @@
   
     
   
-  Erste Schritte
+  Getting started
 
       </a>
     </li>
@@ -333,7 +333,7 @@
           
   
   
-  Nutzung
+  Usage
 
         </a>
       </li>
@@ -375,7 +375,7 @@
           
   
   
-  Theorie
+  Theory
 
         </a>
       </li>
@@ -395,7 +395,7 @@
           
   
   
-  Beispiele
+  Examples
 
         </a>
       </li>
@@ -415,7 +415,7 @@
           
   
   
-  API-Referenz
+  API reference
 
         </a>
       </li>
@@ -435,7 +435,7 @@
           
   
   
-  Entwicklung
+  Development
 
         </a>
       </li>
@@ -455,7 +455,7 @@
   
     
   
-  Fehlerbehebung
+  Troubleshooting
 
       </a>
     </li>
@@ -568,7 +568,7 @@
   <span class="md-ellipsis">
     
   
-    Erste Schritte
+    Getting started
   
 
     
@@ -640,7 +640,7 @@
   <span class="md-ellipsis">
     
   
-    Nutzung
+    Usage
   
 
     
@@ -656,7 +656,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Nutzung
+    Usage
   
 
           </label>
@@ -676,7 +676,7 @@
   <span class="md-ellipsis">
     
   
-    Übersicht
+    Overview
   
 
     
@@ -704,7 +704,7 @@
   <span class="md-ellipsis">
     
   
-    UKF im Einsatz
+    UKF in practice
   
 
     
@@ -732,7 +732,7 @@
   <span class="md-ellipsis">
     
   
-    Twin-Experimente
+    Twin experiments
   
 
     
@@ -760,7 +760,35 @@
   <span class="md-ellipsis">
     
   
-    Kalibrierungs-Artefakt
+    Calibration artifact
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/estimators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Estimator registry
   
 
     
@@ -849,7 +877,7 @@
   <span class="md-ellipsis">
     
   
-    Übersicht
+    Overview
   
 
     
@@ -877,7 +905,7 @@
   <span class="md-ellipsis">
     
   
-    Literaturüberblick
+    Literature review
   
 
     
@@ -905,7 +933,7 @@
   <span class="md-ellipsis">
     
   
-    Sensor-Zustand-Abhängigkeiten
+    Sensor-state dependencies
   
 
     
@@ -961,7 +989,7 @@
   <span class="md-ellipsis">
     
   
-    Theorie
+    Theory
   
 
     
@@ -977,7 +1005,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Theorie
+    Theory
   
 
           </label>
@@ -997,7 +1025,7 @@
   <span class="md-ellipsis">
     
   
-    Übersicht
+    Overview
   
 
     
@@ -1025,7 +1053,7 @@
   <span class="md-ellipsis">
     
   
-    ADM1da-Modell
+    ADM1da model
   
 
     
@@ -1053,7 +1081,7 @@
   <span class="md-ellipsis">
     
   
-    PINN
+    PINN v2
   
 
     
@@ -1090,7 +1118,7 @@
   <span class="md-ellipsis">
     
   
-    Vortrainierter Observer
+    GRU observer (PINN B)
   
 
     
@@ -1108,7 +1136,7 @@
   <span class="md-ellipsis">
     
   
-    Vortrainierter Observer
+    GRU observer (PINN B)
   
 
     
@@ -1167,10 +1195,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-strengths-and-limits-vs-the-smoother" class="md-nav__link">
+  <a href="#4-strengths-and-limits" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Strengths and limits vs. the smoother
+        4. Strengths and limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-generalisation-to-shifted-plants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Generalisation to shifted plants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-kinetics-as-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Kinetics as input
       
     </span>
   </a>
@@ -1201,7 +1251,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer" class="md-nav__link">
     <span class="md-ellipsis">
       
         Adm1Observer
@@ -1213,7 +1263,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer-functions" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
         Methods:
@@ -1225,7 +1275,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer.forward" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer.forward" class="md-nav__link">
     <span class="md-ellipsis">
       
         forward
@@ -1236,7 +1286,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer.from_adm1" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer.from_adm1" class="md-nav__link">
     <span class="md-ellipsis">
       
         from_adm1
@@ -1257,7 +1307,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver" class="md-nav__link">
     <span class="md-ellipsis">
       
         SlidingWindowObserver
@@ -1269,7 +1319,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver-functions" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
         Methods:
@@ -1281,7 +1331,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver.run" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver.run" class="md-nav__link">
     <span class="md-ellipsis">
       
         run
@@ -1292,7 +1342,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver.step" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver.step" class="md-nav__link">
     <span class="md-ellipsis">
       
         step
@@ -1340,7 +1390,7 @@
   <span class="md-ellipsis">
     
   
-    UKF↔PINN-Fusion
+    UKF↔PINN fusion
   
 
     
@@ -1393,7 +1443,7 @@
   <span class="md-ellipsis">
     
   
-    Beispiele
+    Examples
   
 
     
@@ -1409,7 +1459,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Beispiele
+    Examples
   
 
           </label>
@@ -1429,7 +1479,7 @@
   <span class="md-ellipsis">
     
   
-    Übersicht
+    Overview
   
 
     
@@ -1482,7 +1532,7 @@
   <span class="md-ellipsis">
     
   
-    API-Referenz
+    API reference
   
 
     
@@ -1498,7 +1548,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API-Referenz
+    API reference
   
 
           </label>
@@ -1518,7 +1568,7 @@
   <span class="md-ellipsis">
     
   
-    Übersicht
+    Overview
   
 
     
@@ -1571,7 +1621,7 @@
   <span class="md-ellipsis">
     
   
-    Entwicklung
+    Development
   
 
     
@@ -1587,7 +1637,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Entwicklung
+    Development
   
 
           </label>
@@ -1607,7 +1657,7 @@
   <span class="md-ellipsis">
     
   
-    Übersicht
+    Overview
   
 
     
@@ -1663,7 +1713,7 @@
   <span class="md-ellipsis">
     
   
-    SR-UKF Performance
+    SR-UKF performance
   
 
     
@@ -1691,7 +1741,7 @@
   <span class="md-ellipsis">
     
   
-    Realistische Testbedingungen
+    Realistic test conditions
   
 
     
@@ -1726,7 +1776,7 @@
   <span class="md-ellipsis">
     
   
-    Fehlerbehebung
+    Troubleshooting
   
 
     
@@ -1807,7 +1857,7 @@
   <span class="md-ellipsis">
     
   
-    Übersicht
+    Overview
   
 
     
@@ -1944,10 +1994,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-strengths-and-limits-vs-the-smoother" class="md-nav__link">
+  <a href="#4-strengths-and-limits" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Strengths and limits vs. the smoother
+        4. Strengths and limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-generalisation-to-shifted-plants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Generalisation to shifted plants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-kinetics-as-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Kinetics as input
       
     </span>
   </a>
@@ -1978,7 +2050,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer" class="md-nav__link">
     <span class="md-ellipsis">
       
         Adm1Observer
@@ -1990,7 +2062,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer-functions" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
         Methods:
@@ -2002,7 +2074,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer.forward" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer.forward" class="md-nav__link">
     <span class="md-ellipsis">
       
         forward
@@ -2013,7 +2085,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer.from_adm1" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer.from_adm1" class="md-nav__link">
     <span class="md-ellipsis">
       
         from_adm1
@@ -2034,7 +2106,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver" class="md-nav__link">
     <span class="md-ellipsis">
       
         SlidingWindowObserver
@@ -2046,7 +2118,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver-functions" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
         Methods:
@@ -2058,7 +2130,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver.run" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver.run" class="md-nav__link">
     <span class="md-ellipsis">
       
         run
@@ -2069,7 +2141,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver.step" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver.step" class="md-nav__link">
     <span class="md-ellipsis">
       
         step
@@ -2114,14 +2186,14 @@
   
 
 
-<h1 id="the-pre-trained-observer">The pre-trained observer<a class="headerlink" href="#the-pre-trained-observer" title="Permanent link">&para;</a></h1>
-<p>The <a href="../pinn/">per-window PINN</a> fits a fresh network to every window, but it pays a
-full optimisation (seconds to minutes) each time. The <strong>amortised observer</strong> moves
-that cost <em>offline</em>: it is pre-trained once on many simulated scenarios and then
-reads out the state in a single forward pass. Where the smoother <em>optimises</em> per
+<h1 id="the-gru-observer-pinn-b">The GRU observer (PINN B)<a class="headerlink" href="#the-gru-observer-pinn-b" title="Permanent link">&para;</a></h1>
+<p><a href="../pinn/">PINN v2</a> fits a fresh network to every series and retrains it every
+day, paying a full optimisation each time. The <strong>amortised observer</strong> (PINN B)
+moves that cost <em>offline</em>: it is pre-trained once on many simulated scenarios and
+then reads out the state in a single forward pass. Where PINN v2 <em>optimises</em> per
 window, the observer <em>learns a reusable mapping</em> from the measurement stream to
 the state trajectory.</p>
-<p>It shares the physics scaffolding of the smoother (positivity via a log-transform,
+<p>It shares the physics scaffolding of PINN v2 (positivity via a log-transform,
 quasi-steady gas), only the network and the training differ.</p>
 <hr />
 <h2 id="1-architecture-a-gru-filter">1. Architecture: a GRU filter<a class="headerlink" href="#1-architecture-a-gru-filter" title="Permanent link">&para;</a></h2>
@@ -2132,7 +2204,7 @@ state per step:</p>
 \underbrace{(y_t,\ u_t)}_{\text{measurements + feed}}\ \longrightarrow\
 \text{GRU}\ \longrightarrow\ \hat{x}(t)\ \ (41\text{ states}).
 \]</div>
-<p>Two things carry over unchanged from the <a href="../pinn/">smoother</a>:</p>
+<p>Two design choices it shares with <a href="../pinn/">PINN v2</a>:</p>
 <ul>
 <li><strong>Positivity / scaling</strong> — the head predicts only the <strong>37 liquid states</strong> as a<br />
   log-deviation from a reference, <span class="arithmatex">\(\hat{x}_\text{liq} = x_\text{ref}\odot
@@ -2142,11 +2214,12 @@ state per step:</p>
   newest step is a proper <strong>online filtered</strong> estimate: the same network runs as
   a streaming filter (section 3).</li>
 </ul>
-<p>The key difference from the smoother: the observer is <em>conditioned on the
-measurements</em>. The smoother's network is a function of time only (the data enters
-through the loss), whereas the observer takes the measurement stream as its
-<strong>input</strong>. This is exactly what lets a single trained net generalise across
-operating points instead of being refit each window.</p>
+<p>The key difference from PINN v2: the observer is <em>conditioned on the
+measurements</em>. PINN v2's network is a function of time and feed only (the data
+enters through the loss), whereas the observer takes the measurement stream as
+its <strong>input</strong>. This is what lets a single trained net serve every series
+instead of being refit each window. How far that carries beyond the training
+distribution is the subject of section 5.</p>
 <hr />
 <h2 id="2-training-phase-1">2. Training, phase 1<a class="headerlink" href="#2-training-phase-1" title="Permanent link">&para;</a></h2>
 <p>Pre-training can use either of two objectives (or both):</p>
@@ -2162,11 +2235,11 @@ training loss keeps falling. <code>restore_best=True</code> (the default) plus
 <code>patience=N</code> returns the best-validated weights and halves the runtime at an
 identical result.</p>
 <p>What did <strong>not</strong> help, measured: enlarging the window set. Overlapping or
-randomly-placed windows (320 -&gt; 1120 -&gt; 1600) lower the validation loss
-slightly but make the full-series score <em>worse</em> (15.6 % -&gt; 16.7 %). They add
-gradient steps, not information -- the 80 series are the bottleneck, not how
-they are cut. Prefer capacity reduction and regularisation (<code>weight_decay</code>,
-<code>dropout</code>, a smaller <code>hidden</code>).</p>
+randomly-placed windows lower the validation loss but make the test score
+<em>worse</em> (section 5). They add gradient steps, not information -- the 80
+series are the bottleneck, not how they are cut. Of the regularisers, only
+<code>dropout=0.1</code> between the GRU layers improved the test score; a smaller
+<code>hidden</code>, weight decay and input-noise augmentation did not.</p>
 </div>
 <p>The scale <code>s</code> is computed from the <strong>training</strong> sequences only; deriving it over
 the whole set first would leak validation statistics into the objective. Options
@@ -2237,30 +2310,258 @@ Two operational details:</p>
   net cannot take <code>NaN</code>, so it is mapped to the normalised mean (0) on the input
   side and masked out of the loss on the target side.</li>
 </ul>
-<p><strong>Uncertainty</strong> is optional MC-Dropout, exactly as for the smoother.</p>
+<p><strong>Uncertainty</strong> is optional MC-Dropout (<code>mc_samples &gt; 1</code> with a dropout-trained net).</p>
 <hr />
-<h2 id="4-strengths-and-limits-vs-the-smoother">4. Strengths and limits vs. the smoother<a class="headerlink" href="#4-strengths-and-limits-vs-the-smoother" title="Permanent link">&para;</a></h2>
-<p><strong>Strengths.</strong> Near-instant inference after the one-time offline cost; learns the
-<em>full</em> state structure from the simulator (so it is strong even on unobserved
-states); generalises across operating points without a per-window refit.</p>
-<p>Measured on the benchmark's validation split, a plain 200-epoch run with no
-tuning already <strong>beats the do-nothing baseline in all four operating modes</strong>
-(15.6 % vs. 32.6 % median NRMSE), where the per-window
-<a href="../pinn/">smoother</a> manages two of four after four rounds of fixes. It also costs
-~1.7 s per epoch against ~2.5 min for a <em>single</em> smoother window -- roughly 70x
-cheaper per step, which is what puts a real hyperparameter search within reach.</p>
-<p><strong>Limits.</strong> Needs a <strong>representative</strong> pre-training distribution; carries a
-<strong>sim-to-real gap</strong> that only self-supervised adaptation closes; and the
-ill-conditioned biogas map still limits self-supervised cold starts.</p>
-<p>For where both PINNs sit relative to the UKF, and how to combine them, see the
-<a href="../fusion/">UKF ↔ PINN fusion</a>.</p>
+<h2 id="4-strengths-and-limits">4. Strengths and limits<a class="headerlink" href="#4-strengths-and-limits" title="Permanent link">&para;</a></h2>
+<p><strong>Strengths.</strong> Near-instant inference after the one-time offline cost (well under
+a second per 60-day series, against minutes for the UKF and tens of minutes for
+PINN v2); learns the <em>full</em> state structure from the simulator, so it is strong
+even on unobserved states; one network serves every series. On the benchmark
+test set it is the only learned estimator close to the UKF (20 series, 60 days,
+median-over-states NRMSE after a 48-h burn-in):</p>
+<table>
+<thead>
+<tr>
+<th>Estimator</th>
+<th>Error</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UKF, 41 states (reference)</td>
+<td>14.4 %</td>
+</tr>
+<tr>
+<td>PINN B as published (no dropout)</td>
+<td>15.1 %</td>
+</tr>
+<tr>
+<td>PINN B with <code>dropout=0.1</code> (new default, mean of 3 seeds)</td>
+<td>14.7 %</td>
+</tr>
+<tr>
+<td>PINN v2, causal, 10-day window</td>
+<td>18.7 %</td>
+</tr>
+</tbody>
+</table>
+<p>PINN B beats the UKF in the <code>stable_high</code> mode (12.9 % against 19.1 %), the
+chronically overloaded regime where the UKF's nominal kinetics are furthest off.</p>
+<p><strong>Limits.</strong> It is bounded by its training distribution: on shifted plants it
+loses more than the UKF does (section 5). It carries a <strong>sim-to-real gap</strong> that
+only self-supervised adaptation closes, and the ill-conditioned biogas map still
+limits self-supervised cold starts.</p>
+<p>For combining it with the UKF, see the <a href="../fusion/">UKF ↔ PINN fusion</a>.</p>
+<hr />
+<h2 id="5-generalisation-to-shifted-plants">5. Generalisation to shifted plants<a class="headerlink" href="#5-generalisation-to-shifted-plants" title="Permanent link">&para;</a></h2>
+<p>Two test sets shift the plant, and neither is used in training: one replaces
+maize silage by corn-cob mix at the same organic load, the other adds a 3-day
+load rhythm on top. Both were generated for this study only and are not part of
+the repository. Scores are the median NRMSE
+over the states after a 48-h burn-in; PINN B rows are the mean of three seeds
+(<code>experiments/observer_generalisation/</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Estimator</th>
+<th>Benchmark</th>
+<th>Substrate swap</th>
+<th>Swap + rhythm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UKF, 41 states</td>
+<td>14.4 %</td>
+<td>17.1 %</td>
+<td>17.7 %</td>
+</tr>
+<tr>
+<td>UKF, acid + digester core</td>
+<td>17.5 %</td>
+<td>20.1 %</td>
+<td>19.6 %</td>
+</tr>
+<tr>
+<td>PINN v2, causal</td>
+<td>18.7 %</td>
+<td>23.0 %</td>
+<td>21.9 %</td>
+</tr>
+<tr>
+<td>PINN B, published recipe</td>
+<td>15.2 %</td>
+<td>19.3 %</td>
+<td>20.2 %</td>
+</tr>
+<tr>
+<td>PINN B, <code>dropout=0.1</code> (default)</td>
+<td>14.7 %</td>
+<td>18.9 %</td>
+<td>19.5 %</td>
+</tr>
+<tr>
+<td>PINN B, 5-seed ensemble with dropout</td>
+<td><strong>14.1 %</strong></td>
+<td>18.5 %</td>
+<td>19.2 %</td>
+</tr>
+</tbody>
+</table>
+<p>PINN B loses 4 to 5 points on a shifted plant, the UKF about 3. The 18.4 %
+published for the swap set was a favourable seed; three seeds of the same recipe
+average 19.3 %, with a spread of about ±0.5 points per seed.</p>
+<p><strong>What does not close the gap.</strong> Input-noise augmentation, weight decay, a
+smaller network, overlapping, random or shorter training windows and their
+combinations all leave the gap at 3.5 to 5 points. Dropout and the ensemble
+lower all three scores together; the gap stays.</p>
+<p><strong>Substrate-aware input.</strong> <code>FeatureSpec(organic_load=True, use_feed=False)</code>
+replaces the per-substrate volumes by influent loads per component group,
+computed with the plant's own substrate characterisation. Inside the training
+distribution it is the best observer (14.0 % with dropout, below the UKF), but
+it generalises worse: 19.2 % and 19.4 % on the shifted sets.</p>
+<p><strong>Shifted data in training.</strong> Adding 12 of the 20 corn-cob series to the
+training pool and scoring on the other 8 (<code>coverage.py</code>, three seeds each):</p>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Training pool</th>
+<th>Benchmark</th>
+<th>Held-out corn-cob</th>
+<th>Swap + rhythm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>raw feed</td>
+<td>benchmark</td>
+<td>14.7 %</td>
+<td>17.8 %</td>
+<td>19.5 %</td>
+</tr>
+<tr>
+<td>raw feed</td>
+<td>+ 12 corn-cob series</td>
+<td>15.1 %</td>
+<td>17.8 %</td>
+<td>19.6 %</td>
+</tr>
+<tr>
+<td>organic load</td>
+<td>benchmark</td>
+<td>14.0 %</td>
+<td>19.6 %</td>
+<td>19.4 %</td>
+</tr>
+<tr>
+<td>organic load</td>
+<td>+ 12 corn-cob series</td>
+<td>15.5 %</td>
+<td>18.4 %</td>
+<td>20.0 %</td>
+</tr>
+</tbody>
+</table>
+<p>With the raw feed the extra series change nothing: column 0 means maize in 100
+series and corn-cob mix in 12, so the network cannot tell the plants apart. With
+the load input they help on the held-out corn-cob series, but less than the raw
+input reaches without them, and they cost accuracy on the original plant.</p>
+<p><strong>Where the error grows.</strong> On the shifted sets PINN B's error rises most on the
+fast particulate fractions, the propionate degraders and the anion pool — states
+the substrate swap moves and the five sensors barely see. The UKF's error rises
+mostly on acetate. The UKF is told the substrate mix through its model, while the
+observer has to infer the composition from the sensor history and maps an
+unfamiliar history back toward the states it was trained on.</p>
+<p><strong>Consequence.</strong> PINN B is a strong estimator inside its training distribution,
+and the cheap gains there are dropout and a seed ensemble. Outside it the UKF is
+more robust. For a new plant the observer has to be trained on simulations of
+that plant; where the kinetics differ, the UKF with a calibrated model is the
+more robust route.</p>
+<hr />
+<h2 id="6-kinetics-as-input">6. Kinetics as input<a class="headerlink" href="#6-kinetics-as-input" title="Permanent link">&para;</a></h2>
+<p>PINN B never sees which kinetics a series has, so calibrated kinetics cannot
+help it. <code>FeatureSpec(kinetic_keys=...)</code> changes that: it appends one input
+column per named kinetic constant, holding the log of its factor relative to the
+nominal value, constant over the whole series.</p>
+<ul>
+<li><strong>Training</strong> uses the generator's true factors of each simulated series.<br />
+<code>ObserverEstimator.train(..., kinetic_noise=0.07)</code> perturbs them by one draw
+  per training sequence, so the network learns to use kinetics that are known
+  only to calibration accuracy.  </li>
+<li><strong>Inference</strong> takes the kinetics as given:<br />
+<code>est.run(series, kinetics={"k_m_ac": 0.8, ...})</code>. Keys that are not given count
+  as nominal, and <code>{}</code> means nominal kinetics. A kinetics-aware observer refuses
+  to run without explicit kinetics, so the generator truth a benchmark series
+  carries can never slip in.</li>
+</ul>
+<p>The inputs are the ten constants that move the sensors most over a 20-day
+window, screened on eight training series
+(<code>experiments/final_test/screen_kinetics.py</code>): <code>k_dis_PS</code>, <code>k_m_ac</code>, <code>k_m_pro</code>, <code>k_dis_PF</code>, <code>k_hyd_ch</code>, <code>k_dec_ac</code>, <code>k_dec_su</code>, <code>K_S_ac</code>, <code>k_dec_pro</code>, <code>K_S_pro</code>.</p>
+<p>Comparison on the 20 validation series, both as 5-seed ensembles with the same
+recipe and seeds, median NRMSE after 48 h (the test sets stay untouched for the
+final test; <code>experiments/observer_generalisation/kinetic_inputs.py</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Kinetics given</th>
+<th>Kinetics-blind</th>
+<th>10 kinetic inputs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>none, nominal values</td>
+<td>14.7 %</td>
+<td>17.2 %</td>
+</tr>
+<tr>
+<td>true factors</td>
+<td>14.7 %</td>
+<td>12.4 %</td>
+</tr>
+<tr>
+<td>true × exp(N(0, 0.07))</td>
+<td>14.7 %</td>
+<td>12.9 %</td>
+</tr>
+<tr>
+<td>true × exp(N(0, 0.15))</td>
+<td>14.7 %</td>
+<td>14.0 %</td>
+</tr>
+</tbody>
+</table>
+<p>For orientation: the UKF with nominal kinetics reaches 16.3 % on the same series.
+Five inputs instead of ten give 13.2 % at σ = 0.07. With all 26 constants known
+exactly, which no calibration achieves, the observer reaches 7.7 %.</p>
+<ul>
+<li><strong>Most of the observer's error is unknown kinetics.</strong> Knowing all of them<br />
+  halves it.  </li>
+<li><strong>With calibrated kinetics it is clearly better.</strong> At the accuracy the kinetics<br />
+  calibration study reaches, σ ≈ 0.07, the kinetics-aware observer is 1.9 points
+  better (p = 0.005). At σ = 0.15 the gain shrinks to 0.8 points and is no longer
+  significant.  </li>
+<li><strong>Without calibration it is worse.</strong> Told "nominal", it trusts that input<br />
+  instead of inferring the kinetics from the sensor history as the kinetics-blind
+  observer does, and loses 2.5 points.</li>
+</ul>
+<p>The decision rule was fixed before the run: better with calibration at σ = 0.07,
+and not more than 0.3 points worse without. The second part fails, so the
+kinetics-aware observer does not replace the kinetics-blind one. Use it, with ten
+inputs and trained with <code>kinetic_noise=0.07</code>, whenever calibrated kinetics are
+available; use the kinetics-blind observer otherwise. The checkpoints are not
+shipped; <code>kinetic_inputs.py</code> retrains them.</p>
 <hr />
 <h2 id="source-files">Source files<a class="headerlink" href="#source-files" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observer.py</code> — <code>Adm1Observer</code>  </li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observer_data.py</code> — <code>generate_observer_dataset</code>, <code>ObserverDataset</code>, <code>MeasurementDataset</code>  </li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observer_train.py</code> — <code>pretrain_observer</code>, <code>pretrain_observer_selfsup</code>, <code>pretrain_observer_sim2real</code>, <code>finetune_observer</code>  </li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/online_observer.py</code> — <code>SlidingWindowObserver</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/observer/model.py</code> — <code>Adm1Observer</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/observer/datasets.py</code> — <code>generate_observer_dataset</code>, <code>ObserverDataset</code>, <code>MeasurementDataset</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/observer/train.py</code> — <code>pretrain_observer</code>, <code>pretrain_observer_selfsup</code>, <code>pretrain_observer_sim2real</code>, <code>finetune_observer</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/observer/online.py</code> — <code>SlidingWindowObserver</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/observer/adapter.py</code> — <code>PinnData</code>, <code>FeatureSpec</code> (incl. <code>organic_load</code>, <code>kinetic_keys</code>), <code>kinetic_log_factors</code>  </li>
+<li><code>pyadm1ode_estimation/estimation/estimators.py</code> — <code>ObserverEstimator</code> (train, save, load, <code>for_dataset</code>)  </li>
+<li><code>experiments/observer_generalisation/</code> — recipe sweep, seed ensemble, coverage test, kinetic inputs  </li>
 </ul>
 <h2 id="api-reference">API reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h2>
 
@@ -2269,10 +2570,10 @@ ill-conditioned biogas map still limits self-supervised cold starts.</p>
 
 
 
-<h3 id="pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">deep_learning</span><span class="o">.</span><span class="n">observer</span><span class="o">.</span><span class="n">Adm1Observer</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">x_ref</span><span class="p">,</span> <span class="n">n_features</span><span class="p">,</span> <span class="n">hidden</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">gas_n_iter</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></code>
+<h3 id="pyadm1ode_estimation.estimation.observer.model.Adm1Observer" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">observer</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Adm1Observer</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">x_ref</span><span class="p">,</span> <span class="n">n_features</span><span class="p">,</span> <span class="n">hidden</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">gas_n_iter</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></code>
 
-<a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2430,15 +2731,15 @@ ill-conditioned biogas map still limits self-supervised cold starts.</p>
 
 
 
-<h4 id="pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer-functions">Methods:<a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer-functions" class="headerlink" title="Permanent link">&para;</a></h4>
+<h4 id="pyadm1ode_estimation.estimation.observer.model.Adm1Observer-functions">Methods:<a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer-functions" class="headerlink" title="Permanent link">&para;</a></h4>
 
 <div class="doc doc-object doc-function">
 
 
-<h5 id="pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer.forward" class="doc doc-heading">
+<h5 id="pyadm1ode_estimation.estimation.observer.model.Adm1Observer.forward" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="n">u</span><span class="p">)</span></code>
 
-<a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer.forward" class="headerlink" title="Permanent link">&para;</a></h5>
+<a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer.forward" class="headerlink" title="Permanent link">&para;</a></h5>
 
 
     <div class="doc doc-contents ">
@@ -2456,14 +2757,14 @@ the predicted liquid state at every step.</p>
 <div class="doc doc-object doc-function">
 
 
-<h5 id="pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer.from_adm1" class="doc doc-heading">
+<h5 id="pyadm1ode_estimation.estimation.observer.model.Adm1Observer.from_adm1" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">from_adm1</span><span class="p">(</span><span class="n">adm1</span><span class="p">,</span> <span class="n">x_ref</span><span class="p">,</span> <span class="n">n_features</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
   </span>
 
-<a href="#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer.from_adm1" class="headerlink" title="Permanent link">&para;</a></h5>
+<a href="#pyadm1ode_estimation.estimation.observer.model.Adm1Observer.from_adm1" class="headerlink" title="Permanent link">&para;</a></h5>
 
 
     <div class="doc doc-contents ">
@@ -2487,10 +2788,10 @@ the predicted liquid state at every step.</p>
 
 
 
-<h3 id="pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">deep_learning</span><span class="o">.</span><span class="n">online_observer</span><span class="o">.</span><span class="n">SlidingWindowObserver</span><span class="p">(</span><span class="n">observer</span><span class="p">,</span> <span class="n">obs_model</span><span class="p">,</span> <span class="n">feat_mean</span><span class="p">,</span> <span class="n">feat_std</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">window_hours</span><span class="o">=</span><span class="mf">48.0</span><span class="p">,</span> <span class="n">dt_hours</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">finetune_every</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">finetune_epochs</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">finetune_lr</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">finetune_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mc_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">feed_aware</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nominal_feed_sum</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<h3 id="pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">observer</span><span class="o">.</span><span class="n">online</span><span class="o">.</span><span class="n">SlidingWindowObserver</span><span class="p">(</span><span class="n">observer</span><span class="p">,</span> <span class="n">obs_model</span><span class="p">,</span> <span class="n">feat_mean</span><span class="p">,</span> <span class="n">feat_std</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">window_hours</span><span class="o">=</span><span class="mf">48.0</span><span class="p">,</span> <span class="n">dt_hours</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">finetune_every</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">finetune_epochs</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">finetune_lr</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">finetune_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mc_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">feed_aware</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nominal_feed_sum</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
-<a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2516,7 +2817,7 @@ the predicted liquid state at every step.</p>
                 <code>observer</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;pyadm1ode_estimation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;estimation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;deep_learning&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;observer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Adm1Observer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x_ref&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n_features&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hidden&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;64&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num_layers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dropout&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gas_n_iter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt; (&lt;code&gt;pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer&lt;/code&gt;)" href="../../../theory/observer/#pyadm1ode_estimation.estimation.deep_learning.observer.Adm1Observer">Adm1Observer</a></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;highlight language-python&quot;&gt;&lt;span class=&quot;n&quot;&gt;pyadm1ode_estimation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;estimation&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;observer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;model&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Adm1Observer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x_ref&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n_features&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hidden&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;64&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num_layers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dropout&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gas_n_iter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;float32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt; (&lt;code&gt;pyadm1ode_estimation.estimation.observer.model.Adm1Observer&lt;/code&gt;)" href="../../../theory/observer/#pyadm1ode_estimation.estimation.observer.model.Adm1Observer">Adm1Observer</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2532,7 +2833,7 @@ the predicted liquid state at every step.</p>
                 <code>obs_model</code>
             </td>
             <td>
-                  <code><span title="pyadm1ode_estimation.estimation.deep_learning.observation_torch.TorchObservationModel">TorchObservationModel</span></code>
+                  <code><span title="pyadm1ode_estimation.estimation.observation_torch.TorchObservationModel">TorchObservationModel</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2697,15 +2998,15 @@ measurement loss); its <code>channel_names</code> order must match the
 
 
 
-<h4 id="pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver-functions">Methods:<a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver-functions" class="headerlink" title="Permanent link">&para;</a></h4>
+<h4 id="pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver-functions">Methods:<a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver-functions" class="headerlink" title="Permanent link">&para;</a></h4>
 
 <div class="doc doc-object doc-function">
 
 
-<h5 id="pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver.run" class="doc doc-heading">
+<h5 id="pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver.run" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">run</span><span class="p">(</span><span class="n">measurements</span><span class="p">,</span> <span class="n">feeds</span><span class="p">)</span></code>
 
-<a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver.run" class="headerlink" title="Permanent link">&para;</a></h5>
+<a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver.run" class="headerlink" title="Permanent link">&para;</a></h5>
 
 
     <div class="doc doc-contents ">
@@ -2720,10 +3021,10 @@ measurement loss); its <code>channel_names</code> order must match the
 <div class="doc doc-object doc-function">
 
 
-<h5 id="pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver.step" class="doc doc-heading">
+<h5 id="pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver.step" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">step</span><span class="p">(</span><span class="n">measurement</span><span class="p">,</span> <span class="n">feed</span><span class="p">)</span></code>
 
-<a href="#pyadm1ode_estimation.estimation.deep_learning.online_observer.SlidingWindowObserver.step" class="headerlink" title="Permanent link">&para;</a></h5>
+<a href="#pyadm1ode_estimation.estimation.observer.online.SlidingWindowObserver.step" class="headerlink" title="Permanent link">&para;</a></h5>
 
 
     <div class="doc doc-contents ">
@@ -2802,10 +3103,10 @@ measurement loss); its <code>channel_names</code> order must match the
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.c21346df.min.js"></script>
       
         <script src="../../../javascripts/mathjax.js"></script>
       

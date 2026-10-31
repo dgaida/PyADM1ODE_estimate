@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -35,10 +35,10 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -612,10 +612,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#drei-schatzansatze" class="md-nav__link">
+  <a href="#schatzansatze" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Drei Schätzansätze
+        Schätzansätze
       
     </span>
   </a>
@@ -870,6 +870,34 @@
     
   
     Kalibrierungs-Artefakt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="usage/estimators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schätzer-Registry
   
 
     
@@ -1159,7 +1187,7 @@
   <span class="md-ellipsis">
     
   
-    PINN
+    PINN v2
   
 
     
@@ -1187,7 +1215,7 @@
   <span class="md-ellipsis">
     
   
-    Vortrainierter Observer
+    GRU-Observer (PINN B)
   
 
     
@@ -1808,10 +1836,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#drei-schatzansatze" class="md-nav__link">
+  <a href="#schatzansatze" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Drei Schätzansätze
+        Schätzansätze
       
     </span>
   </a>
@@ -1897,13 +1925,13 @@ an den Anlagenbetreiber geben.</p>
 <h2 id="hauptmerkmale">Hauptmerkmale<a class="headerlink" href="#hauptmerkmale" title="Permanent link">&para;</a></h2>
 <ul>
 <li>🎯 <strong>Mechanistisch und datengetrieben</strong> — UKF auf dem vollen 41-State ADM1da<br />
-  plus geplante Deep-Learning- und Fusion-Schichten.  </li>
+  und zwei gelernte Schätzer (PINN v2, GRU-Observer) hinter einer Registry.  </li>
 <li>🔌 <strong>Sensor-tolerant</strong> — Channel-Gating für sparsame Lab-Messungen,<br />
   OU-Drift für augmentierte Eingangsschätzung.  </li>
 <li>📊 <strong>Diagnostisch</strong> — NIS-Monitoring je Schritt, Innovation pro Channel,<br />
   Joseph-Form Kovarianz-Update für lange Läufe.</li>
 </ul>
-<h2 id="drei-schatzansatze">Drei Schätzansätze<a class="headerlink" href="#drei-schatzansatze" title="Permanent link">&para;</a></h2>
+<h2 id="schatzansatze">Schätzansätze<a class="headerlink" href="#schatzansatze" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1919,13 +1947,18 @@ an den Anlagenbetreiber geben.</p>
 <td>AP 4.2</td>
 </tr>
 <tr>
-<td><strong>Deep Learning Ensemble</strong></td>
-<td>Skelett</td>
+<td><strong>PINN v2</strong> — Kollokations-Trajektoriennetz</td>
+<td>Forschung</td>
+<td>AP 4.3</td>
+</tr>
+<tr>
+<td><strong>GRU-Observer (PINN B)</strong> — amortisiert, einmal trainiert</td>
+<td>Forschung</td>
 <td>AP 4.3</td>
 </tr>
 <tr>
 <td><strong>Fusion</strong> (Covariance Intersection)</td>
-<td>Platzhalter</td>
+<td>experimentell</td>
 <td>AP 4.4</td>
 </tr>
 </tbody>
@@ -1934,9 +1967,9 @@ an den Anlagenbetreiber geben.</p>
 <ul>
 <li><a href="getting-started/">Erste Schritte</a> — Schneller Einstieg.  </li>
 <li><a href="installation/">Installation</a> — Setup für verschiedene Umgebungen.  </li>
-<li><a href="usage/">Nutzung</a> — UKF konfigurieren, Kalibrierungs-Artefakt einlesen.  </li>
+<li><a href="usage/">Nutzung</a> — UKF konfigurieren, Kalibrierungs-Artefakt einlesen, Schätzer wählen.  </li>
 <li><a href="observability/">Observability</a> — Welche Zustände sind aus welchen Sensoren schätzbar?  </li>
-<li><a href="theory/">Theorie</a> — ADM1da-Modell, PINN-Konzept.  </li>
+<li><a href="theory/">Theorie</a> — ADM1da-Modell, PINN v2, GRU-Observer, Fusion.  </li>
 <li><a href="examples/">Beispiele</a> — End-to-End-Beispiele (Twin, echte Anlage).  </li>
 <li><a href="api/">API-Referenz</a> — Auto-generiert via mkdocstrings.  </li>
 </ul>
@@ -2050,10 +2083,10 @@ an den Anlagenbetreiber geben.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="assets/javascripts/bundle.c21346df.min.js"></script>
       
         <script src="javascripts/mathjax.js"></script>
       

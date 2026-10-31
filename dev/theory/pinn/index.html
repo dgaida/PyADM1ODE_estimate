@@ -29,18 +29,18 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
-        <title>PINN - PyADM1ODE Estimate</title>
+        <title>PINN v2 - PyADM1ODE Estimate</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -86,7 +86,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#physics-informed-neural-networks-pinn-fur-adm1" class="md-skip">
+        <a href="#pinn-v2-das-kollokations-trajektorien-pinn" class="md-skip">
           Zum Inhalt
         </a>
       
@@ -124,7 +124,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PINN
+              PINN v2
             
           </span>
         </div>
@@ -772,6 +772,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/estimators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schätzer-Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1060,7 +1088,7 @@
   <span class="md-ellipsis">
     
   
-    PINN
+    PINN v2
   
 
     
@@ -1078,7 +1106,7 @@
   <span class="md-ellipsis">
     
   
-    PINN
+    PINN v2
   
 
     
@@ -1104,10 +1132,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-das-geloste-problem" class="md-nav__link">
+  <a href="#1-das-problem-und-die-zwei-wege" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Das gelöste Problem
+        1. Das Problem und die zwei Wege
       
     </span>
   </a>
@@ -1115,10 +1143,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-ein-neuronales-netz" class="md-nav__link">
+  <a href="#2-das-netz" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Ein neuronales Netz
+        2. Das Netz
       
     </span>
   </a>
@@ -1126,10 +1154,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-was-physics-informed-bedeutet" class="md-nav__link">
+  <a href="#3-die-physikseite" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Was „physics-informed" bedeutet
+        3. Die Physikseite
       
     </span>
   </a>
@@ -1137,10 +1165,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-die-mathematik" class="md-nav__link">
+  <a href="#4-der-loss" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Die Mathematik
+        4. Der Loss
       
     </span>
   </a>
@@ -1148,165 +1176,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-warum-adm1-schwierig-ist" class="md-nav__link">
+  <a href="#5-kausaler-betrieb-das-gleitende-fenster" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Warum ADM1 schwierig ist
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Warum ADM1 schwierig ist">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-positive-gut-skalierte-ausgaben" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Positive, gut skalierte Ausgaben
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-relatives-physik-residuum" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Relatives Physik-Residuum
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-quasi-stationare-gasphase" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Quasi-stationäre Gasphase
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-prior-verankerung-und-zustandsweise-gewichtung" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Prior-Verankerung und zustandsweise Gewichtung
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-quasi-stationare-ladungsbilanz-solve_cationtrue" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Quasi-stationäre Ladungsbilanz (solve_cation=True)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-begrenzte-residuen-res_clip" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Begrenzte Residuen (res_clip)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-umsetzung-in-diesem-repository" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Umsetzung in diesem Repository
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Umsetzung in diesem Repository">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#die-datenanbindung-der-adapter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Die Datenanbindung: der Adapter
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#batch-nicht-rekursiv" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Batch, nicht rekursiv
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#prognose" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prognose
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#online-betrieb" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Online-Betrieb
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#unsicherheit" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Unsicherheit
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-gemessener-stand" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Gemessener Stand
+        5. Kausaler Betrieb: das gleitende Fenster
       
     </span>
   </a>
@@ -1314,10 +1187,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quelldateien" class="md-nav__link">
+  <a href="#6-ergebnisse-der-strukturstudie" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quelldateien
+        6. Ergebnisse der Strukturstudie
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-code-landkarte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Code-Landkarte
       
     </span>
   </a>
@@ -1348,19 +1232,47 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PinnSmoother
+        ADM1Physics
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="PinnSmoother">
+    <nav class="md-nav" aria-label="ADM1Physics">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother-functions" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.n_residual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        n_residual
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
         Methods:
@@ -1372,10 +1284,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.estimate" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.fit_scale" class="md-nav__link">
     <span class="md-ellipsis">
       
-        estimate
+        fit_scale
       
     </span>
   </a>
@@ -1383,10 +1295,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.fit" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.full_state" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fit
+        full_state
       
     </span>
   </a>
@@ -1394,10 +1306,54 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.update" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.full_state_with_rates" class="md-nav__link">
     <span class="md-ellipsis">
       
-        update
+        full_state_with_rates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.model_rates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        model_rates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.residual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        residual
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.rhs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rhs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.state_rates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        state_rates
       
     </span>
   </a>
@@ -1415,19 +1371,19 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ADM1PINN
+        TrajectoryNet
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="ADM1PINN">
+    <nav class="md-nav" aria-label="TrajectoryNet">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN-functions" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
         Methods:
@@ -1439,7 +1395,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN.forward" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.forward" class="md-nav__link">
     <span class="md-ellipsis">
       
         forward
@@ -1449,6 +1405,39 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.latent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        latent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.to_latent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_latent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.with_rates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        with_rates
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1456,6 +1445,17 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.rolling.run_rolling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_rolling
+      
+    </span>
+  </a>
   
 </li>
         
@@ -1487,7 +1487,7 @@
   <span class="md-ellipsis">
     
   
-    Vortrainierter Observer
+    GRU-Observer (PINN B)
   
 
     
@@ -2086,10 +2086,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-das-geloste-problem" class="md-nav__link">
+  <a href="#1-das-problem-und-die-zwei-wege" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Das gelöste Problem
+        1. Das Problem und die zwei Wege
       
     </span>
   </a>
@@ -2097,10 +2097,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-ein-neuronales-netz" class="md-nav__link">
+  <a href="#2-das-netz" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Ein neuronales Netz
+        2. Das Netz
       
     </span>
   </a>
@@ -2108,10 +2108,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-was-physics-informed-bedeutet" class="md-nav__link">
+  <a href="#3-die-physikseite" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Was „physics-informed" bedeutet
+        3. Die Physikseite
       
     </span>
   </a>
@@ -2119,10 +2119,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-die-mathematik" class="md-nav__link">
+  <a href="#4-der-loss" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Die Mathematik
+        4. Der Loss
       
     </span>
   </a>
@@ -2130,165 +2130,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-warum-adm1-schwierig-ist" class="md-nav__link">
+  <a href="#5-kausaler-betrieb-das-gleitende-fenster" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Warum ADM1 schwierig ist
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Warum ADM1 schwierig ist">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-positive-gut-skalierte-ausgaben" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Positive, gut skalierte Ausgaben
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-relatives-physik-residuum" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Relatives Physik-Residuum
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-quasi-stationare-gasphase" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Quasi-stationäre Gasphase
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-prior-verankerung-und-zustandsweise-gewichtung" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Prior-Verankerung und zustandsweise Gewichtung
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-quasi-stationare-ladungsbilanz-solve_cationtrue" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Quasi-stationäre Ladungsbilanz (solve_cation=True)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-begrenzte-residuen-res_clip" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Begrenzte Residuen (res_clip)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-umsetzung-in-diesem-repository" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Umsetzung in diesem Repository
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Umsetzung in diesem Repository">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#die-datenanbindung-der-adapter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Die Datenanbindung: der Adapter
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#batch-nicht-rekursiv" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Batch, nicht rekursiv
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#prognose" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prognose
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#online-betrieb" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Online-Betrieb
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#unsicherheit" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Unsicherheit
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-gemessener-stand" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Gemessener Stand
+        5. Kausaler Betrieb: das gleitende Fenster
       
     </span>
   </a>
@@ -2296,10 +2141,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quelldateien" class="md-nav__link">
+  <a href="#6-ergebnisse-der-strukturstudie" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quelldateien
+        6. Ergebnisse der Strukturstudie
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-code-landkarte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Code-Landkarte
       
     </span>
   </a>
@@ -2330,19 +2186,47 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        PinnSmoother
+        ADM1Physics
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="PinnSmoother">
+    <nav class="md-nav" aria-label="ADM1Physics">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother-functions" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.n_residual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        n_residual
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
         Methods:
@@ -2354,10 +2238,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.estimate" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.fit_scale" class="md-nav__link">
     <span class="md-ellipsis">
       
-        estimate
+        fit_scale
       
     </span>
   </a>
@@ -2365,10 +2249,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.fit" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.full_state" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fit
+        full_state
       
     </span>
   </a>
@@ -2376,10 +2260,54 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.update" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.full_state_with_rates" class="md-nav__link">
     <span class="md-ellipsis">
       
-        update
+        full_state_with_rates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.model_rates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        model_rates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.residual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        residual
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.rhs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rhs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.state_rates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        state_rates
       
     </span>
   </a>
@@ -2397,19 +2325,19 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ADM1PINN
+        TrajectoryNet
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="ADM1PINN">
+    <nav class="md-nav" aria-label="TrajectoryNet">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN-functions" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
         Methods:
@@ -2421,7 +2349,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN.forward" class="md-nav__link">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.forward" class="md-nav__link">
     <span class="md-ellipsis">
       
         forward
@@ -2431,6 +2359,39 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.latent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        latent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.to_latent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_latent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.with_rates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        with_rates
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2438,6 +2399,17 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyadm1ode_estimation.estimation.pinn.rolling.run_rolling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_rolling
+      
+    </span>
+  </a>
   
 </li>
         
@@ -2466,455 +2438,253 @@
   
 
 
-<h1 id="physics-informed-neural-networks-pinn-fur-adm1">Physics-Informed Neural Networks (PINN) für ADM1<a class="headerlink" href="#physics-informed-neural-networks-pinn-fur-adm1" title="Permanent link">&para;</a></h1>
-<p>Diese Seite erklärt den PINN-Schätzer von Grund auf. Sie beginnt mit der Idee, baut dann die genaue
-Mathematik auf, erklärt die ADM1-spezifischen Kniffe, die es überhaupt zum
-Funktionieren bringen und schließlich, wie es in diesem Repository umgesetzt ist
-(<code>pinn.py</code>, <code>pinn_smoother.py</code>).</p>
+<h1 id="pinn-v2-das-kollokations-trajektorien-pinn">PINN v2 — das Kollokations-Trajektorien-PINN<a class="headerlink" href="#pinn-v2-das-kollokations-trajektorien-pinn" title="Permanent link">&para;</a></h1>
+<p>Diese Seite erklärt das physik-informierte neuronale Netz des Repositorys in
+seinem heutigen Stand: <strong>PINN v2</strong>, ein Trajektoriennetz, das am
+ADM1da-Residuum an Kollokationspunkten trainiert und kausal in einem
+gleitenden Fenster betrieben wird. Der GRU-Observer (PINN B) hat eine
+<a href="../observer/">eigene Seite</a>.</p>
 <div class="admonition abstract">
 <p class="admonition-title">In einem Satz</p>
-<p>Ein PINN ist ein neuronales Netz, das die verborgene Zustandstrajektorie
-<span class="arithmatex">\(\hat{x}(t)\)</span> des Fermenters rekonstruiert, indem es gleichzeitig <strong>die wenigen
-verfügbaren Sensormessungen anpasst</strong> und <strong>die ADM1-Differenzialgleichungen
-erfüllt</strong>.</p>
+<p>Das Netz <em>ist</em> die Zustandstrajektorie: <span class="arithmatex">\(\hat{x}(t) = \exp(\mu + \sigma\, z_\theta(t, u))\)</span>.
+Es wird so trainiert, dass es <strong>die Sensorwerte</strong> über das Messmodell
+<strong>trifft</strong> und an frei gewählten Zeitpunkten <strong>die ADM1da-Gleichungen
+erfüllt</strong>; die bekannte Fütterung <span class="arithmatex">\(u\)</span> ist Eingang.</p>
 </div>
-<p>Abschnitte 1–3 sind die Intuition (ohne Mathematik), Abschnitt 4 ist
-die formale Verlustfunktion, Abschnitt 5 erklärt, warum das steife ADM1 besondere
-Sorgfalt braucht und Abschnitt 6 bildet jede Idee auf den echten Code ab.</p>
+<p><img alt="PINN: neuronales Netz mit eingebauter Physik" src="../../assets/slides/folie_schaetzung_pinn.svg" /></p>
+<p><em>PINN v2 im Überblick: Das Netz bildet Zeit und Fütterung auf den Verlauf der 41
+Zustände ab; das Training verkleinert eine Daten-Strafe (Abstand zu den
+Sensormessungen) plus eine Physik-Strafe (Verstoß gegen die Modellgleichungen),
+und das Netz wird täglich auf einem gleitenden 10-Tage-Fenster nachtrainiert.</em></p>
+<p>Abschnitte 1–3 sind die Idee, Abschnitt 4 der Loss, Abschnitt 5 der kausale
+Betrieb, Abschnitt 6 die Ergebnisse der Strukturstudie, Abschnitt 7 die
+Code-Landkarte.</p>
 <hr />
-<h2 id="1-das-geloste-problem">1. Das gelöste Problem<a class="headerlink" href="#1-das-geloste-problem" title="Permanent link">&para;</a></h2>
-<p>Ein Biogasfermenter wird durch <strong>41 interne ADM1-Zustände</strong> beschrieben: gelöste
-Zucker und Säuren, partikuläre Fraktionen, mikrobielle Biomasse, Ionen-/
-Ladungsspezies und Gasphasendrücke (siehe <a href="../adm1/">ADM1da-Modell</a>). Online lässt
-sich davon nur eine Handvoll indirekt messen: Biogasstrom <span class="arithmatex">\(Q_\text{gas}\)</span>, Methan
-<span class="arithmatex">\(Q_\text{ch4}\)</span>, pH und wenige weitere. <strong>Zustandsschätzung</strong> ist die Aufgabe, aus
-diesen wenigen verrauschten Signalen alle 41 Zustände über die Zeit zu
-rekonstruieren.</p>
-<p>Es gibt zwei klassische Wege, jeder mit einer Schwäche:</p>
+<h2 id="1-das-problem-und-die-zwei-wege">1. Das Problem und die zwei Wege<a class="headerlink" href="#1-das-problem-und-die-zwei-wege" title="Permanent link">&para;</a></h2>
+<p>Ein Fermenter hat <strong>41 ADM1da-Zustände</strong>; online sehen wir fünf Signale
+(Gasfluss, Methan, CO₂, pH, Trockensubstanz). Der UKF löst das rekursiv mit dem
+ADM1da als Prädiktionsmodell. Ein PINN geht den umgekehrten Weg: Es schreibt die
+ganze Trajektorie als Netz und nutzt die Physik als <em>weiche Nebenbedingung</em>.</p>
+<p>Daraus folgen zwei Eigenschaften:</p>
 <ul>
-<li><strong>Rein mechanistisches Modell (ADM1).</strong> Vertrauenswürdige Struktur, aber es<br />
-  braucht den exakten Anfangszustand und exakte kinetische Parameter. Kleine
-  Fehler summieren sich und die Simulation driftet von der realen Anlage weg.  </li>
-<li><strong>Rein maschinelles Lernen.</strong> Flexibel, aber es braucht einen großen<br />
-  gelabelten Datensatz <em>echter</em> Zustände zum Lernen, den wir an einer realen
-  Anlage nie haben, denn die echten Zustände sind genau das, was wir nicht messen
-  können.</li>
+<li><strong>Weiche Physik.</strong> Die Gleichungen sind ein Strafterm, das Netz kann also<br />
+  Modellfehler gegen Datenanpassung abwägen. Das ist eine Stärke, wenn das
+  Modell falsch ist, und eine Schwäche, wenn die Daten den Zustand nicht
+  festlegen.  </li>
+<li><strong>Fit je Reihe.</strong> Über Reihen hinweg wird nichts gelernt. Was das Netz über<br />
+  die Kinetik weiß, muss es aus dem Fenster ableiten, das es sieht. Der
+  Benchmark stört 26 Kinetikkonstanten je Reihe (<span class="arithmatex">\(\sigma = 0{,}25\)</span>, lognormal),
+  und ein Fenster mit fünf Sensoren kann sie nicht identifizieren. Das ist die
+  Grenze dieses Ansatzes, gemessen in Abschnitt 6.</li>
 </ul>
-<p>Ein PINN kombiniert beides: ein neuronales Netz, flexibel genug, um die spärlichen
-Daten zu treffen, <strong>eingeschränkt durch die ADM1-Physik</strong>, sodass es weit weniger
-Daten braucht und nicht in physikalisch unmögliche Trajektorien abdriften kann.</p>
 <hr />
-<h2 id="2-ein-neuronales-netz">2. Ein neuronales Netz<a class="headerlink" href="#2-ein-neuronales-netz" title="Permanent link">&para;</a></h2>
+<h2 id="2-das-netz">2. Das Netz<a class="headerlink" href="#2-das-netz" title="Permanent link">&para;</a></h2>
+<p><code>TrajectoryNet</code> (<code>pinn/model.py</code>) bildet die normierte Zeit plus
+<strong>Fütterungsmerkmale</strong> auf den Zustand ab:</p>
+<div class="arithmatex">\[
+\hat{x}(t) = \exp\big(\mu + \sigma \odot z_\theta(\tilde t,\ \phi(u, t))\big),
+\]</div>
 <ul>
-<li>Ein neuronales Netz ist eine flexible mathematische Funktion<br />
-<span class="arithmatex">\(y = \text{NN}_\theta(x)\)</span> mit vielen einstellbaren Zahlen <span class="arithmatex">\(\theta\)</span> (den
-  <em>Gewichten</em>).  </li>
-<li><strong>Training</strong> heißt, <span class="arithmatex">\(\theta\)</span> so anzupassen, dass ein <em>Loss</em> per Gradientenabstieg minimiert<br />
-  wird.  </li>
-<li>Die <strong>Eingabe ist die Zeit <span class="arithmatex">\(t\)</span></strong> und die <strong>Ausgabe ist der Zustandsvektor <span class="arithmatex">\(\hat{x}(t)\)</span></strong>.<br />
- Das Netz <em>ist</em> also die geschätzte Trajektorie selbst. Fragt man es zu
-  einem beliebigen Zeitpunkt <span class="arithmatex">\(t\)</span>, liefert es den geschätzten Anlagenzustand in
-  diesem Moment.</li>
+<li><span class="arithmatex">\(\mu, \sigma\)</span> — Mittelwert und Streuung von <span class="arithmatex">\(\log x\)</span> je Zustand auf dem<br />
+<strong>Trainings-Split</strong> (<code>train_split_log_stats</code>), die Ausgabenormierung sieht
+  also nie die Wahrheit der bewerteten Reihe. Die Exponentialfunktion hält
+  jeden Zustand positiv.  </li>
+<li><span class="arithmatex">\(\tilde t\)</span> — auf das Fenster skalierte Zeit, optional in <span class="arithmatex">\(K\)</span> deterministische<br />
+  Fourier-Paare <span class="arithmatex">\((\sin 2\pi k \tilde t, \cos 2\pi k \tilde t)\)</span> entwickelt
+  (<code>ArchConfig.fourier_features</code>). Das ist der einzige Strukturhebel, der
+  messbar geholfen hat (Abschnitt 6).  </li>
+<li><span class="arithmatex">\(\phi(u, t)\)</span> — die aktuelle Fütterung oder zusätzlich Tages- bzw.<br />
+  Wochenmittel der Vergangenheit (<code>feed_mode = "current" | "hist7" | "hist30"</code>).  </li>
+<li>Rumpf: <code>depth</code> tanh-Schichten mit je <code>width</code> Neuronen; Layer-Norm,<br />
+  Residualblöcke, das „modified MLP“ und Ausgabeköpfe je Zustand sind als
+  Optionen vorhanden und getestet.</li>
 </ul>
-<p>Konkret ist es ein Multilayer-Perceptron (MLP): einige <code>Linear</code>-Schichten
-mit einer glatten <code>tanh</code>-Nichtlinearität dazwischen. <code>tanh</code> wird in PINNs
-bevorzugt, weil seine Ableitungen glatt sind.</p>
+<p><strong>Closure.</strong> Standardmäßig sagt das Netz nur die <strong>31 Kernzustände</strong> voraus.
+Die sechs Ionenspezies folgen aus den Säure-Base-Gleichgewichten und der
+Ladungsbilanz (<code>solve_charge_balance</code>, ein Newton-Verfahren für <span class="arithmatex">\(S_{H^+}\)</span>), die
+vier Gaspartialdrücke aus dem quasi-stationären Gasraum (<code>close_state</code>). Beide
+Closures sind differenzierbar, und die Raten der geschlossenen Zustände kommen
+aus einem Jacobi-Vektor-Produkt im Vorwärtsmodus (<code>close_state_with_rates</code>), das
+Residuum unten ist also exakt. Der alternative „DAE-Modus“ sagt alle 41
+Zustände voraus und hängt die sechs Gleichgewichtsresiduen als algebraische
+Zeilen an.</p>
 <hr />
-<h2 id="3-was-physics-informed-bedeutet">3. Was „physics-informed" bedeutet<a class="headerlink" href="#3-was-physics-informed-bedeutet" title="Permanent link">&para;</a></h2>
-<p>Ein nur auf Daten trainiertes Netz würde die Messpunkte treffen, wäre aber frei,
-dazwischen und danach beliebig zu verlaufen. Ein PINN fügt eine zweite Forderung
-hinzu: die Trajektorie muss die bekannte Bewegungsgleichung erfüllen</p>
-<div class="arithmatex">\[
-\frac{dx}{dt} = f(x, u),
-\]</div>
-<p>wobei <span class="arithmatex">\(f\)</span> die rechte Seite von ADM1 und <span class="arithmatex">\(u\)</span> die (bekannte) Substratzufuhr ist.</p>
-<p>Der Kniff, der das überprüfbar macht, ist die <strong>automatische Differenzierung</strong>:
-Da die Netzausgabe <span class="arithmatex">\(\hat{x}(t)\)</span> eine explizite Funktion der Eingabe <span class="arithmatex">\(t\)</span> ist,
-können wir das Framework nach ihrer exakten Zeitableitung
-<span class="arithmatex">\(\tfrac{d\hat{x}}{dt}\)</span> fragen. ADM1 liefert <span class="arithmatex">\(f(\hat{x}, u)\)</span>. Ihre Abweichung,</p>
-<div class="arithmatex">\[
-r(t) \;=\; \frac{d\hat{x}}{dt} - f(\hat{x}, u),
-\]</div>
-<p>ist das <strong>Physik-Residuum</strong> &rarr;  Null, wenn die Trajektorie das Modell erfüllt.</p>
-<p>Das Training minimiert dann eine Summe aus drei Forderungen:</p>
-<div class="arithmatex">\[
-\boxed{\text{Netz-Vorhersage } \hat{x}(t)}\ \Longrightarrow\
-\left\{
-\begin{array}{l}
-\text{vergleiche mit den Sensoren} \ \longrightarrow\ \boxed{\text{Daten-Loss}} \\[8pt]
-\text{vergleiche mit der ADM1-ODE} \ \longrightarrow\ \boxed{\text{Physik-Loss}} \\[8pt]
-\text{vergleiche mit dem Prior am Start} \ \longrightarrow\ \boxed{\text{Prior-Loss}}
-\end{array}
-\right\}
-\ \Longrightarrow\ \boxed{\text{Gesamt-Loss } L}
-\]</div>
-<p>Der Gradientenabstieg auf <span class="arithmatex">\(\theta\)</span> minimiert <span class="arithmatex">\(L\)</span> und speist die aktualisierten
-Gewichte zurück ins Netz.</p>
-<p>Der Nutzen des Physik-Terms: er <strong>interpoliert über Lücken</strong> in den Daten,
-<strong>regularisiert</strong> gegen Sensorrauschen und lässt das Modell, da die ODE zu jedem
-Zeitpunkt definiert ist, über die letzte Messung hinaus <strong>prognostizieren</strong>.</p>
+<h2 id="3-die-physikseite">3. Die Physikseite<a class="headerlink" href="#3-die-physikseite" title="Permanent link">&para;</a></h2>
+<p><code>ADM1Physics</code> (<code>pinn/physics.py</code>) wertet die rechte Seite des ADM1da für einen
+<em>Batch</em> von Zeitpunkten mit <em>unterschiedlicher</em> Fütterung aus. Sie nutzt
+denselben differenzierbaren Kern <code>pyadm1.core.adm1_torch.adm1da_rhs_torch</code> wie
+das Torch-Backend des UKF und der GRU-Observer; eine getestete
+Implementierung der Gleichungen bedient also alle Schätzer.</p>
+<ul>
+<li><code>InfluentModel</code> macht aus der Fütterung <span class="arithmatex">\(u\)</span> [m³/d je Substrat] mit reiner<br />
+  Array-Algebra <span class="arithmatex">\((q_{ad}, s_{in})\)</span>. Der Modus <code>"nominal_mix"</code> bildet nach, wie
+  die Benchmark-Wahrheit erzeugt wurde (Zusammensetzung aus der Nominalmischung,
+  Gesamtfluss aus der Fütterung); <code>"blend"</code> ist die physikalisch richtige
+  flussgewichtete Mischung für Anlagen mit wirklich wechselnder Zusammensetzung.  </li>
+<li><code>build_params</code> friert die Anlagenparameter ein, optional mit den wahren<br />
+  Kinetikfaktoren der Reihe (nur zur Verifikation — ein PINN im Feld hat das
+  Nominalmodell).  </li>
+<li>Die Residuumszeilen sind die Kernzustände ohne die schnellen gelösten Gase<br />
+<span class="arithmatex">\(S_{h2}, S_{ch4}\)</span>; die Zeilen von <span class="arithmatex">\(S_{co2}\)</span> und <span class="arithmatex">\(S_{nh4}\)</span> werden als
+  Erhaltungssummen <span class="arithmatex">\(S_{co2}+S_{hco3}\)</span> und <span class="arithmatex">\(S_{nh4}+S_{nh3}\)</span> gebildet, was die
+  steifen Säure-Base-Raten exakt entfernt (<code>acid_base = "sum"</code>).</li>
+</ul>
+<p><code>trajectory_residual</code> verifiziert die Physik am Simulator: Das Residuum der
+Benchmark-Wahrheit mit den wahren Parametern liegt auf dem Niveau des
+Differenzenfehlers (getestet in <code>tests/test_pinn_physics.py</code>).</p>
 <hr />
-<h2 id="4-die-mathematik">4. Die Mathematik<a class="headerlink" href="#4-die-mathematik" title="Permanent link">&para;</a></h2>
-<p>Sei das Netz <span class="arithmatex">\(\hat{x}_\theta(t)\)</span>. Der Schätzer minimiert</p>
+<h2 id="4-der-loss">4. Der Loss<a class="headerlink" href="#4-der-loss" title="Permanent link">&para;</a></h2>
+<p>Für ein Fenster <span class="arithmatex">\([0, t_{obs}]\)</span> mit Sensorwerten <span class="arithmatex">\(y_k\)</span> zu den Stunden <span class="arithmatex">\(t_k\)</span> und
+Kollokationspunkten <span class="arithmatex">\(\tau_m\)</span> (zufällig in <span class="arithmatex">\([0, t_{obs} + \text{Horizont}]\)</span>):</p>
 <div class="arithmatex">\[
-L(\theta) \;=\; L_\text{data} \;+\; \lambda_\text{phys}\, L_\text{phys}
-             \;+\; \lambda_\text{prior}\, L_\text{prior}.
+\mathcal L = \underbrace{\frac1K\sum_k \Big\lVert \frac{h(\hat x(t_k)) - y_k}{\sigma_y}\Big\rVert^2}_{\text{Daten}}
+\;+\; \lambda\ \underbrace{\frac1M\sum_m \Big\lVert \frac{\dot{\hat x}(\tau_m) - f(\hat x(\tau_m), u(\tau_m))}{\sigma_r}\Big\rVert^2}_{\text{Physik}} .
 \]</div>
-<p>Die Gewichte <span class="arithmatex">\(\lambda_\text{phys}, \lambda_\text{prior}\)</span> balancieren die drei
-Forderungen und sind die wichtigsten Stellschrauben.</p>
-<p><strong>Daten-Loss:</strong> die Messungen treffen. Mit der differenzierbaren Messabbildung
-<span class="arithmatex">\(h\)</span> (Zustand <span class="arithmatex">\(\to\)</span> Sensorkanäle) und der Rausch-Standardabweichung <span class="arithmatex">\(\sigma\)</span> je
-Kanal, über die beobachteten Zellen <span class="arithmatex">\(\mathcal{O}\)</span> (fehlende/geblockte Messungen
-werden maskiert):</p>
-<div class="arithmatex">\[
-L_\text{data} \;=\; \frac{1}{|\mathcal{O}|}
-  \sum_{i}\left\lVert \frac{h(\hat{x}_\theta(t_i)) - y_i}{\sigma} \right\rVert^2 .
-\]</div>
-<p><strong>Physik-Loss:</strong> die ADM1-Gleichung einhalten. Er misst, wie stark die
-vorhergesagte Trajektorie die ODE verletzt. Geprüft wird das an <span class="arithmatex">\(N_c\)</span> <em>Kollokationspunkten</em> <span class="arithmatex">\(\{\tau_j\}\)</span>,
-selbst gewählte Zeitpunkte, die man über das Fenster legt. ADM1 mischt sehr
-schnelle Vorgänge (Säure-Base-Reaktionen) mit sehr langsamen (Biomasse). 
-Ohne Ausgleich würden die schnellen den Loss dominieren.  Daher wird das Residuum je Zustand 
-durch eine typische Skala <span class="arithmatex">\(s\)</span> geteilt, sodass alle gleich zählen (Details in Abschnitt 5):</p>
-<div class="arithmatex">\[
-L_\text{phys} \;=\; \frac{1}{N_c}\sum_{j}
-  \left\lVert \frac{\tfrac{d\hat{x}_\theta}{dt}(\tau_j)  
-    - f(\hat{x}_\theta(\tau_j), u)}{s} \right\rVert^2 .  
-\]</div>
-<p><strong>Prior-Loss:</strong> den Start verankern. Eine schwache Randbedingung, die die
-Trajektorie bei <span class="arithmatex">\(t_0\)</span> an einen physikalischen Prior-Zustand <span class="arithmatex">\(x_\text{prior}\)</span>
-bindet:</p>
-<div class="arithmatex">\[
-L_\text{prior} \;=\;
-  \left\lVert \frac{\hat{x}_\theta(t_0) - x_\text{prior}}{s} \right\rVert^2 .
-\]</div>
-<div class="admonition tip">
-<p class="admonition-title">Warum Kollokationspunkte wichtig sind</p>
-<p>Da <span class="arithmatex">\(L_\text{data}\)</span> nur an den Messzeiten lebt, <span class="arithmatex">\(L_\text{phys}\)</span> aber an jedem
-beliebigen Kollokationspunkt ausgewertet werden kann, sind die beiden
-Zeitbereiche entkoppelt. Legt man Kollokationspunkte hinter die letzte
-Messung, trägt die ODE allein den Zustand weiter: so <strong>prognostiziert</strong>
-derselbe Fit.</p>
-</div>
+<ul>
+<li><span class="arithmatex">\(h\)</span> ist das differenzierbare Messmodell (<code>MeasurementModel</code>: Gasflüsse aus dem<br />
+  quasi-stationären Gasraum, pH aus der Ladungsbilanz, TS aus den
+  Partikulärfraktionen), <span class="arithmatex">\(\sigma_y\)</span> das Sensorrauschen des Datensatzes.  </li>
+<li><span class="arithmatex">\(\dot{\hat x}\)</span> ist die exakte Zeitableitung des Netzes (Autograd).  </li>
+<li><span class="arithmatex">\(\sigma_r\)</span> ist eine <strong>Residuumsskala je Zeile</strong>, auf Trainingsdaten gefittet<br />
+  (<code>fit_scale</code>), entweder die typische Größe der Nettorate (<code>"rate"</code>) oder eine
+  Jacobi-basierte Skala (<code>"jacobian"</code>, Standard beim PINN). Ohne sie dominieren
+  die steifen Zeilen und die langsamen, informativen Zeilen gehen unter.  </li>
+<li><span class="arithmatex">\(\lambda\)</span> steigt in den ersten 20 % der Schritte linear an<br />
+  (<code>lambda_warmup_frac</code>); Adam mit Kosinus-Abfall, optional L-BFGS zum Schluss.</li>
+</ul>
+<p>Untersuchte und in <code>TrainConfig</code> erhaltene Varianten: Training auf den wahren
+Zuständen statt auf Messungen (<code>data_source</code>), ein Anfangswert-Prior aus dem
+Anlagen-Warm-up (<code>ic_prior</code>), kausale Kollokationsgewichtung (<code>causal_eps</code>),
+Time-Marching, ein inverser Modus, der die Kinetikfaktoren lernt
+(<code>estimate_kinetics</code>), und eine additive gelernte Korrektur des Physik-Residuums
+(Option <code>greybox</code>, <code>RateCorrection</code> in <code>pinn/train.py</code>).</p>
 <hr />
-<h2 id="5-warum-adm1-schwierig-ist">5. Warum ADM1 schwierig ist<a class="headerlink" href="#5-warum-adm1-schwierig-ist" title="Permanent link">&para;</a></h2>
-<p>Ein Lehrbuch-PINN scheitert an ADM1: das System ist
-<strong>steif</strong> (Raten über viele Größenordnungen) und seine Zustände reichen von
-<span class="arithmatex">\(\sim 10^{-7}\)</span> bis in die Zehner, wobei alle nicht-negativ bleiben müssen. Sechs
-Konstruktionsentscheidungen in <code>PinnSmoother</code> bringen es zur Konvergenz
-(es läuft stabil auf eine gute Lösung zu, statt zu entgleisen).</p>
-<div class="admonition warning">
-<p class="admonition-title">Das ist kein optionaler Feinschliff</p>
-<p>Auf dem mitgelieferten Benchmark gemessen: ohne die Ladungsbilanz-Auflösung
-aus §5.5 verbessert der Fit seinen eigenen Startwert <strong>nie</strong> — bei keiner
-Lernrate, keiner Loss-Gewichtung und keiner Netzgröße. Die beste je erreichte
-Data-Loss war ihr Wert bei Epoche 0; das Training hat den Fit nur
-verschlechtert. Zahlen in §7.</p>
-</div>
-<h3 id="1-positive-gut-skalierte-ausgaben">1. Positive, gut skalierte Ausgaben<a class="headerlink" href="#1-positive-gut-skalierte-ausgaben" title="Permanent link">&para;</a></h3>
-<p>Bisher hieß es vereinfacht: das Netz gibt <span class="arithmatex">\(\hat{x}(t)\)</span> aus. Genauer liefert die
-letzte Schicht erst eine <strong>rohe</strong>, unbeschränkte Zahlenreihe <span class="arithmatex">\(\text{raw}_\theta(t)\)</span>.
-Den physikalischen Zustand bildet daraus erst eine <strong>Log-Abweichung von einem Prior</strong>:</p>
-<div class="arithmatex">\[
-\hat{x}(t) \;=\; x_\text{prior}\,\odot\, \exp\!\big(\text{raw}_\theta(t)\big).
-\]</div>
-<p>Die letzte Schicht ist <strong>null-initialisiert</strong>, sodass zu Trainingsbeginn
-<span class="arithmatex">\(\text{raw}_\theta \equiv 0\)</span> und <span class="arithmatex">\(\hat{x}(t) = x_\text{prior}\)</span> exakt gilt. Die Exponentialfunktion garantiert
-<span class="arithmatex">\(\hat{x}(t) &gt; 0\)</span> für alle Zeiten (<code>raw</code> wird für die numerische Sicherheit auf
-<span class="arithmatex">\([-10, 10]\)</span> begrenzt).</p>
-<h3 id="2-relatives-physik-residuum">2. Relatives Physik-Residuum<a class="headerlink" href="#2-relatives-physik-residuum" title="Permanent link">&para;</a></h3>
-<p>Säure-Base-Reaktionen in ADM1 laufen mit Raten <span class="arithmatex">\(\sim 10^{8}\)</span>, während sich
-Biomasse über Tage ändert. Eine Normierung des Residuums nach Zustandsgröße
-würde die schnellen Terme den Loss überfluten lassen. Stattdessen ist die Skala
-<span class="arithmatex">\(s\)</span> aus Abschnitt 4 nicht fest, sondern jede Gleichung wird durch ihre <strong>eigene
-aktuelle Rate</strong> <span class="arithmatex">\(\lvert f_i \rvert\)</span> geteilt (mit einer Untergrenze, damit Zustände nahe dem
-Gleichgewicht mit <span class="arithmatex">\(f\approx 0\)</span> nicht explodieren). Ergebnis ist ein <em>relatives</em> Residuum,
-sodass keine einzelne steife Gleichung allein durch ihre Größe dominiert.</p>
-<h3 id="3-quasi-stationare-gasphase">3. Quasi-stationäre Gasphase<a class="headerlink" href="#3-quasi-stationare-gasphase" title="Permanent link">&para;</a></h3>
-<p>Die vier Gasphasendrücke (besonders der Gesamtdruck) sind numerisch heikel: schon
-winzige Änderungen können die Lösung kippen lassen. Statt das Netz sie vorhersagen
-zu lassen, sagt es <strong>nur die 37 Flüssigzustände</strong> vorher. Die Gasdrücke werden bei jeder
-Auswertung aus dem Gas-Flüssig-Gleichgewicht berechnet (<code>gas_equilibrium_torch</code>). 
-Die vier Gas-ODEs sind dann automatisch erfüllt, sodass der Physik-Loss nur noch
-die 37 Flüssigzustände prüfen muss.</p>
-<h3 id="4-prior-verankerung-und-zustandsweise-gewichtung">4. Prior-Verankerung und zustandsweise Gewichtung<a class="headerlink" href="#4-prior-verankerung-und-zustandsweise-gewichtung" title="Permanent link">&para;</a></h3>
-<p>Der Prior-Term aus §4 zieht <strong>alle</strong> Zustände bei <span class="arithmatex">\(t_0\)</span> zu ihrem physikalischen
-Prior. Gut beobachtete zieht der Daten-Loss wieder weg, schwach beobachtete
-bleiben dort hängen. Welche das sind, ergibt sich also von selbst aus der
-Beobachtbarkeit. Damit der Optimierer solche trägen Zustände trotzdem bewegt,
-statt sie am Prior zu parken, kann man sie in <span class="arithmatex">\(L_\text{phys}\)</span> einzeln <strong>höher gewichten</strong>:
-ein von Hand gesetzter Gewichtsvektor, <strong>kein gelernter Parameter</strong>. Welche man
-hochgewichtet, entscheidet man selbst per Fachwissen/Diagnose, nicht das Training.</p>
-<p>Der Prior selbst muss ein <strong>physikalisch erreichbarer Zustand</strong> sein. Eine
-komponentenweise Statistik (etwa der Median je Zustand über einen Trainingssatz)
-ist das im Allgemeinen nicht: nimmt man jede Komponente für sich, zerbrechen die
-Identitäten, die sie verbinden. Bei ADM1 ist das die Ladungsbilanz, und der so
-entstandene „Durchschnittszustand" impliziert einen pH weit außerhalb des
-physikalischen Bereichs. Stattdessen den <strong>Medoid</strong> nehmen — einen echten
-beobachteten Zustand; <code>PinnData</code> macht das automatisch (§6).</p>
-<h3 id="5-quasi-stationare-ladungsbilanz-solve_cationtrue">5. Quasi-stationäre Ladungsbilanz (<code>solve_cation=True</code>)<a class="headerlink" href="#5-quasi-stationare-ladungsbilanz-solve_cationtrue" title="Permanent link">&para;</a></h3>
-<p>ADM1 gewinnt den pH aus der Elektroneutralität:</p>
-<div class="arithmatex">\[
-    ext{fixed} = S_ ext{cat} - S_   ext{an} + (S_{\mathrm{NH_4}} - S_{\mathrm{NH_3}})  
-              - S_{\mathrm{HCO_3}} - \sum   ext{VFA}^- ,  
-\qquad
-S_{\mathrm H} =     frac12\!\left(- ext{fixed} + \sqrt{ ext{fixed}^2 + 4K_w}
-ight).
-\]</div>
-<p>An einem normalen Arbeitspunkt ist <code>fixed</code> eine Differenz von Termen der
-Größenordnung <span class="arithmatex">\(0{,}1\!-\!0{,}2\)</span> kmol m⁻³, die sich auf <span class="arithmatex">\(\sim\!10^{-6}\)</span> auslöscht —
-<strong>5,3 Dekaden Auslöschung</strong>. Wegen <span class="arithmatex">\(S_\mathrm{H} pprox K_w/    ext{fixed}\)</span> gilt
-faktisch $  ext{pH} pprox -\log_{10} K_w + \log_{10}(  ext{fixed})$: stört man
-irgendeinen Ionenzustand um 1 %, bewegt sich <code>fixed</code> um Größenordnungen.</p>
-<p>Das ist dieselbe Messerschneide wie die Biogas-Abbildung in §5.3, mit derselben
-Folge — der pH reagiert mit <span class="arithmatex">\(\sim\!5\cdot10^{4}\,\sigma\)</span> auf eine 1-%-Zustands-
-änderung, sein Gradient diktiert jeden Optimierungsschritt und der Fit divergiert.</p>
-<p>Die Lösung spiegelt den Gas-Solver: <strong>das Netz darf nicht raten, woran die
-Auslöschung hängt.</strong> Das Netz sagt direkt den <strong>pH</strong> vorher (eine gut skalierte
-Ausgabe um <span class="arithmatex">\(pprox 7{,}5\)</span> mit Empfindlichkeit 1:1), und <span class="arithmatex">\(S_ ext{cat}\)</span> wird
-geschlossen aus der Ladungsbilanz gelöst:</p>
-<div class="arithmatex">\[
-S_\mathrm{H} = 10^{-    ext{pH}},\qquad
-    ext{fixed} = 
-rac{K_w - S_\mathrm{H}^2}{S_\mathrm{H}},\qquad
-S_  ext{cat} =  ext{fixed} - (  ext{übrige Ladungsterme}).
-\]</div>
-<div class="admonition note">
-<p class="admonition-title">Was das kostet</p>
-<p><span class="arithmatex">\(S_ ext{cat}\)</span> ist damit kein differentieller, sondern ein algebraischer
-Zustand — aus der ODE wird eine <strong>DAE</strong>, die triviale Verdünnungsgleichung
-wird durch die Elektroneutralitäts-Nebenbedingung ersetzt. <code>PinnSmoother</code>
-maskiert ihn deshalb aus dem Physik-Residuum <strong>und</strong> dem Prior-Anker. Das ist
-Absicht: <span class="arithmatex">\(S_    ext{cat}\)</span> ist eine Buchhaltungsladung, keine gemessene Spezies,
-und genau die Erzwingung seiner Verdünnungsgleichung erzeugt die schlechte
-Kondition. Aus demselben Grund kann der gelöste Wert leicht negativ werden —
-das ist ein Anionenüberschuss und liegt im Rahmen dessen, wie ADM1 diese
-beiden Slots verwendet.</p>
-</div>
-<h3 id="6-begrenzte-residuen-res_clip">6. Begrenzte Residuen (<code>res_clip</code>)<a class="headerlink" href="#6-begrenzte-residuen-res_clip" title="Permanent link">&para;</a></h3>
-<p>Ein quadriertes Residuum hat einen Gradienten proportional zum Residuum, also
-diktiert ein schlecht konditionierter Kanal den ganzen Schritt. <code>res_clip</code> stellt
-das Residuum auf <strong>Huber</strong> um: quadratisch unterhalb der Schwelle <span class="arithmatex">\(\delta\)</span>, linear
-darüber, sodass der Gradient bei <span class="arithmatex">\(2\delta\)</span> gedeckelt bleibt, ohne null zu werden.</p>
-<p>Das ist bewusst weicher als ein hartes Abschneiden (das den Gradienten jenseits
-der Schwelle auf null setzt und einem bereits entglittenen Kanal jede Rückholkraft
-nimmt). Es begrenzt den Schaden eines schlecht konditionierten Kanals, ersetzt
-aber <strong>nicht</strong> §5.5 — es deckelt, wie weit ein schlechter Schritt geht, nicht die
-Kondition, die ihn verursacht.</p>
+<h2 id="5-kausaler-betrieb-das-gleitende-fenster">5. Kausaler Betrieb: das gleitende Fenster<a class="headerlink" href="#5-kausaler-betrieb-das-gleitende-fenster" title="Permanent link">&para;</a></h2>
+<p>Ein Trajektoriennetz ist ein Glätter: Es sieht das ganze Fenster. Im Betrieb
+kann es nicht in die Zukunft sehen, deshalb betreibt <code>pinn/rolling.py</code> es
+<strong>kausal</strong>: Alle <code>cadence_hours</code> (24 h) wird das Netz auf den letzten
+<code>window_days</code> Messungen nachtrainiert, warm gestartet mit den vorigen Gewichten
+(<code>steps_warm = 200</code> statt 3000 von Grund auf). Das beste Fenster der Studie sind
+10 Tage, und diese Einstellung nutzt die Registry; längere Fenster und häufigeres
+Nachtrainieren helfen nicht. Zwischen zwei Nachtrainings wird die Schätzung der
+aktuellen Stunde überbrückt, entweder durch Halten des letzten Werts (<code>"hold"</code>)
+oder durch Vorwärtsintegration des nominalen ADM1da mit der bekannten Fütterung
+(<code>"adm1"</code>). Halten ist 0,8 Punkte besser, weil die Nominalkinetik binnen eines
+Tages vom wahren Zustand wegdriftet. Dieselbe Kette liefert auch
+Fixed-Lag-Schätzungen (der Wert, den ein späteres Nachtraining einer früheren
+Stunde zuweist, Schlüssel <code>"lag1"</code> und <code>"lag3"</code>); sie sind etwas genauer, aber
+einen bzw. drei Tage verspätet.</p>
+<p>Kosten: Eine 60-Tage-Reihe braucht auf der CPU einige zehn Minuten. Darum
+bleibt der UKF der operative Schätzer und das PINN ein Studienobjekt.</p>
 <hr />
-<h2 id="6-umsetzung-in-diesem-repository">6. Umsetzung in diesem Repository<a class="headerlink" href="#6-umsetzung-in-diesem-repository" title="Permanent link">&para;</a></h2>
-<p>Die Umsetzung hat <strong>zwei Ebenen</strong>: eine Lehrbuch-Vorlage und den darauf
-aufbauenden Produktivschätzer.</p>
+<h2 id="6-ergebnisse-der-strukturstudie">6. Ergebnisse der Strukturstudie<a class="headerlink" href="#6-ergebnisse-der-strukturstudie" title="Permanent link">&para;</a></h2>
+<p>Zwanzig Testreihen, 60 Tage, Benchmark-Metrik (Median-NRMSE über die
+Zustände). Details und Statistik stehen im Architekturbericht
+(<code>PyADM1ODE_estimate_local/experiments/pinn_architecture_study</code>). Die
+Strukturstudie fittet je Reihe ein Netz auf den ganzen 60-Tage-Messverlauf
+(offline) und bewertet alle 60 Tage; die kausale Studie bewertet ab Tag 3, weil
+das gleitende PINN in den ersten Tagen auf der Prior-Mitte läuft.</p>
 <table>
 <thead>
 <tr>
-<th>Ebene</th>
-<th>Datei</th>
-<th>Rolle</th>
+<th>Einstellung</th>
+<th>UKF</th>
+<th>PINN v2</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>ADM1PINN</code> + <code>PINNLoss</code></td>
-<td><code>deep_learning/pinn.py</code></td>
-<td>Die Bausteine: das MLP <span class="arithmatex">\(t \to x\)</span> (<code>tanh</code>, konfigurierbare Hidden-Layer, optionaler Dropout) und eine generische <em>Daten + Physik</em>-Loss-Vorlage. Lesbare Referenzimplementierung.</td>
+<td>offline, beste Struktur (Tiefe 4, Breite 128, tanh, 4 Fourier-Paare), 60 d</td>
+<td>15,1 %</td>
+<td><strong>18,3 %</strong></td>
 </tr>
 <tr>
-<td><code>PinnSmoother</code></td>
-<td><code>deep_learning/pinn_smoother.py</code></td>
-<td>Der Produktivschätzer. Baut auf <code>ADM1PINN</code> auf und ergänzt die Log-Transformation, den Drei-Term-Loss, Rate-Scaling, quasi-stationäre Gasphase, Prognose, rollierende Updates und MC-Dropout-Unsicherheit.</td>
+<td>offline, Spanne über alle getesteten Strukturen, 60 d</td>
+<td>15,1 %</td>
+<td>18,3 – 24,4 %</td>
+</tr>
+<tr>
+<td>kausal, 10-Tage-Fenster, tägliches Nachtraining, Halten, ab Tag 3</td>
+<td>14,2 %</td>
+<td><strong>18,6 %</strong></td>
+</tr>
+<tr>
+<td>kausal, dieselbe Kette mit einem Tag Nachlauf, ab Tag 3</td>
+<td>14,2 %</td>
+<td>18,3 %</td>
 </tr>
 </tbody>
 </table>
-<p>Die differenzierbaren Physik-Bausteine, die er zusammenschaltet, kommen alle aus
-dem Basispaket <code>pyadm1</code>:</p>
-<table>
-<thead>
-<tr>
-<th>Symbol</th>
-<th>Bereitgestellt von</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><span class="arithmatex">\(f\)</span> — rechte Seite von ADM1</td>
-<td><code>pyadm1.core.adm1_torch.adm1da_rhs_torch</code></td>
-</tr>
-<tr>
-<td>Gas-Flüssig-Gleichgewicht</td>
-<td><code>pyadm1.core.adm1_torch.gas_equilibrium_torch</code></td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(h\)</span> — Messabbildung</td>
-<td><code>deep_learning.observation_torch.TorchObservationModel</code></td>
-</tr>
-<tr>
-<td>Ladungsbilanz-Inversion</td>
-<td><code>deep_learning.charge_balance.solve_cation_for_ph</code></td>
-</tr>
-<tr>
-<td>Zufuhr / Parameter</td>
-<td><code>Adm1TorchParams</code> — die Netzeingabe bleibt <strong>nur die Zeit</strong>; eine im Fenster <em>veränderliche</em> Zufuhr kommt über <code>params_at</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="die-datenanbindung-der-adapter">Die Datenanbindung: der Adapter<a class="headerlink" href="#die-datenanbindung-der-adapter" title="Permanent link">&para;</a></h3>
-<p><code>PinnData</code> (<code>deep_learning/data_adapter.py</code>) bringt jeden in
-<code>filter_tuning.datasets</code> registrierten Datensatz in die Form, die beide
-PINN-Varianten brauchen. Drei Zusagen sind für die Korrektheit entscheidend:</p>
 <ul>
-<li><strong>Derselbe Split wie bei den Filtern.</strong> Beide gehen durch<br />
-<code>EstimatorDataset.split_indices</code> — stratifiziert nach dem Serien-Label,
-  gruppiert nach Serie. Gleiches <code>(val_frac, seed)</code> ⇒ gleiche Serien, und genau
-  das macht Netz und Filter vergleichbar. Mit <code>save_split()</code> / <code>split_file=</code>
-  einfrieren.  </li>
-<li><strong>Statistik nur aus Train.</strong> Feature-Normierung, <code>x_ref</code>, <code>x_prior</code> (als<br />
-  Medoid) und die Zustandsskala werden ausschließlich aus den Trainingsserien
-  geschätzt.  </li>
-<li><strong>Feed-passende Physik.</strong> <code>smoother_inputs()</code> hängt jeder Serie eine<br />
-<code>params_at</code>-Closure über ihre <em>eigene</em> Zufuhr an, damit das ODE-Residuum gegen
-  die Anlage ausgewertet wird, die die Daten erzeugt hat. Das wiegt schwerer als
-  es klingt: ein ungefütterter Parametersatz (<code>q_ad = 0</code>) modelliert einen
-  <em>geschlossenen Batch-Reaktor</em>, und der Zulaufterm <span class="arithmatex">\(D_ ext{in}\,s_ ext{in}\)</span>
-  dominiert die rechte Seite von ADM1.</li>
+<li><strong>Der einzige Hebel, der hilft, ist die Fourier-Zeitkodierung</strong><br />
+  (Haupteffekt etwa −1 Punkt). Tiefe, Breite, Aktivierung, Layer-Norm,
+  Residualblöcke, Fütterungshistorie, Ausgabeköpfe je Zustand: innerhalb des
+  Seed-Rauschens.  </li>
+<li>Der Offline-Abstand zum UKF (3,3 Punkte, <span class="arithmatex">\(p = 0{,}064\)</span>) ist eine Lücke aus<br />
+<strong>Modellfehler und Identifizierbarkeit</strong>, keine Kapazitätslücke: Das Netz
+  kann die Kinetik der Reihe nicht aus fünf Sensoren lernen, und die weiche
+  Physik lässt es dort driften, wo die Daten es nicht festhalten. Kausal
+  betrieben bleibt jedes Schema signifikant hinter dem UKF (<span class="arithmatex">\(p \le 0{,}005\)</span>).  </li>
+<li>Das PINN als Pseudomessung oder mit festem Gate in den UKF zu fusionieren<br />
+  (Blöcke F1–F4) bringt etwa einen Punkt, nicht signifikant.</li>
 </ul>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.deep_learning</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinnData</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">data</span> <span class="o">=</span> <span class="n">PinnData</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="s2">"benchmark"</span><span class="p">,</span> <span class="n">val_frac</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">inputs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">smoother_inputs</span><span class="p">(</span><span class="s2">"val"</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>     <span class="c1"># ein Payload je Serie</span>
-</span></code></pre></div>
-<h3 id="batch-nicht-rekursiv">Batch, nicht rekursiv<a class="headerlink" href="#batch-nicht-rekursiv" title="Permanent link">&para;</a></h3>
-<p>Anders als der UKF (ein rekursiver <code>StateEstimator</code> mit Prädiktion/Korrektur je
-Schritt) ist das PINN ein <strong><code>BatchEstimator</code></strong>: einmal über das Fenster fitten,
-dann abfragen.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyadm1ode_estimation.estimation.deep_learning</span><span class="w"> </span><span class="kn">import</span> <span class="n">PinnSmoother</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">it</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">smoother</span> <span class="o">=</span> <span class="n">PinnSmoother</span><span class="p">(</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">data</span><span class="o">.</span><span class="n">physics_params</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">obs_model</span><span class="p">(),</span> <span class="n">it</span><span class="o">.</span><span class="n">x_prior</span><span class="p">,</span> <span class="n">it</span><span class="o">.</span><span class="n">x_scale</span><span class="p">,</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>   <span class="c1"># §5.3 — Gasdrücke werden gelöst</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">solve_cation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>       <span class="c1"># §5.5 — S_cation folgt dem vorhergesagten pH</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">res_clip</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>            <span class="c1"># §5.6 — Huber-Schwelle in Sigma</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">params_at</span><span class="o">=</span><span class="n">it</span><span class="o">.</span><span class="n">params_at</span><span class="p">,</span>  <span class="c1"># die eigene, zeitvariable Zufuhr der Serie</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">)</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">smoother</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">**</span><span class="n">it</span><span class="o">.</span><span class="n">fit_kwargs</span><span class="p">(),</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">traj</span> <span class="o">=</span> <span class="n">smoother</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">it</span><span class="o">.</span><span class="n">obs_times</span><span class="p">)</span>                 <span class="c1"># (T, 41) Zustände + std</span>
-</span></code></pre></div>
-<p><code>estimate</code> liefert einen <code>TrajectoryEstimate</code> (<code>time</code>, <code>x_hat</code>, <code>std</code>), die
-gemeinsame Ausgabewährung mit dem UKF, sodass das Twin-Experiment-Harness beide
-Schätzerfamilien gleich bewertet.</p>
-<p><code>restore_best=True</code> (Standard) gibt die Gewichte der besten Epoche zurück statt
-der letzten. Der Kollokations-Fit ist <strong>nicht monoton</strong> — er erreicht regelmäßig
-seine beste Trajektorie und läuft dann wieder von ihr weg, sodass die
-Endgewichte die bereits gefundene Antwort wegwerfen. Zugleich wird der Fit damit
-monoton-sicher: er kann nie etwas Schlechteres als den Prior zurückgeben.</p>
-<h3 id="prognose">Prognose<a class="headerlink" href="#prognose" title="Permanent link">&para;</a></h3>
-<p>Da das Kollokationsfenster <code>[t0, t1]</code> unabhängig von den Messzeiten ist, trägt
-das Setzen von <code>t1</code> <strong>hinter die letzte Messung</strong> den Zustand über die ADM1-ODE
-in den datenfreien Bereich, eine physikgetriebene Prognose aus demselben Fit.</p>
-<h3 id="online-betrieb">Online-Betrieb<a class="headerlink" href="#online-betrieb" title="Permanent link">&para;</a></h3>
-<p><code>update(...)</code> startet warm aus den aktuellen Gewichten <strong>und</strong> dem
-Optimierer-Zustand für günstige inkrementelle Nachfits, wenn neue Messwerte
-eintreffen:</p>
-<ul>
-<li><strong>wachsendes Fenster:</strong> die ganze Historie behalten, Anker bleibt beim<br />
-  ursprünglichen <code>t0</code>; oder  </li>
-<li><strong>gleitendes Fenster:</strong> ein fester Horizont <code>t0 = t1 − window</code>, selbst<br />
-  verankert am eigenen aktuellen Schätzwert des Netzes am Fensteranfang
-  (begrenzt den Rechenaufwand bei langen Läufen).</li>
-</ul>
-<h3 id="unsicherheit">Unsicherheit<a class="headerlink" href="#unsicherheit" title="Permanent link">&para;</a></h3>
-<p>Optionaler <strong>MC-Dropout</strong>: <code>dropout &gt; 0</code> setzen und <code>estimate(..., mc_samples=k)</code>
-aufrufen, um Mittelwert und Standardabweichung über <code>k</code> stochastische
-Vorwärtspässe zu erhalten.</p>
+<p>Die bindende Grenze ist damit der Modellfehler der Kinetik, nicht das Netz.</p>
 <hr />
-<h2 id="7-gemessener-stand">7. Gemessener Stand<a class="headerlink" href="#7-gemessener-stand" title="Permanent link">&para;</a></h2>
-<p>Die Zahlen stammen vom Validierungs-Split des mitgelieferten Benchmarks (4
-Betriebsmodi), 5-Tage-Fenster, reproduzierbar über <code>experiments/pinn_gate/</code>.</p>
-<p><strong>Die Optimierung ist gelöst.</strong> Data-Loss = mittleres quadriertes standardisiertes
-Residuum auf den Messkanälen; der Rauschboden (was der <em>wahre</em> Zustand erreicht)
-liegt bei 0,57.</p>
+<h2 id="7-code-landkarte">7. Code-Landkarte<a class="headerlink" href="#7-code-landkarte" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Konfiguration</th>
-<th>Median der besten Data-Loss</th>
+<th>Modul</th>
+<th>Inhalt</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Ausgangspunkt</td>
-<td>3520</td>
+<td><code>pinn/data.py</code></td>
+<td><code>BenchmarkSeries</code> (aus dem gemeinsamen <code>Series</code> von <code>filter_tuning.datasets.load_benchmark</code>), Fütterungs-Lookup und -Historie, Prioren aus dem Trainings-Split</td>
 </tr>
 <tr>
-<td>+ <code>res_clip</code></td>
-<td>11,7</td>
+<td><code>pinn/influent.py</code></td>
+<td><code>InfluentModel</code>: Fütterung → <span class="arithmatex">\((q_{ad}, s_{in})\)</span>, gebatcht</td>
 </tr>
 <tr>
-<td>+ <code>solve_cation</code> (§5.5)</td>
-<td><strong>0,562</strong></td>
+<td><code>pinn/physics.py</code></td>
+<td><code>ADM1Physics</code>, Closures, <code>PhysicsConfig</code>, <code>trajectory_residual</code>, <code>build_params</code></td>
+</tr>
+<tr>
+<td><code>pinn/measure.py</code></td>
+<td><code>MeasurementModel</code>, <code>SensorNoise</code> aus <code>meta.json</code></td>
+</tr>
+<tr>
+<td><code>pinn/model.py</code></td>
+<td><code>TrajectoryNet</code>, <code>ArchConfig</code></td>
+</tr>
+<tr>
+<td><code>pinn/train.py</code></td>
+<td><code>TrainConfig</code>, <code>train_trajectory</code>, Metriken und Berichtsformatierung</td>
+</tr>
+<tr>
+<td><code>pinn/rolling.py</code></td>
+<td><code>RollingConfig</code>, <code>run_rolling</code>, ADM1-Überbrückung</td>
+</tr>
+<tr>
+<td><code>pinn/kinetics.py</code></td>
+<td>lernbare Kinetikfaktoren (inverses PINN)</td>
+</tr>
+<tr>
+<td><code>estimators.py</code></td>
+<td><code>"pinn"</code> in der <a href="../../usage/estimators/">Schätzer-Registry</a>: <code>PinnEstimator.run(series)</code></td>
 </tr>
 </tbody>
 </table>
-<p>Der Messfit erreicht damit sein theoretisches Optimum. Vor der
-Ladungsbilanz-Auflösung hat das Training den Fit nie verbessert — der beste je
-erreichte Wert war der Wert bei Epoche 0.</p>
-<p><strong>Die Zustandsgenauigkeit ist es nicht.</strong> Median-NRMSE über 41 Zustände, gegen
-die triviale Referenz „Prior konstant halten":</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>Median-NRMSE</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>x_prior</code> halten (nichts tun)</td>
-<td>25,1 %</td>
-</tr>
-<tr>
-<td>PINN A (bestes <code>rate_floor</code>)</td>
-<td>22,0 % — aber nur 2 von 4 Modi</td>
-</tr>
-<tr>
-<td>wahres <span class="arithmatex">\(x(t_0)\)</span> halten (Referenz)</td>
-<td>1,2 – 3,7 %</td>
-</tr>
-</tbody>
-</table>
-<p>Ein <code>rate_floor</code>-Sweep zeigt kein belastbares Optimum. <strong>Fünf Sensoren legen 41
-Zustände nicht fest</strong>, und der ADM1-Term kann die Lücke nicht schließen, weil ein
-Fit pro Fenster die wahre Kinetik nicht lernen kann (der Benchmark stört sie je
-Serie lognormal, <span class="arithmatex">\(\sigma = 0{,}25\)</span>). Die verbleibende Lücke ist
-<strong>Beobachtbarkeit, nicht Architektur</strong> — deshalb sind Breite, Tiefe und
-Aktivierung des Netzes bislang nicht optimiert: sie sind nachweislich nicht der
-begrenzende Faktor.</p>
-<p><strong>Grenzen.</strong> Die MC-Dropout-Unsicherheit ist nicht kalibriert. Ein Fit von Grund
-auf kostet ~2,5 min pro 5-Tage-Fenster, was den bezahlbaren Umfang einer
-Hyperparametersuche deckelt.</p>
-<p><strong>Einordnung.</strong> Der UKF (siehe <a href="../../usage/ukf/">UKF im Einsatz</a> und
-<a href="../../development/ukf_performance/">SR-UKF-Performance</a>) ist rekursiv und günstig
-pro Schritt. Auf dieser Metrik ist er allerdings selbst <strong>in 3 von 4 Modi
-schlechter als Nichtstun</strong> (50,5 % gegen 34,2 % gesamt auf dem Test-Split) — also
-beide Referenzen berichten, sonst sieht ein Ergebnis besser aus als es ist. Der
-<strong><a href="../observer/">vortrainierte Observer</a></strong> nimmt dieselbe Hürde in allen vier
-Modi, weil er über Serien hinweg lernt, was ein Einzelfenster-Fit nicht kann. Ein
-<strong><a href="../fusion/">Hybrid per Kovarianzschnitt</a></strong> kann Schätzer fusionieren.</p>
-<hr />
-<h2 id="quelldateien">Quelldateien<a class="headerlink" href="#quelldateien" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn.py</code> — <code>ADM1PINN</code>, <code>PINNLoss</code>  </li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/charge_balance.py</code> — <code>solve_cation_for_ph</code>, <code>apply_ph</code>  </li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/data_adapter.py</code> — <code>PinnData</code>, <code>FeatureSpec</code>  </li>
-<li><code>experiments/pinn_gate/</code> — Gate-Messung und <code>rate_floor</code>-Sweep  </li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/pinn_smoother.py</code> — <code>PinnSmoother</code>  </li>
-<li><code>pyadm1ode_estimation/estimation/deep_learning/observation_torch.py</code> — <code>TorchObservationModel</code>  </li>
-</ul>
+<p>Experimente: <code>experiments/pinn_v2/</code> (Architektur-Sweep, Rolling-Sweep,
+Fusionsregeln, Lag-Bericht).</p>
 <h2 id="literatur">Literatur<a class="headerlink" href="#literatur" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Raissi, M., Perdikaris, P. &amp; Karniadakis, G. E. (2019). <em>Physics-informed<br />
   neural networks.</em> Journal of Computational Physics 378:686–707.  </li>
+<li>Wang, S., Sankaran, S. &amp; Perdikaris, P. (2022). <em>Respecting causality is all<br />
+  you need for training physics-informed neural networks.</em> arXiv:2203.07404.  </li>
 <li>ADM1da-Modell und Zustandsindizes: <a href="../adm1/">ADM1da-Modell</a>.  </li>
 </ul>
 <h2 id="api-referenz">API-Referenz<a class="headerlink" href="#api-referenz" title="Permanent link">&para;</a></h2>
@@ -2924,17 +2694,82 @@ Modi, weil er über Serien hinweg lernt, was ein Einzelfenster-Fit nicht kann. E
 
 
 
-<h3 id="pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">deep_learning</span><span class="o">.</span><span class="n">pinn_smoother</span><span class="o">.</span><span class="n">PinnSmoother</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">x_prior</span><span class="p">,</span> <span class="n">x_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hidden_layers</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">lambda_phys</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lambda_prior</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_scaling</span><span class="o">=</span><span class="s1">'rate'</span><span class="p">,</span> <span class="n">rate_floor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">physics_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">res_clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">restore_best</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quasi_steady_gas</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">solve_cation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gas_n_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">params_at</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cpu'</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></code>
+<h3 id="pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">pinn</span><span class="o">.</span><span class="n">physics</span><span class="o">.</span><span class="n">ADM1Physics</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">influent</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
-<a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
 
 
 
-        <p>Offline PINN state-trajectory smoother; see module docstring.</p>
+        <p>Physics residual of the ADM1da for a PINN.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>params</code>
+            </td>
+            <td>
+                  <code><span title="pyadm1.core.adm1_torch.Adm1TorchParams">Adm1TorchParams</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Parameter snapshot (see :func:<code>build_params</code>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>influent</code>
+            </td>
+            <td>
+                  <code><span title="pyadm1ode_estimation.estimation.pinn.influent.InfluentModel">InfluentModel</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Feed -&gt; influent map (see :class:<code>InfluentModel</code>).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>config</code>
+            </td>
+            <td>
+                  <code><span title="pyadm1ode_estimation.estimation.pinn.physics.PhysicsConfig">PhysicsConfig</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Residual configuration.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+        <p>All tensor inputs are batched along the leading dimensions; <code>x</code> and
+<code>dxdt</code> are <code>(..., 31)</code> with closure or <code>(..., 41)</code> without.</p>
 
 
 
@@ -2952,72 +2787,60 @@ Modi, weil er über Serien hinweg lernt, was ein Einzelfenster-Fit nicht kann. E
 
 
 
+<h4 id="pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics-attributes">Attributes<a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics-attributes" class="headerlink" title="Permanent link">&para;</a></h4>
+
+<div class="doc doc-object doc-attribute">
 
 
 
-<h4 id="pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother-functions">Methods:<a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother-functions" class="headerlink" title="Permanent link">&para;</a></h4>
+<h5 id="pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.n_residual" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">n_residual</span></code>
 
-<div class="doc doc-object doc-function">
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
 
-
-<h5 id="pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.estimate" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">estimate</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">mc_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></code>
-
-<a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.estimate" class="headerlink" title="Permanent link">&para;</a></h5>
+<a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.n_residual" class="headerlink" title="Permanent link">&para;</a></h5>
 
 
     <div class="doc doc-contents ">
 
-        <p>Query the fitted trajectory (+ MC-Dropout uncertainty).</p>
+        <p>Columns returned by :meth:<code>residual</code>: ODE rows + algebraic rows.</p>
+
+    </div>
+
+</div>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>times</code>
-            </td>
-            <td>
-                  <code><span title="collections.abc.Sequence">Sequence</span>[<span title="float">float</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Query times, shape <code>(T,)</code> [days].</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>mc_samples</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Number of stochastic forward passes for the MC-Dropout
-uncertainty band. <code>&gt; 1</code> requires <code>dropout &gt; 0</code>; otherwise
-the estimate is deterministic and <code>std</code> is zero.</p>
-              </div>
-            </td>
-            <td>
-                  <code>1</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<h4 id="pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics-functions">Methods:<a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics-functions" class="headerlink" title="Permanent link">&para;</a></h4>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.fit_scale" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">fit_scale</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">feed</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'jacobian'</span><span class="p">,</span> <span class="n">n_jacobian</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">chunk</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span> <span class="n">floor</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.fit_scale" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set the per-row residual scale <code>sigma_i</code> from reference data.</p>
+<p><code>states (N, 41|31)</code> / <code>feed (N, n_sub)</code> are the truth of the observed
+window. Two modes:</p>
+<p><code>"rate"</code>
+    <code>sigma_i = RMS(f_i)</code>, the net rate. Right for a network that already
+    sits on the slow manifold, but for rows whose net rate is a small
+    difference of large gross terms (gas rows, S_h2, S_ch4) a network
+    that is a few percent off produces residuals of 1e6-1e11 times the
+    net rate, and the physics loss then ignores everything else.
+<code>"jacobian"</code> (default)
+    <code>sigma_i = sqrt(RMS(f_i)^2 + RMS_t(sum_j (J_ij s_j)^2))</code> with the
+    RHS Jacobian <code>J = df/dx</code> at <code>n_jacobian</code> reference points and the
+    per-state variation <code>s_j = std(x_j)</code> over the window. The second
+    term is the rate error a <em>typical-variation-sized</em> state error
+    causes in row <code>i</code>, so <code>r_i / sigma_i ~ 1</code> means "as wrong as a
+    state that is off by its own spread" in fast and slow rows alike.</p>
 
 
     </div>
@@ -3027,143 +2850,15 @@ the estimate is deterministic and <code>std</code> is zero.</p>
 <div class="doc doc-object doc-function">
 
 
-<h5 id="pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.fit" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">fit</span><span class="p">(</span><span class="n">obs_times</span><span class="p">,</span> <span class="n">obs_values</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">n_collocation</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">grad_clip</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+<h5 id="pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.full_state" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">full_state</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></code>
 
-<a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.fit" class="headerlink" title="Permanent link">&para;</a></h5>
+<a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.full_state" class="headerlink" title="Permanent link">&para;</a></h5>
 
 
     <div class="doc doc-contents ">
 
-        <p>Train the smoother over <code>[t0, t1]</code>.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>obs_times</code>
-            </td>
-            <td>
-                  <code><span title="collections.abc.Sequence">Sequence</span>[<span title="float">float</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Measurement times, shape <code>(To,)</code> [days].</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>obs_values</code>
-            </td>
-            <td>
-                  <code><span title="numpy.ndarray">ndarray</span> | <span title="dict">dict</span>[<span title="str">str</span>, <span title="collections.abc.Sequence">Sequence</span>[<span title="float">float</span>]]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Either an array <code>(To, n_channels)</code> in the observation
-model's channel order, or a mapping <code>{channel: values}</code>.
-<code>NaN</code> entries are treated as missing (gated) and skipped.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>t0, t1</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p><strong>Collocation window</strong> bounds [days] — the ODE residual is
-enforced across all of <code>[t0, t1]</code> and the prior is anchored at
-<code>t0</code>. This is <em>independent</em> of the measurement extent.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>n_collocation</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Number of uniform physics-residual points in the window.</p>
-              </div>
-            </td>
-            <td>
-                  <code>200</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>epochs, lr</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Adam training schedule.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-        <p>Forecasting (physics-driven, still a per-window fit — no pre-training):
-    the data loss lives only at <code>obs_times</code>, so if <code>t1</code> runs <strong>past
-    the last measurement</strong> the tail <code>(max(obs_times), t1]</code> has no data
-    and the ADM1 ODE alone (<code>dx/dt = f(x)</code>) carries the state forward
-    from the data-anchored end — an initial-value continuation. Pass the
-    historical measurements as <code>obs_times</code> and set <code>t1</code> to the forecast
-    horizon; <code>estimate(t)</code> for <code>t</code> beyond the data is then a forecast
-    (put enough <code>n_collocation</code> points to cover the tail densely).</p>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="list">list</span>[<span title="float">float</span>]]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Loss history dict with keys <code>loss</code>, <code>data</code>, <code>phys</code>, <code>prior</code>.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+        <p><code>(..., 41)</code> state: closure applied when configured, else <code>x</code> itself.</p>
 
 
     </div>
@@ -3173,131 +2868,91 @@ enforced across all of <code>[t0, t1]</code> and the prior is anchored at
 <div class="doc doc-object doc-function">
 
 
-<h5 id="pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.update" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">update</span><span class="p">(</span><span class="n">obs_times</span><span class="p">,</span> <span class="n">obs_values</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_collocation</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.0003</span><span class="p">,</span> <span class="n">grad_clip</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+<h5 id="pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.full_state_with_rates" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">full_state_with_rates</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dxdt</span><span class="p">)</span></code>
 
-<a href="#pyadm1ode_estimation.estimation.deep_learning.pinn_smoother.PinnSmoother.update" class="headerlink" title="Permanent link">&para;</a></h5>
+<a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.full_state_with_rates" class="headerlink" title="Permanent link">&para;</a></h5>
 
 
     <div class="doc doc-contents ">
 
-        <p>Warm-started incremental re-fit for rolling operation.</p>
-<p>Reuses the current network weights <strong>and</strong> optimiser state instead of
-retraining from scratch, so each new step (e.g. a new hourly sample)
-converges in far fewer <code>epochs</code>. Requires a prior :meth:<code>fit</code>.</p>
-<p>Window mode is chosen by <code>window</code>:</p>
-<ul>
-<li><code>window is None</code> — <strong>growing window</strong>: <code>t0</code> stays at the original
-  :meth:<code>fit</code> <code>t0</code> (all measurements from the start are used and the
-  original prior anchors <code>x̂(t0)</code>). Use when you keep the whole history.</li>
-<li><code>window</code> a float — <strong>sliding window</strong> of that many days: <code>t0 = t1 −
-  window</code>, only measurements in <code>[t0, t1]</code> are used, and the window
-  start is anchored to the network's <strong>own current estimate at <code>t0</code></strong>
-  (a self-consistent hand-off), not the stale initial prior. Use to cap
-  compute / memory on a long run.</li>
-</ul>
-<p>As in :meth:<code>fit</code>, <code>t1</code> may run past the last measurement to forecast.</p>
+        <p><code>(x_full, dx_full/dt)</code>; the closed rows' rates come from forward-mode AD.</p>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>obs_times, obs_values</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>measurements (the full history for a growing
-window; anything is fine, the window is applied here).</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>t1</code>
-            </td>
-            <td>
-                  <code><span title="float">float</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>current window end [days] (also the forecast horizon).</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>window</code>
-            </td>
-            <td>
-                  <code><span title="float">float</span> | None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>sliding-window length [days], or <code>None</code> for a growing window.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>epochs, lr</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>warm-start schedule (few epochs, smaller lr than fit).</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="list">list</span>[<span title="float">float</span>]]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Loss history dict (<code>loss</code>, <code>data</code>, <code>phys</code>, <code>prior</code>).</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<h5 id="pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.model_rates" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">model_rates</span><span class="p">(</span><span class="n">x_full</span><span class="p">,</span> <span class="n">feed</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.model_rates" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Effective <code>f_i</code> per configured row, <code>(..., n_ode)</code>.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.residual" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">residual</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dxdt</span><span class="p">,</span> <span class="n">feed</span><span class="p">,</span> <span class="n">scaled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.residual" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Physics residual <code>(..., n_ode [+ 6])</code>.</p>
+<p>Columns <code>0 .. n_ode-1</code>: <code>r_i = dx_i/dt - f_i(x, u)</code> on the configured
+rows (scaled by <code>sigma_i</code> when set). In DAE mode with
+<code>ion_equilibrium</code> the six dimensionless equilibrium residuals follow.
+<code>dxdt</code> is the time derivative of the network output <code>x</code> (same shape).</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.rhs" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">rhs</span><span class="p">(</span><span class="n">x_full</span><span class="p">,</span> <span class="n">feed</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.rhs" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Raw <code>f(x, u)</code>, all 41 rows, for the full state and feed <code>(..., n_sub)</code>.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.state_rates" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">state_rates</span><span class="p">(</span><span class="n">dx_full</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.pinn.physics.ADM1Physics.state_rates" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Effective <code>dx_i/dt</code> per configured row, <code>(..., n_ode)</code>.</p>
 
 
     </div>
@@ -3316,10 +2971,10 @@ window; anything is fine, the window is applied here).</p>
 
 
 
-<h3 id="pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">deep_learning</span><span class="o">.</span><span class="n">pinn</span><span class="o">.</span><span class="n">ADM1PINN</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="mi">41</span><span class="p">,</span> <span class="n">hidden_layers</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+<h3 id="pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">pinn</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">TrajectoryNet</span><span class="p">(</span><span class="n">arch</span><span class="p">,</span> <span class="n">n_out</span><span class="p">,</span> <span class="n">n_feed</span><span class="p">,</span> <span class="n">t_scale</span><span class="p">,</span> <span class="n">feed_scale</span><span class="p">,</span> <span class="n">log_mu</span><span class="p">,</span> <span class="n">log_sigma</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
 
-<a href="#pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -3328,16 +2983,7 @@ window; anything is fine, the window is applied here).</p>
 
 
 
-        <p>Physics-Informed Neural Network (PINN) for the ADM1 (AP 4.3).</p>
-<p>Estimates the state vector x(t) from time t and the time-dependent input
-u(t) (substrate feed).</p>
-<p>The output covers the full extended ADM1da state (41 slots: 12 soluble, 10
-particulate PS/PF fractions, 7 biomass, 8 charge/ion states, 4 gas-phase
-slots). The 4 gas-phase states (p_gas_<em>, p_total) are not optional: they
-couple back into diff_S_h2/ch4/co2 via the Rho_T_</em> transfer rates, so the
-ADM_ODE physics residual cannot be closed without them.</p>
-
-        <p>Initialize the PINN.</p>
+        <p><code>(t, feed features) -&gt; x</code> with a positive output transform.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3353,69 +2999,97 @@ ADM_ODE physics residual cannot be closed without them.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>input_dim</code>
+                <code>arch</code>
+            </td>
+            <td>
+                  <code><span title="pyadm1ode_estimation.estimation.pinn.model.ArchConfig">ArchConfig</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Architecture.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>n_out</code>
             </td>
             <td>
                   <code><span title="int">int</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Input dimension (time t + u_dim), where u_dim is the
-number of substrate feed channels, i.e. input_dim = 1 + u_dim.</p>
+                <p>Number of state outputs (31 in closure mode, 41 in DAE mode).</p>
               </div>
             </td>
             <td>
-                  <code>2</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>output_dim</code>
+                <code>n_feed</code>
             </td>
             <td>
                   <code><span title="int">int</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Dimension of the extended ADM1da state vector (41).</p>
+                <p>Number of feed feature columns (see :func:<code>~.data.feed_features</code>).</p>
               </div>
             </td>
             <td>
-                  <code>41</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>hidden_layers</code>
-            </td>
-            <td>
-                  <code><span title="collections.abc.Sequence">Sequence</span>[<span title="int">int</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Number of neurons per hidden layer.</p>
-              </div>
-            </td>
-            <td>
-                  <code>(64, 64, 64)</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>dropout</code>
+                <code>t_scale</code>
             </td>
             <td>
                   <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Dropout probability after each hidden layer; <code>&gt; 0</code> enables
-MC-Dropout (evaluate the net repeatedly in train() mode for an
-uncertainty estimate).</p>
+                <p>Time normalisation <code>t_norm = t / t_scale</code> [days].</p>
               </div>
             </td>
             <td>
-                  <code>0.0</code>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>feed_scale</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>(n_feed,)</code> feed feature normalisation.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>log_mu, log_sigma</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>(n_out,)</code> per-state mean / std of <code>log x</code> (prior).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
             </td>
           </tr>
       </tbody>
@@ -3440,67 +3114,74 @@ uncertainty estimate).</p>
 
 
 
-<h4 id="pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN-functions">Methods:<a href="#pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN-functions" class="headerlink" title="Permanent link">&para;</a></h4>
+<h4 id="pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet-functions">Methods:<a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet-functions" class="headerlink" title="Permanent link">&para;</a></h4>
 
 <div class="doc doc-object doc-function">
 
 
-<h5 id="pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN.forward" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<h5 id="pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.forward" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></code>
 
-<a href="#pyadm1ode_estimation.estimation.deep_learning.pinn.ADM1PINN.forward" class="headerlink" title="Permanent link">&para;</a></h5>
+<a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.forward" class="headerlink" title="Permanent link">&para;</a></h5>
 
 
     <div class="doc doc-contents ">
 
-        <p>Forward pass of the network.</p>
+        <p>States <code>(B, n_out)</code> for <code>t (B, 1)</code> and feed features <code>u (B, n_feed)</code>.</p>
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>t</code>
-            </td>
-            <td>
-                  <code><span title="torch.Tensor">Tensor</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Time points (shape: [batch, 1]).</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>u</code>
-            </td>
-            <td>
-                  <code><span title="torch.Tensor">Tensor</span> | None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Additional inputs / substrate feed (shape: [batch, u_dim]).</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.latent" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">latent</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.latent" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Normalised state <code>z</code> (the network's own output space).</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.to_latent" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">to_latent</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.to_latent" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Inverse of the output transform (for state targets and priors).</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.with_rates" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">with_rates</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.pinn.model.TrajectoryNet.with_rates" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+    <div class="doc doc-contents ">
+
+        <p><code>(x, dx/dt)</code> by forward-mode AD over <code>t</code> (<code>u</code> is piecewise constant in <code>t</code>).</p>
 
 
     </div>
@@ -3510,6 +3191,24 @@ uncertainty estimate).</p>
 
 
   </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pyadm1ode_estimation.estimation.pinn.rolling.run_rolling" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pyadm1ode_estimation</span><span class="o">.</span><span class="n">estimation</span><span class="o">.</span><span class="n">pinn</span><span class="o">.</span><span class="n">rolling</span><span class="o">.</span><span class="n">run_rolling</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">arch</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">roll</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prior_stats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#pyadm1ode_estimation.estimation.pinn.rolling.run_rolling" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Run one causal scheme on one series and score all derived trajectories.</p>
+
 
     </div>
 
@@ -3574,10 +3273,10 @@ uncertainty estimate).</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
       
         <script src="../../javascripts/mathjax.js"></script>
       
