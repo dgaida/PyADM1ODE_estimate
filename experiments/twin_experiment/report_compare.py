@@ -799,7 +799,7 @@ if SAVE_TRAJ and trajs:
     print(f"Wrote {RESULTS}/{A.tag}_traj.npz (real-vs-estimated trajectories)")
 with open(f"{RESULTS}/{A.tag}_meta.txt", "w", encoding="utf-8") as fh:
     fh.write(
-        f"timestamp     : {datetime.datetime.now().isoformat(timespec='seconds')}\n"  # noqa: DTZ005
+        f"timestamp     : {datetime.datetime.now().astimezone().isoformat(timespec='seconds')}\n"
     )
     fh.write(f"estimate_git  : {_git(str(_ROOT))}\n")
     fh.write(

@@ -21,7 +21,8 @@ jobs:
       - name: Install linting tools
         run: |
           python -m pip install --upgrade pip
-          pip install ruff black
+          # Pinned: an unpinned ruff changes its default rule set between releases.
+          pip install "ruff==0.17.3" "black==26.10.1"
 
       - name: Run ruff
         run: ruff check .
