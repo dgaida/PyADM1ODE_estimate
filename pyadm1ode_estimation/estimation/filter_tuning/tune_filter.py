@@ -323,6 +323,11 @@ def cmd_cmaes(a):
     if a.fostac_every_days:
         tag += f"_fostac{a.fostac_every_days:g}d"
     ds = get_dataset(a.dataset)
+    if not a.no_task_cache:
+        # every finished filter run lands on disk, so a reboot costs only what was in flight
+        from .filter_runners import set_task_cache
+
+        set_task_cache(out / f"{tag}_task_cache")
 
     print(
         f"[cmaes] host {socket.gethostname()} | variant {a.variant} | D={a.days} | "
@@ -365,8 +370,41 @@ def cmd_cmaes(a):
             m, b, w_acc=a.w_acc, w_dec=1.0 - a.w_acc
         )
 
+    # -- warm start / comparison candidates --------------------------------------------
+    from ..specs import BLOCK_INDICES
+
+    blocks_all = cs.AD_CORE_BLOCKS if a.variant == "adcore" else list(BLOCK_INDICES)
+    x0 = None
+    if a.warm_start:
+        ws = json.loads(Path(a.warm_start).read_text(encoding="utf-8"))
+        q_ref = cs.load_empirical_q(a.warm_start_q) if a.warm_start_q else q_emp
+        x0 = cs.x_from_theta(ws.get("theta", ws), q_ref, blocks_all)
+        print(
+            f"[warm start] {a.warm_start}: block corrections "
+            f"{cs.q_scales_of(x0, blocks_all)}, r {np.exp(x0[-2]):.3g}, "
+            f"p0 {np.exp(x0[-1]):.3g}",
+            flush=True,
+        )
+    compare = {}
+    for spec in a.compare or []:
+        label, _, path = spec.partition("=")
+        if not path:
+            raise SystemExit(f"--compare expects LABEL=PATH, got {spec!r}")
+        th = json.loads(Path(path).read_text(encoding="utf-8"))
+        th = th.get("theta", th)
+        # sigma is refitted in stage 2, exactly as for every other candidate
+        compare[label] = {k: v for k, v in th.items() if k != "std_scale"}
+
     # -- stage 1 -----------------------------------------------------------------------
     trace_path = out / f"{tag}_stage1.json"
+    resume = None
+    if a.resume and trace_path.exists():
+        resume = json.loads(trace_path.read_text(encoding="utf-8"))
+        print(
+            f"[resume] {trace_path}: replaying {len(resume['generations'])} "
+            f"generations",
+            flush=True,
+        )
 
     def progress(e):
         print(
@@ -395,6 +433,9 @@ def cmd_cmaes(a):
         out_path=trace_path,
         progress=progress,
         cma_seed=a.cma_seed,
+        x0=x0,
+        sigma0=a.sigma0,
+        resume=resume,
     )
     base = trace["config"]["base_nrmse"]
 
@@ -432,6 +473,9 @@ def cmd_cmaes(a):
             for i, x in enumerate(picked)
         }
     )
+    if x0 is not None:  # CMA-ES samples around its start point, never the point itself
+        configs["warm_start"] = cs.theta_from_x(x0, q_emp, blocks)
+    configs.update(compare)
     vd = a.verify_days  # None = full series, which is the point of stage 2
     print(
         f"[stage 2] {len(configs)} configs on {len(val_eps)} validation episodes, "
@@ -467,10 +511,31 @@ def cmd_cmaes(a):
         f"({len(scores)}/{len(configs)} configs scorable)",
         flush=True,
     )
+    win_theta = dict(configs[winner])
+    win_theta["std_scale"] = ver["results"][winner]["std_scale"]
+    winner_path = out / f"{tag}_winner.json"
+    with winner_path.open("w", encoding="utf-8") as fh:
+        json.dump(
+            {
+                "variant": a.variant,
+                "winner": winner,
+                "dataset": a.dataset,
+                "fostac_every_days": a.fostac_every_days,
+                "host": socket.gethostname(),
+                "days_searched": a.days,
+                "stage2_score": scores[winner],
+                "stage2": ver["results"][winner],
+                "theta": win_theta,
+            },
+            fh,
+            indent=2,
+            default=lambda o: o.tolist() if hasattr(o, "tolist") else str(o),
+        )
+    print(f"[stage 2] winning parameter set -> {winner_path}", flush=True)
 
     # -- stage 3 -----------------------------------------------------------------------
     test = None
-    files = [str(trace_path), str(out / f"{tag}_stage2.json")]
+    files = [str(trace_path), str(out / f"{tag}_stage2.json"), str(winner_path)]
     if not a.no_test:
         theta = dict(configs[winner])
         theta["std_scale"] = np.asarray(ver["results"][winner]["std_scale"], float)
@@ -720,6 +785,44 @@ def main():
                 help="skip measuring the nominal reference and use this instead",
             )
             p.add_argument("--cma-seed", type=int, default=1)
+            p.add_argument(
+                "--no-task-cache",
+                action="store_true",
+                help="do not persist finished filter runs under --out (they make --resume "
+                "cheap; about 1 MB per 60-day run)",
+            )
+            p.add_argument(
+                "--resume",
+                action="store_true",
+                help="continue an interrupted run in --out: replay the stage-1 trace and "
+                "reuse every filter run already in the task cache",
+            )
+            p.add_argument(
+                "--sigma0",
+                type=float,
+                default=1.5,
+                help="initial CMA-ES step size in log space; smaller for a warm start",
+            )
+            p.add_argument(
+                "--warm-start",
+                default=None,
+                help="winner JSON (or bare theta) whose block corrections start the "
+                "search; also re-measured in stage 2 as 'warm_start'",
+            )
+            p.add_argument(
+                "--warm-start-q",
+                default=None,
+                help="stage-0 JSON the warm-start theta was tuned against; its block "
+                "corrections are then carried over to this run's empirical Q",
+            )
+            p.add_argument(
+                "--compare",
+                action="append",
+                default=None,
+                metavar="LABEL=PATH",
+                help="extra stage-2 candidate from a winner JSON, e.g. the shipped "
+                "reference; repeatable",
+            )
             p.add_argument(
                 "--verify-days",
                 type=float,

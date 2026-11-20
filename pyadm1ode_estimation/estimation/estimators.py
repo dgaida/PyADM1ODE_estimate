@@ -111,7 +111,8 @@ class UkfEstimator:
         theta: Q/R/P0 parameters; default: the CMA-ES reference of ``variant``.
         fostac_every_days: Lab titration interval (``None`` = no FOS/TAC).
         prune: Simulate only the primary digester and its gas storage, the parts
-            the sensors depend on (about 12x faster, same primary trajectories).
+            the sensors depend on. The estimate is bit-identical and a UKF run about
+            2x faster (12x for a plain forward simulation).
         name: Registry name.
     """
 
@@ -119,7 +120,7 @@ class UkfEstimator:
     variant: str = "full"
     theta: dict | None = None
     fostac_every_days: float | None = None
-    prune: bool = False
+    prune: bool = True
     name: str = "ukf"
     _runner: UkfRunner = field(init=False, repr=False)
 

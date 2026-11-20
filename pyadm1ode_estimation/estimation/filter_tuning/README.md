@@ -55,8 +55,9 @@ Results are written to `filter_tuning_results/` (or `--out`).
 
 ## CMA-ES pipeline (1.3)
 
-Not exposed through `tune_filter.py`, because stage 1 runs for hours and belongs in a
-detached script rather than a CLI call. Import it directly:
+The unattended run goes through `tune_filter.py cmaes`, see `TUNING.md` at the repository
+root, including the warm start from an earlier winner after a dataset change
+(`x_from_theta`, `run_cmaes(x0=...)`). The stages can also be driven directly:
 
 ```python
 from pyadm1ode_estimation.estimation.filter_tuning import get_dataset

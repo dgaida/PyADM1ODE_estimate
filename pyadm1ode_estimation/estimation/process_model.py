@@ -20,6 +20,7 @@ Responsibilities
 
 from __future__ import annotations
 
+import copy
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -32,6 +33,18 @@ if TYPE_CHECKING:
 
 #: Default gas-phase equilibration time [days] for :meth:`refresh_outputs`.
 _GAS_EQUILIBRATION_DT = 1.0 / 24.0  # 1 h
+
+
+def _gas_storage_of(comp: Any) -> Any:
+    """Return the object that holds a component's gas storage state, or ``None``.
+
+    pyadm1 up to 0.6.2 kept a storage inside the digester (``comp.gas_storage``);
+    since then a storage is a plant component of its own.
+    """
+    inner = getattr(comp, "gas_storage", None)
+    if inner is not None:
+        return inner
+    return comp if hasattr(comp, "stored_volume_m3") else None
 
 
 class ADM1ProcessModel:
@@ -115,13 +128,16 @@ class ADM1ProcessModel:
             if comp_snap:
                 snap["components"][cid] = comp_snap
 
-            gs = getattr(comp, "gas_storage", None)
+            gs = _gas_storage_of(comp)
             if gs is None:
                 continue
             gs_snap = dict(getattr(gs, "outputs_data", {}) or {})
             for attr in ("stored_volume_m3", "_stored_volume_m3"):
                 if hasattr(gs, attr):
                     gs_snap[f"__attr__{attr}"] = getattr(gs, attr)
+            get_state = getattr(gs, "get_state", None)
+            if callable(get_state):
+                gs_snap["__state__"] = copy.deepcopy(get_state())
             snap["gas_storage"][cid] = gs_snap
 
         self._baseline = snap
@@ -148,15 +164,16 @@ class ADM1ProcessModel:
         # snap is keyed by component id.
         for cid, gs_snap in self._baseline.get("gas_storage", {}).items():
             comp = self.plant.components.get(cid)
-            gs = getattr(comp, "gas_storage", None) if comp else None
+            gs = _gas_storage_of(comp) if comp else None
             if gs is None:
                 continue
+            state = gs_snap.get("__state__")
+            if state is not None and callable(getattr(gs, "set_state", None)):
+                gs.set_state(copy.deepcopy(state))
             attr_updates = {
                 k: v for k, v in gs_snap.items() if k.startswith("__attr__")
             }
-            outputs_part = {
-                k: v for k, v in gs_snap.items() if not k.startswith("__attr__")
-            }
+            outputs_part = {k: v for k, v in gs_snap.items() if not k.startswith("__")}
             try:
                 gs.outputs_data = dict(outputs_part)
             except Exception:  # noqa: BLE001, S110

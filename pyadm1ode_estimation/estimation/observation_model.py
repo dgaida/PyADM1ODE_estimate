@@ -318,13 +318,24 @@ def make_state_extractor(channel_index: int) -> Extractor:
 
 
 def make_stored_volume_extractor(digester_id: str) -> Extractor:
-    """Return the fractional fill of the named digester's gas dome."""
+    """Return the fractional fill of the gas storage that belongs to a digester.
+
+    pyadm1 keeps the storage as a component of its own, named
+    ``<digester_id>_storage`` by the plant configurator; its fill is the stored
+    volume over its capacity. Plants of pyadm1 up to 0.6.2 carried the storage
+    inside the digester, where the fill refers to the gas volume ``V_gas``.
+    """
 
     def extractor(plant: BiogasPlant, x: np.ndarray) -> float:
-        comp = plant.components[digester_id]
-        gs = comp.outputs_data.get("gas_storage", {}) or {}
-        vol = gs.get("stored_volume_m3", float("nan"))
-        cap = float(getattr(comp, "V_gas", float("nan")))
+        storage = plant.components.get(f"{digester_id}_storage")
+        if storage is not None and hasattr(storage, "stored_volume_m3"):
+            vol = float(storage.stored_volume_m3)
+            cap = float(getattr(storage, "capacity_m3", float("nan")))
+        else:
+            comp = plant.components[digester_id]
+            gs = comp.outputs_data.get("gas_storage", {}) or {}
+            vol = gs.get("stored_volume_m3", float("nan"))
+            cap = float(getattr(comp, "V_gas", float("nan")))
         if not cap or cap <= 0 or not np.isfinite(vol):
             return float("nan")
         return float(vol / cap)

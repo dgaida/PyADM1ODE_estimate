@@ -132,6 +132,13 @@ Fenster. Zwei Betriebsdetails:
 
 ## 4. Stärken und Grenzen
 
+!!! note "Datensatz dieser Zahlen"
+    Die Zahlen ab hier wurden auf dem Benchmark gemessen, der vor dem 06.11.2026
+    veröffentlicht war. Auf dem am 15.11.2026 neu erzeugten Benchmark haben alle
+    Schätzer höhere Fehler, und die Rangfolge ist eine andere; der aktuelle
+    Vergleich steht auf der
+    [Schätzer-Seite](../usage/estimators.md#finaler-vergleich).
+
 **Stärken:** Nahezu sofortige Inferenz nach den einmaligen Offline-Kosten
 (deutlich unter einer Sekunde je 60-Tage-Reihe, gegen Minuten für den UKF und
 einige zehn Minuten für PINN v2); lernt die *volle* Zustandsstruktur aus dem

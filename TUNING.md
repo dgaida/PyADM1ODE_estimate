@@ -47,6 +47,14 @@ Scaling is strongly sublinear, so a smaller machine costs less than proportional
 | --- | --- | --- | --- | --- | --- | --- |
 | Time factor | 2.6x | 1.9x | 1.5x | 1.3x | 1.15x | 1.0x |
 
+**Fill whole waves.** A generation is `popsize × 4` filter runs (sigma-fit plus scoring
+episodes). With `--popsize 8` that is 32 runs: on 30 workers the last two start only when
+the first wave ends, and the generation takes two run lengths instead of one. Choose
+`--jobs` of at least `popsize × 4`, or a `popsize` that fits, e.g. 7 for 28 workers.
+
+**Keep the machine to yourself.** Every other process with its own worker pool competes for
+the same cores, and a generation lasts as long as its slowest run.
+
 ---
 
 ## 3. Optional: enable the e-mail report
@@ -134,6 +142,28 @@ already represented by S_nh3, which is in the core.
 Pairing `adcore` with the titration is possible but not recommended, and comparing it against
 run 4 is the cleanest way to demonstrate the point empirically.
 
+### Re-tuning after the dataset changed
+
+A regenerated dataset changes the empirical Q that the search is expressed against, so the
+shipped winner is no longer tuned for it. Start the new search from the old winner instead of
+from scratch, and re-measure the shipped reference next to the new candidates:
+
+```bash
+$RUN --variant full $COMMON --sigma0 0.75 \
+     --warm-start pyadm1ode_estimation/estimation/reference/cmaes_full_winner.json \
+     --warm-start-q results_ukf/empirical_noise.json \
+     --compare current=pyadm1ode_estimation/estimation/reference/cmaes_full_winner.json
+```
+
+- `--warm-start` re-expresses the winner as block corrections against the stage-0 Q it was
+  tuned on (`--warm-start-q`) and starts CMA-ES there, on the new Q shape. The start point
+  itself goes into stage 2 as `warm_start`, because CMA-ES only samples around it.
+- `--compare current=...` puts the shipped parameters, unchanged, into stage 2. Its σ is
+  refitted like every other candidate's, so the comparison is on equal terms and answers
+  whether the new search found anything better.
+- `--sigma0` shrinks the first step size. The default 1.5 suits a cold start; a warm start
+  wants to explore its neighbourhood first.
+
 ### What the options mean
 
 | Option | Meaning |
@@ -146,6 +176,11 @@ run 4 is the cleanest way to demonstrate the point empirically.
 | `--objective accuracy` | Score is the NRMSE gain, minus a coverage penalty, minus a one-sided guard `2.0 · max(0, 0.5 − AUC)` that only bites if the FOS/TAC ranking is worse than a coin flip. |
 | `--dataset-dir` | Lets the final report score the new reference against the true states. |
 | `--fostac-every-days` | Interval of the FOS/TAC titration in days. Omitted means no lab measurement. |
+| `--warm-start`, `--warm-start-q` | Start the search at an earlier winner, carried over to the new empirical Q. |
+| `--compare LABEL=PATH` | Extra stage-2 candidate from a winner JSON, repeatable. |
+| `--sigma0` | Initial CMA-ES step size in log space, default 1.5. |
+| `--resume` | Continue an interrupted run in the same `--out`, see section 8. |
+| `--no-task-cache` | Do not keep finished filter runs on disk. Makes `--resume` expensive again. |
 
 Available variants:
 
@@ -189,8 +224,10 @@ Everything lands in `--out` (default `filter_tuning_results/`):
 | File | Contents |
 | --- | --- |
 | `empirical_noise.json` | Stage 0, Q and R measured from ground truth. Reused automatically on the next run. |
-| `cmaes_<variant>_stage1.json` | Every candidate of every generation with all its metrics. Written after each generation, so a crash costs at most one generation. |
+| `cmaes_<variant>_stage1.json` | Every candidate of every generation with all its metrics. Written after each generation. |
+| `cmaes_<variant>_task_cache/` | One file per finished filter run (about 1 MB for 60 days). Lets `--resume` skip everything already computed. Delete it with the run. |
 | `cmaes_<variant>_stage2.json` | The top-k plus nominal, re-measured on validation at full length. |
+| `cmaes_<variant>_winner.json` | The winning theta with its refitted σ, in the format of `pyadm1ode_estimation/estimation/reference/`. |
 | `cmaes_<variant>_reference.npz` | `ukf_x_hat` / `ukf_std` of the winner over the 20 test series. |
 | `cmaes_<variant>_summary.json` | Machine-readable summary of the whole run. |
 | `cmaes_<variant>_report.txt` | The same as plain text. This is what gets e-mailed. |
@@ -220,6 +257,14 @@ sequence: roughly **four days**. At 16 workers about 1.5 times that. Those figur
 CPU of similar single-core speed to a Ryzen 9 7950X3D; an older chip adds 30 to 50 % on top,
 independent of core count. `--patience 3` typically saves a few hours per run.
 
+Since November 2026 every UKF run simulates only the primary digester and its gas storage
+(`prune`, the default of `make_ukf_runner`). The two downstream digesters cannot reach the
+primary digester's states or sensors, so the estimate is bit-identical (checked over a full
+60-day series against the stored reference), and a run takes less than half as long. The
+figures above were measured without it. The first tuning run on the regenerated dataset,
+also without it, took about 11 h per generation at 30 workers: two waves of a 5.5-hour run,
+on a machine shared with another job.
+
 ## 8. If something goes wrong
 
 **The run dies without a message on Windows.** Almost always a `multiprocessing` problem. Any
@@ -238,6 +283,14 @@ Such candidates come back as `None`, receive the worst fitness and the search co
 empirical-Q warm start keeps this rare, in the reference runs all 8 of 8 candidates were
 evaluable in every generation.
 
-**Resuming.** There is no built-in resume. `cmaes_<variant>_stage1.json` holds every candidate
-evaluated so far, so a crashed search can be continued by hand, and stage 2 and 3 can be run
-from it without repeating the search.
+**Resuming.** Start the identical command again with `--resume` added. Stage 1 reuses the
+reference points of `cmaes_<variant>_stage1.json` and replays its generations through CMA-ES,
+which restores the optimiser state exactly because the search is deterministic for a fixed
+seed. It then continues with the next generation. Every filter run that finished before the
+crash, in any stage, is loaded from `cmaes_<variant>_task_cache/` instead of being recomputed,
+so a crash costs only the runs that were in flight. A trace written with other settings is
+refused with the differing options named.
+
+**Windows restarts for updates.** A multi-day run does not survive it, and Windows Update
+does restart a machine that is busy computing. Pause updates for the duration of the run
+(Settings, Windows Update, pause) and resume with `--resume` if it happens anyway.

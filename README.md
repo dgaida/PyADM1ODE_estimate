@@ -151,6 +151,19 @@ Key pages:
 * [Examples — methodology](docs/de/examples/index.md)  
 * [ADM1da model overview](docs/de/theory/adm1.md)  
 
+## Citation
+
+If you use PyADM1ODE_estimation in your research, please cite:
+
+```bibtex
+@software{pyadm1_estimation,
+  author = {Nordhoff, Tim Yago and Gaida, Daniel},
+  title = {PyADM1ODE\_estimation: State Estimation for Biogas Plant Models},
+  year = {2026},
+  url = {https://github.com/dgaida/PyADM1ODE_estimate}
+}
+```
+
 ## License
 
 This project is licensed under the MIT License.

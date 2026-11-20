@@ -85,13 +85,29 @@ bis 60, gemittelt über 20 Reihen, mit nominaler Kinetik:
 
 | Schätzer | `benchmark` | Substratwechsel | Wechsel + Lastrhythmus |
 | --- | --- | --- | --- |
-| Fusion UKF + PINN B | 13,1 % | 15,2 % | 15,5 % |
-| UKF, 41 Zustände | 13,5 % | 16,1 % | 16,2 % |
-| PINN B, kinetikblind | 13,8 % | 17,5 % | 18,5 % |
-| UKF, A+D-Kern | 16,5 % | 18,2 % | 18,0 % |
-| PINN v2 | 18,4 % | 21,7 % | 20,5 % |
+| UKF, 41 Zustände | 17,3 % | 18,1 % | 18,8 % |
+| Fusion UKF + PINN B | 18,1 % | 22,1 % | 22,8 % |
+| UKF, A+D-Kern | 18,2 % | 21,1 % | 20,3 % |
+| Offene Simulation (Modell ohne Messungen) | 19,6 % | 21,9 % | 21,6 % |
+| PINN B, kinetikblind | 21,5 % | 29,8 % | 29,7 % |
+| PINN v2 | 25,5 % | 30,6 % | 29,8 % |
 
-Mit den wahren Faktoren der zehn kalibrierbaren Kinetiken erreicht der UKF 6,4, 7,8
-und 8,4 %. Eine Kalibrierung dieser Kinetiken aus den ersten 20 Tagen Messungen
-findet sie nicht wieder und macht jeden Schätzer schlechter, weil sie den Fehler des
-geschätzten Startzustands ausgleicht.
+Auf `benchmark` sind die beiden UKF-Varianten und die Fusion statistisch nicht
+getrennt; auf den beiden verschobenen Sätzen hat der UKF mit 41 Zuständen den
+kleinsten Fehler. Mit den wahren Faktoren der zehn kalibrierbaren Kinetiken erreicht
+der UKF 12,1, 11,9 und 11,4 %. Eine Kalibrierung dieser Kinetiken aus den ersten
+20 Tagen Messungen findet sie nicht wieder und macht jeden Schätzer schlechter (UKF:
+20,4, 23,4 und 21,5 %), weil sie den Fehler des geschätzten Startzustands ausgleicht.
+
+!!! note "Datensatz dieser Zahlen"
+    Die Tabelle wurde am 17.11.2026 auf dem Benchmark gemessen, der am 15.11.2026
+    mit dem überarbeiteten ADM1da-Modell neu erzeugt wurde (siehe
+    `datasets/benchmark/README.md`). Der UKF wurde dafür nicht neu abgestimmt; seine
+    Einstellungen stammen vom Benchmark, der vor dem 06.11.2026 veröffentlicht war.
+    PINN B wurde neu trainiert. Der Lauf vom 20.10.2026 auf jenem
+    früheren Benchmark ergab auf `benchmark` 13,5 % für den UKF mit 41 Zuständen,
+    13,1 % für die Fusion und 13,8 % für PINN B. Der größte Teil des Unterschieds
+    stammt aus der Datensatzüberarbeitung vom 06./08.11.2026 (wechselnder
+    Substratmix, unbeschnittene Wahrheit) und nicht aus der Modellüberarbeitung:
+    Auf dem Datensatz vom 08.11.2026 trainiert liegt PINN B ebenso weit von seinem
+    früheren Wert wie auf dem jetzigen.

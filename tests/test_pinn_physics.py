@@ -20,6 +20,11 @@ from pyadm1.core.adm1 import STATE_SIZE
 from pyadm1.core.adm1_torch import adm1da_rhs_torch
 
 from pyadm1ode_estimation.estimation.filter_tuning.datasets import DEFAULT_BENCHMARK_DIR
+from pyadm1ode_estimation.estimation.filter_tuning.filter_runners import (
+    build_plant,
+    freeze_nominal_mix,
+    influent_mode,
+)
 from pyadm1ode_estimation.estimation.pinn import (
     CLOSURE_ODE_STATES,
     FULL_ODE_STATES,
@@ -66,9 +71,22 @@ _BASE_STATE = np.array(
 
 @pytest.fixture(scope="module")
 def plant():
+    """The benchmark's process model: digesters pinned to the nominal mix.
+
+    pyadm1 blends the influent from the current feed. The benchmark truth was
+    generated when it still cached the blend of the initialisation, so the
+    physics under test has to be pinned the same way.
+    """
     p = build_multi_stage_plant()
     p.components[DIGESTER].adm1._kinetic["k_dec_ac"] = 0.02
+    freeze_nominal_mix(p)
     return p
+
+
+@pytest.fixture(scope="module")
+def unpinned_adm1():
+    """A digester as pyadm1 builds it today: the influent follows the feed."""
+    return build_multi_stage_plant().components[DIGESTER].adm1
 
 
 @pytest.fixture(scope="module")
@@ -120,6 +138,49 @@ def test_blend_mode_matches_the_feedstock_blend(adm1, n_sub):
         q, s = model(feed)
         assert q == pytest.approx(row[-1], rel=1e-12)
         np.testing.assert_allclose(s, row[:-1], rtol=1e-10, atol=1e-14)
+
+
+def test_blend_mode_matches_what_an_unpinned_digester_feeds_the_ode(
+    unpinned_adm1, n_sub
+):
+    rng = np.random.default_rng(1)
+    feeds = _random_feed(rng, 4, n_sub)
+    model = InfluentModel.from_adm1(unpinned_adm1, mode="blend")
+    for feed in feeds:
+        unpinned_adm1.create_influent(list(feed), 0)
+        q, s = model(feed)
+        assert q == pytest.approx(float(np.sum(unpinned_adm1._Q)), rel=1e-12)
+        np.testing.assert_allclose(
+            s, np.asarray(unpinned_adm1._state_input, float), rtol=1e-10, atol=1e-14
+        )
+
+
+def test_nominal_mix_needs_a_pinned_digester(unpinned_adm1, n_sub):
+    """An unpinned digester has no nominal composition; the last blend is not one."""
+    unpinned_adm1.create_influent([1.0] + [0.0] * (n_sub - 1), 0)
+    with pytest.raises(ValueError, match="freeze_nominal_mix"):
+        InfluentModel.from_adm1(unpinned_adm1, mode="nominal_mix")
+
+
+def test_pinning_fixes_the_composition_at_the_nominal_feed(n_sub):
+    p = build_multi_stage_plant()
+    digester = p.components[DIGESTER]
+    nominal = digester.adm1.feedstock.blended_concentrations(digester.Q_substrates)
+    freeze_nominal_mix(p)
+    digester.adm1.create_influent([1.0] + [0.0] * (n_sub - 1), 0)
+    np.testing.assert_allclose(
+        digester.adm1._state_input, list(nominal.values()), rtol=1e-12, atol=1e-15
+    )
+
+
+def test_build_plant_pins_only_datasets_generated_with_the_nominal_mix():
+    """Datasets without the field predate the pyadm1 fix; new ones state "blend"."""
+    legacy, blended = {}, {"influent_mode": "blend"}
+    assert influent_mode(legacy) == "nominal_mix" and influent_mode(blended) == "blend"
+    assert build_plant(legacy).components[DIGESTER].adm1._influent_df is not None
+    assert build_plant(blended).components[DIGESTER].adm1._influent_df is None
+    with pytest.raises(ValueError, match="influent_mode"):
+        influent_mode({"influent_mode": "frozen"})
 
 
 def test_influent_is_batched_and_torch_compatible(adm1, n_sub):
@@ -292,9 +353,10 @@ def test_residual_shapes_and_scaling(adm1, n_sub):
         PhysicsConfig(closure=False, ode_indices=(0, 35))
 
 
-def test_conserved_sum_rows_carry_no_acid_base_term(adm1, n_sub):
-    """In ``"sum"`` mode the k_A_B = 1e8 relaxation term cancels exactly, so the
-    effective S_IC / S_IN rates are insensitive to a slightly off-equilibrium ion."""
+def test_total_rows_carry_no_acid_base_term(adm1, n_sub):
+    """Rows 9 / 10 are totals: an off-equilibrium ion moves its own row by the
+    k_A_B = 1e8 relaxation term, the row of the total only by the smooth free-CO2 /
+    pH dependence."""
     rng = np.random.default_rng(8)
     params = build_params(adm1)
     # start exactly at equilibrium (closed ions), then push one ion off by 0.1 %
@@ -302,23 +364,16 @@ def test_conserved_sum_rows_carry_no_acid_base_term(adm1, n_sub):
         torch.as_tensor(_random_states(rng, 4)[:, :N_CORE], dtype=torch.float64), params
     )
     feed = torch.as_tensor(_random_feed(rng, 4, n_sub), dtype=torch.float64)
-    influent = InfluentModel.from_adm1(adm1)
+    phys = ADM1Physics(
+        params,
+        InfluentModel.from_adm1(adm1),
+        PhysicsConfig(closure=False, ode_indices=(9, 10)),
+    )
     x_off = x41.clone()
     x_off[:, 35] *= 1.001  # off-equilibrium bicarbonate
-    change = {}
-    for mode in ("sum", "keep"):
-        phys = ADM1Physics(
-            params, influent, PhysicsConfig(closure=False, acid_base=mode)
-        )
-        f0 = phys.model_rates(x41, feed)[:, 9]
-        f1 = phys.model_rates(x_off, feed)[:, 9]
-        change[mode] = (f1 - f0).abs()
-    # The raw row moves by the k_A_B-amplified rho_A; the conserved-sum row only by the
-    # smooth free-CO2 / pH dependence - orders of magnitude less.
-    assert torch.all(change["sum"] < 1e-2 * change["keep"]), (
-        change["sum"],
-        change["keep"],
-    )
+    total = (phys.model_rates(x_off, feed) - phys.model_rates(x41, feed))[:, 0].abs()
+    ion = (phys.rhs(x_off, feed) - phys.rhs(x41, feed))[:, 35].abs()
+    assert torch.all(total < 1e-2 * ion), (total, ion)
 
 
 def test_residual_is_differentiable_for_training(adm1, n_sub):
@@ -365,9 +420,7 @@ def benchmark_series():
     }
 
 
-def _benchmark_physics(series, closure: bool, acid_base: str = "sum"):
-    from pyadm1ode_estimation.estimation.filter_tuning.filter_runners import build_plant
-
+def _benchmark_physics(series, closure: bool, mode: str | None = None):
     plant = build_plant(series["meta"])
     adm1 = plant.components[DIGESTER].adm1
     adm1.create_influent(list(series["feed"][0]), 0)
@@ -376,10 +429,8 @@ def _benchmark_physics(series, closure: bool, acid_base: str = "sum"):
         kinetic_factors=series["kinetic_factors"],
         kinetic_keys=series["kinetic_keys"],
     )
-    influent = InfluentModel.from_adm1(adm1, mode="nominal_mix")
-    return ADM1Physics(
-        params, influent, PhysicsConfig(closure=closure, acid_base=acid_base)
-    )
+    influent = InfluentModel.from_adm1(adm1, mode=mode or influent_mode(series["meta"]))
+    return ADM1Physics(params, influent, PhysicsConfig(closure=closure))
 
 
 def _relative_rms(out):
@@ -422,16 +473,20 @@ def test_truth_residual_with_closure_is_documented(benchmark_series):
 
 
 @pytest.mark.slow
-def test_dropping_the_acid_base_terms_is_visibly_wrong_on_the_truth(benchmark_series):
-    """Documents why the conserved-sum form is the default: without rho_A the
-    S_co2 / S_nh4 rows are off by tens of percent on the simulator's own output."""
+def test_blend_is_visibly_wrong_on_the_nominal_mix_truth(benchmark_series):
+    """Documents the dataset: its truth saw the nominal composition at every step.
+
+    The feed record varies the substrate mix per phase, but the generator ran on a
+    pyadm1 that cached the blend of the initialisation. With the flow-weighted
+    blend the particulate rows are off by about 100 % on the simulator's own
+    output; with the nominal mix they sit at the finite-difference level.
+    """
     s = benchmark_series
-    ratio = _relative_rms(
-        trajectory_residual(
-            _benchmark_physics(s, closure=False, acid_base="drop"),
-            s["states"],
-            s["feed"],
-            s["time"],
-        )
-    )
-    assert ratio[9] > 0.1 and ratio[10] > 0.05
+    if influent_mode(s["meta"]) != "nominal_mix":
+        pytest.skip("dataset was generated with the flow-weighted blend")
+    phys = _benchmark_physics(s, closure=False, mode="blend")
+    ratio = _relative_rms(trajectory_residual(phys, s["states"], s["feed"], s["time"]))
+    rows = [
+        list(phys.config.ode_indices).index(i) for i in range(12, 18)
+    ]  # X_PS_*, X_PF_*
+    assert np.all(ratio[rows] > 0.5), ratio[rows]

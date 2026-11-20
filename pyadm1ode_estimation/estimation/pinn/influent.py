@@ -11,18 +11,23 @@ Two composition modes exist because the benchmark truth was **not** generated
 with a flow-weighted blend:
 
 ``"nominal_mix"``
-    ``pyadm1.Digester.set_feedstock`` attaches an influent DataFrame built from
-    the *nominal* substrate mix, and ``ADM1.create_influent`` then reads the
-    composition from that DataFrame regardless of the per-step ``Q``. Only the
-    total flow ``q_ad = sum(Q_j * factor_j)`` follows the feed. This is what the
-    benchmark dataset's truth trajectories obey, so it is the default: a physics
-    residual with the "correct" blend would be non-zero on the truth.
+    The composition is that of the *nominal* substrate mix regardless of the
+    per-step ``Q``; only the total flow ``q_ad = sum(Q_j * factor_j)`` follows the
+    feed. pyadm1 used to behave like this by accident: a digester cached the
+    blend it was initialised with. The benchmark datasets were generated in that
+    state, so their truth trajectories obey this mode and it is the default: a
+    physics residual with the "correct" blend would be non-zero on the truth.
+    pyadm1 no longer caches the blend. The mode therefore needs a digester whose
+    composition is pinned on purpose: ``filter_runners.build_plant(meta)`` does
+    that for these datasets, ``filter_runners.freeze_nominal_mix(plant)`` for any
+    other plant.
 
 ``"blend"``
     Flow-weighted blend of the per-substrate concentrations,
     ``s_in = sum_j q_j c_j / sum_j q_j`` — what ``Feedstock.get_influent_dataframe``
-    returns for a given ``Q``. Physically right; use it for datasets or plants
-    whose composition really varies.
+    returns for a given ``Q`` and what a pyadm1 digester feeds its ODE today.
+    Physically right; use it for datasets or plants whose composition really
+    varies. ``filter_runners.influent_mode(meta)`` tells which mode a dataset obeys.
 
 ``factor_j`` is the ADM1da mass-to-volume conversion (``1000 / rho_j`` under the
 SIMBA Q convention, else 1), read from ``Feedstock.q_conversion_factors``.
@@ -84,8 +89,10 @@ class InfluentModel:
     def from_adm1(cls, adm1, mode: str = "nominal_mix") -> InfluentModel:
         """Read the substrate characterisation from an :class:`pyadm1.core.adm1.ADM1`.
 
-        The nominal composition is taken from the influent DataFrame the digester
-        attached (row 0), falling back to the last ``create_influent`` result.
+        The nominal composition is row 0 of the influent DataFrame the digester
+        is pinned to. An unpinned digester blends its influent from the current
+        feed and has no nominal composition, so ``"nominal_mix"`` raises for it
+        instead of taking whichever blend was computed last.
         """
         fs = adm1.feedstock
         if fs is None:
@@ -101,13 +108,13 @@ class InfluentModel:
 
         if getattr(adm1, "_influent_df", None) is not None:
             nominal = adm1._influent_df.iloc[0][_INFLUENT_KEYS].to_numpy(dtype=float)
-        elif getattr(adm1, "_state_input", None) is not None:
-            nominal = np.asarray(adm1._state_input, dtype=float)
         elif mode == "blend":
             nominal = np.zeros(N_INFLUENT)
         else:
             raise ValueError(
-                "'nominal_mix' mode needs a digester with an influent DataFrame or a created influent"
+                "'nominal_mix' mode needs a digester pinned to its nominal mix: build the "
+                "plant with filter_runners.build_plant(meta) or call "
+                "filter_runners.freeze_nominal_mix(plant) first"
             )
         return cls(conc=conc, q_factors=q_factors, nominal_s_in=nominal, mode=mode)
 

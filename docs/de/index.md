@@ -110,3 +110,16 @@ Mehr Details: [UKF im Einsatz](usage/ukf.md) und
 * [PyADM1ODE](https://github.com/dgaida/PyADM1ODE) — Basis-Paket mit ADM1da-Modell.  
 * [PyADM1ODE_calibration](https://github.com/dgaida/PyADM1ODE_calibration) —  
   Parameter-Kalibrierung gegen historische Daten, schreibt das Calibration-Artefakt.
+
+## Zitation
+
+Wenn Sie PyADM1ODE_estimation in Ihrer Forschung verwenden, zitieren Sie bitte:
+
+```bibtex
+@software{pyadm1_estimation,
+  author = {Nordhoff, Tim Yago and Gaida, Daniel},
+  title = {PyADM1ODE\_estimation: State Estimation for Biogas Plant Models},
+  year = {2026},
+  url = {https://github.com/dgaida/PyADM1ODE_estimate}
+}
+```

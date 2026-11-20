@@ -62,7 +62,7 @@ def _vfa_tac(states: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     h = 1.0e-5
     a = {k: _KA[k] / (h + _KA[k]) for k in _KA}
     tac_mol = (
-        (g("S_nh3") - a["IN"] * (g("S_nh4") + g("S_nh3")))
+        (g("S_nh3") - a["IN"] * g("S_nh4"))  # S_nh4 is the total, S_nh3 a part of it
         + (g("S_hco3") - a["co2"] * g("S_co2"))
         + (g("S_ac_ion") / _COD["ac"] - a["ac"] * g("S_ac") / _COD["ac"])
         + (g("S_pro_ion") / _COD["pro"] - a["pro"] * g("S_pro") / _COD["pro"])

@@ -26,7 +26,7 @@ import loader
 import numpy as np
 
 CHANNELS = loader.CHANNELS  # ["Q_gas", "Q_ch4", "Q_co2", "pH", "TS"]
-CHANNEL_UNITS = ["m³/d", "m³/d", "m³/d", "-", "% TS"]
+CHANNEL_UNITS = ["Nm³/d", "Nm³/d", "Nm³/d", "-", "% TS"]  # gas: dry, 0 °C, 1.01325 bar
 # Key hidden states in the overview's third row. S_ac is not shown directly — the
 # FOS/TAC panel (which it dominates) takes its place, as the interpretable health view.
 STATE_PANELS = [(5, "S_pro"), (8, "S_ch4"), (10, "S_nh4"), (27, "X_ac")]
@@ -90,7 +90,7 @@ def fostac(states: np.ndarray) -> np.ndarray:
     )
     h = 1.0e-5  # H+ at the pH-5 titration endpoint
     a = {k: _FT_KA[k] / (h + _FT_KA[k]) for k in _FT_KA}
-    total_n = g("S_nh4") + g("S_nh3")
+    total_n = g("S_nh4")  # the total; S_nh3 is a part of it
     tac_mol = (
         (g("S_nh3") - a["IN"] * total_n)
         + (g("S_hco3") - a["co2"] * g("S_co2"))

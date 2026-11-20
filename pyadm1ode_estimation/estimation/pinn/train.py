@@ -23,7 +23,7 @@ import torch
 from pyadm1.core.adm1 import STATE_SIZE
 from pyadm1.core.adm1_torch import calc_gas_quasi_steady_torch, ph_torch
 
-from ..filter_tuning.filter_runners import build_plant
+from ..filter_tuning.filter_runners import build_plant, influent_mode
 from ..specs import BLOCK_INDICES
 from .data import (
     BenchmarkSeries,
@@ -144,7 +144,7 @@ def build_physics(
             "kinetic_keys": series.kinetic_keys,
         }
     params = build_params(plant, **kw)
-    influent = InfluentModel.from_adm1(adm1, mode="nominal_mix")
+    influent = InfluentModel.from_adm1(adm1, mode=influent_mode(meta))
     phys = ADM1Physics(params, influent, PhysicsConfig(closure=cfg.closure))
     if scale_ref is not None:
         phys.fit_scale(scale_ref[0], scale_ref[1], mode=cfg.scale_mode)

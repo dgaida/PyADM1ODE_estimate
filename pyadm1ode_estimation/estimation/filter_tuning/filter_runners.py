@@ -26,6 +26,10 @@ present every N days; the rest of the axis is NaN and the filter skips it automa
 
 from __future__ import annotations
 
+import hashlib
+import os
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from pyadm1.core.adm1 import STATE_SIZE
@@ -117,6 +121,66 @@ def baseline_flows(meta: dict, substrates: list[InputSpec]) -> np.ndarray:
     return nominal * (total / max(nominal.sum(), 1e-9))
 
 
+#: Influent composition a dataset's truth obeys; see :func:`influent_mode`.
+NOMINAL_MIX = "nominal_mix"
+BLEND = "blend"
+INFLUENT_MODES = (NOMINAL_MIX, BLEND)
+
+
+def influent_mode(meta: dict) -> str:
+    """How the influent composition of a dataset's truth follows the feed.
+
+    ``"blend"``: the composition is the flow-weighted blend of the substrates fed
+    at each step. This is what pyadm1 computes today.
+
+    ``"nominal_mix"``: the composition is that of the plant's nominal mix at every
+    step and the reported flows only set the total flow. pyadm1 used to cache the
+    blend when a digester was initialised, so every dataset generated before that
+    was fixed obeys this mode, whatever its feed record says.
+
+    The mode is read from ``meta["influent_mode"]``. Datasets without the field
+    predate the fix and are ``"nominal_mix"``; a generator running on the fixed
+    pyadm1 has to write ``"blend"``.
+
+    Args:
+        meta: The dataset metadata.
+
+    Returns:
+        ``"nominal_mix"`` or ``"blend"``.
+
+    Raises:
+        ValueError: The field holds another value.
+    """
+    mode = str(meta.get("influent_mode", NOMINAL_MIX))
+    if mode not in INFLUENT_MODES:
+        raise ValueError(
+            f"meta['influent_mode'] must be one of {INFLUENT_MODES}, got {mode!r}"
+        )
+    return mode
+
+
+def freeze_nominal_mix(plant) -> None:
+    """Pin every digester's influent composition to its nominal substrate mix.
+
+    Reproduces the process model the ``"nominal_mix"`` datasets were generated
+    with: the composition is the blend at the digester's configured
+    ``Q_substrates`` and later feed rates only change the flow. pyadm1 honours an
+    explicitly set influent DataFrame over the feedstock blend, so this is the
+    documented way to ask for that behaviour.
+
+    Args:
+        plant: A built ``BiogasPlant``; modified in place.
+    """
+    for component in plant.components.values():
+        adm1 = getattr(component, "adm1", None)
+        feedstock = getattr(adm1, "feedstock", None)
+        if feedstock is None or not hasattr(feedstock, "get_influent_dataframe"):
+            continue
+        adm1.set_influent_dataframe(
+            feedstock.get_influent_dataframe(Q=list(component.Q_substrates))
+        )
+
+
 def build_plant(
     meta: dict, digester_id: str = "primary", *, apply_operating_point: bool = True
 ):
@@ -131,6 +195,11 @@ def build_plant(
     dataset is Q, R and the kinetics.
 
     Falls back to the plant's own mix when ``meta`` predates the ``library_id`` field.
+
+    The influent composition follows :func:`influent_mode`: for a ``"nominal_mix"``
+    dataset the digesters are pinned to the nominal mix with
+    :func:`freeze_nominal_mix`, so filter and physics run on the model that
+    generated the truth.
 
     Args:
         meta: The dataset metadata.
@@ -165,6 +234,8 @@ def build_plant(
     kdec = meta.get("operating_point", {}).get("k_dec_ac")
     if apply_operating_point and kdec is not None:
         plant.components[digester_id].adm1._kinetic["k_dec_ac"] = float(kdec)
+    if influent_mode(meta) == NOMINAL_MIX:
+        freeze_nominal_mix(plant)
     return plant
 
 
@@ -290,7 +361,15 @@ def _warmup(process, spec, x0, warmup_days, feed_flows, dt_hours):
 # Picklable runner
 # --------------------------------------------------------------------------
 class UkfRunner:
-    """Picklable ``runner(theta, episode) -> (x_hat (T,41), std (T,41))`` for a variant."""
+    """Picklable ``runner(theta, episode) -> (x_hat (T,41), std (T,41))`` for a variant.
+
+    ``prune`` (default on) simulates only the estimated digester and its gas storage.
+    Every sigma point otherwise drags the two downstream digesters through the stiff
+    solver as well, which costs more than half of the run time, and nothing they compute
+    reaches the primary digester's states or sensors: the output is bit-identical (checked
+    over a full 60-day benchmark series). Pruning applies only to the digester ids in
+    :data:`PRIMARY_COMPONENTS`; another ``digester_id`` keeps the whole plant.
+    """
 
     def __init__(
         self,
@@ -300,12 +379,12 @@ class UkfRunner:
         warmup_days: float | None = None,
         fostac_every_days: float | None = None,
         fostac_noise: tuple[float, float] | None = None,
-        prune: bool = False,
+        prune: bool = True,
     ):
         self.meta = meta
         self.variant = variant
         # Simulate only the components the sensors depend on (see prune_to_primary).
-        self.prune = bool(prune)
+        self.prune = bool(prune) and digester_id in PRIMARY_COMPONENTS
         # Lab titration: None disables it entirely, a number is the sampling interval in
         # days (7 = weekly, 1 = daily, dt_hours/24 = every step).
         self.fostac_every_days = fostac_every_days
@@ -328,6 +407,26 @@ class UkfRunner:
                 f"{sorted(VARIANT_STATES)}"
             )
         self.core = VARIANT_STATES[variant]
+
+    def cache_key(self) -> str:
+        """Digest of everything that shapes this runner's output, for the task cache.
+
+        ``prune`` changes the run time, not the output, so its slot is fixed to the
+        value older keys were written with: cached unpruned runs stay valid for a pruned
+        runner and vice versa.
+        """
+        return _digest(
+            [
+                type(self).__name__,
+                self.meta,
+                self.variant,
+                self.did,
+                False,  # former prune slot, see above
+                self.fostac_every_days,
+                self.fostac_noise,
+                self.wdays,
+            ]
+        )
 
     def __call__(self, theta: dict, ep) -> tuple[np.ndarray, np.ndarray]:
         theta = theta or {}
@@ -455,8 +554,9 @@ def make_ukf_runner(
     warmup_days: float | None = None,
     fostac_every_days: float | None = None,
     fostac_noise: tuple[float, float] | None = None,
-    prune: bool = False,
+    prune: bool = True,
 ) -> UkfRunner:
+    """Build the picklable :class:`UkfRunner`; see there for ``prune``."""
     return UkfRunner(
         meta,
         variant,
@@ -526,7 +626,153 @@ class WorkerPool:
         return self._pool.map(_collect_worker, args, chunksize=1)
 
 
+# --------------------------------------------------------------------- task cache ---
+#: Directory that persists every finished (theta, episode) filter run, or None.
+_TASK_CACHE: Path | None = None
+
+
+def set_task_cache(path: str | Path | None) -> None:
+    """Persist every finished ``(theta, episode)`` filter run under ``path``.
+
+    A 60-day UKF run takes hours, and a multi-day tuning run evaluates hundreds of them. With
+    the cache set, each result is written the moment its worker returns, and any later batch
+    that contains the same task loads it instead of recomputing it. A run killed by a reboot
+    therefore loses only the tasks that were in flight, whatever stage it was in.
+
+    The key covers the runner configuration (dataset meta included), the theta and the
+    episode's arrays, but not the code. Use one cache directory per run and delete it with
+    the run, not across code changes. ``None`` switches the cache off. Only runners with a
+    ``cache_key()`` method are cached.
+
+    Args:
+        path: Cache directory, created if missing, or ``None``.
+    """
+    global _TASK_CACHE
+    _TASK_CACHE = None if path is None else Path(path)
+    if _TASK_CACHE is not None:
+        _TASK_CACHE.mkdir(parents=True, exist_ok=True)
+
+
+def _digest(obj, h=None) -> str:
+    """Stable SHA-256 over nested dicts, sequences, arrays and scalars."""
+    top = h is None
+    h = hashlib.sha256() if top else h
+    if isinstance(obj, np.ndarray):
+        a = np.ascontiguousarray(obj)
+        h.update(f"nd{a.dtype.str}{a.shape}".encode())
+        h.update(a.tobytes())
+    elif isinstance(obj, dict):
+        h.update(b"{")
+        for k in sorted(obj, key=str):
+            h.update(repr(k).encode())
+            _digest(obj[k], h)
+        h.update(b"}")
+    elif isinstance(obj, (list, tuple)):
+        h.update(b"[")
+        for v in obj:
+            _digest(v, h)
+        h.update(b"]")
+    elif isinstance(obj, np.generic):
+        _digest(obj.item(), h)
+    else:
+        h.update(f"{type(obj).__name__}:{obj!r};".encode())
+    return h.hexdigest() if top else ""
+
+
+def _task_key(runner, theta, ep) -> str | None:
+    if not hasattr(runner, "cache_key"):
+        return None
+    return _digest(
+        [
+            runner.cache_key(),
+            theta or {},
+            ep.obs,
+            ep.truth,
+            ep.dt_hours,
+            int(getattr(ep, "burnin", 0) or 0),
+        ]
+    )
+
+
+_MISS = object()
+
+
+def _cache_load(key: str, ep):
+    f = _TASK_CACHE / f"{key}.npz"
+    if not f.exists():
+        return _MISS
+    try:
+        with np.load(f) as z:
+            if bool(z["failed"]):
+                return None
+            b = int(getattr(ep, "burnin", 0) or 0)
+            return (np.asarray(ep.truth, float)[b:], z["x_hat"], z["std"])
+    except Exception:  # noqa: BLE001 - a truncated file is just a miss
+        return _MISS
+
+
+def _cache_save(key: str, res) -> None:
+    f = _TASK_CACHE / f"{key}.npz"
+    tmp = f.with_name(f"{key}.{os.getpid()}.tmp.npz")
+    if res is None:
+        np.savez(tmp, failed=True)
+    else:
+        np.savez(tmp, failed=False, x_hat=res[1], std=res[2])
+    os.replace(tmp, f)  # atomic, so a reboot never leaves a half-written entry
+
+
+def _indexed_worker(item):
+    i, args = item
+    return i, _collect_worker(args)
+
+
 def _run_tasks(args, jobs, pool: WorkerPool | None = None):
+    if _TASK_CACHE is None:
+        return _run_tasks_uncached(args, jobs, pool)
+    keys = [_task_key(*a) for a in args]
+    out: list = [None] * len(args)
+    todo = []
+    for i, (a, k) in enumerate(zip(args, keys)):
+        hit = _MISS if k is None else _cache_load(k, a[2])
+        if hit is _MISS:
+            todo.append(i)
+        else:
+            out[i] = hit
+    if len(todo) < len(args):
+        print(
+            f"[task cache] {len(args) - len(todo)}/{len(args)} runs restored "
+            f"from {_TASK_CACHE}",
+            flush=True,
+        )
+    items = [(i, args[i]) for i in todo]
+    if pool is not None and pool._pool is not None:
+        stream = pool._pool.imap_unordered(_indexed_worker, items, chunksize=1)
+        done = _drain(stream, keys, out)
+    elif pool is None and jobs and jobs > 1 and len(items) > 1:
+        import multiprocessing as mp
+
+        with mp.Pool(min(jobs, len(items))) as p:
+            done = _drain(
+                p.imap_unordered(_indexed_worker, items, chunksize=1), keys, out
+            )
+    else:
+        done = _drain(map(_indexed_worker, items), keys, out)
+    assert done == len(items)
+    return out
+
+
+def _drain(stream, keys, out) -> int:
+    """Store results as they arrive, writing each to the cache at once."""
+    n = 0
+    for i, res in stream:
+        out[i] = res
+        if keys[i] is not None:
+            _cache_save(keys[i], res)
+        n += 1
+    return n
+
+
+def _run_tasks_uncached(args, jobs, pool: WorkerPool | None = None):
     if pool is not None:
         return pool.map(args)
     if jobs and jobs > 1 and len(args) > 1:

@@ -14,7 +14,9 @@ again continues where it stopped.
 Order of work, by dependency: nominal runs (U1 first, the calibration starts from
 its estimate) -> Test A calibration per series -> calibrated artifacts -> Test A
 runs; Test B artifacts ``ident`` / ``voll`` need nothing, ``real`` needs every
-calibration (its error size comes from them).
+calibration (its error size comes from them). All nominal runs are scheduled
+ahead of the calibrations, so the nominal comparison is complete after the first
+few hours of a run; the order does not change any result.
 """
 
 from __future__ import annotations
@@ -32,16 +34,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common as C
 import jobs as J
 
-#: Lower runs first. U1 nominal unblocks the calibration; long jobs before short ones.
+#: Lower runs first. U1 nominal unblocks the calibration; the other nominal runs
+#: follow so the nominal comparison is complete early; long jobs before short ones.
 PRIORITY = {
     "traj:U1:nominal": 0,
-    "calib": 1,
-    "traj:U1": 2,
-    "traj:U2": 2,
-    "traj:P1": 3,
-    "traj:R1": 4,
-    "obs": 5,
-    "val": 6,
+    "traj:nominal": 1,
+    "obs:nominal": 1,
+    "calib": 2,
+    "traj:U1": 3,
+    "traj:U2": 3,
+    "traj:P1": 4,
+    "traj:R1": 5,
+    "obs": 6,
+    "val": 7,
 }
 
 
@@ -94,11 +99,12 @@ def job_ready(job: tuple) -> bool:
 
 def priority(job: tuple) -> tuple:
     if job[0] == "traj":
-        key = (
-            "traj:U1:nominal"
-            if (job[3] == "U1" and job[1] == "nominal")
-            else f"traj:{job[3]}"
-        )
+        if job[1] == "nominal":
+            key = "traj:U1:nominal" if job[3] == "U1" else "traj:nominal"
+        else:
+            key = f"traj:{job[3]}"
+    elif job[0] == "obs" and job[1] == "nominal":
+        key = "obs:nominal"
     else:
         key = job[0]
     return (PRIORITY.get(key, 9), job)

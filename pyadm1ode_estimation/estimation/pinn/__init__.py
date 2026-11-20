@@ -22,9 +22,7 @@ Use it through the registry: ``build_estimator("pinn", dataset)`` in
 
 from .influent import MODES, N_INFLUENT, InfluentModel
 from .physics import (
-    ACID_BASE_MODES,
     CLOSURE_ODE_STATES,
-    CONSERVED_PAIRS,
     CORE_STATES,
     FULL_ODE_STATES,
     GAS_STATES,
@@ -33,7 +31,6 @@ from .physics import (
     N_CORE,
     ADM1Physics,
     PhysicsConfig,
-    acid_base_rates,
     build_params,
     close_state,
     close_state_with_rates,
@@ -46,9 +43,7 @@ from .physics import (
 )
 
 __all__ = [
-    "ACID_BASE_MODES",
     "CLOSURE_ODE_STATES",
-    "CONSERVED_PAIRS",
     "CORE_STATES",
     "FULL_ODE_STATES",
     "GAS_STATES",
@@ -60,7 +55,6 @@ __all__ = [
     "ADM1Physics",
     "InfluentModel",
     "PhysicsConfig",
-    "acid_base_rates",
     "build_params",
     "close_state",
     "close_state_with_rates",

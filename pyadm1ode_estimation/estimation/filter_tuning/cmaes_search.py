@@ -136,6 +136,53 @@ def theta_from_x(
     }
 
 
+def x_from_theta(
+    theta: dict,
+    q_emp: np.ndarray,
+    blocks: Sequence[str],
+    block_indices: dict | None = None,
+) -> np.ndarray:
+    """Inverse of :func:`theta_from_x`: express a parameter set as a CMA-ES vector.
+
+    Each block correction is the median of ``log(q_diag / q_emp)`` over the block's
+    states, which is exact for a theta produced by :func:`theta_from_x` against the same
+    ``q_emp``. Against a different empirical Q (a regenerated dataset) it gives the block
+    corrections of the old search applied to the new Q shape, the natural warm start.
+    Missing ``r_scale`` / ``p0_scale`` map to 0 (untouched).
+    """
+    if block_indices is None:
+        from ..specs import BLOCK_INDICES
+
+        block_indices = BLOCK_INDICES
+    q = np.asarray(theta["q_diag"], float)
+    log_ratio = np.log(q / np.asarray(q_emp, float))
+    x = [
+        float(np.median(log_ratio[[int(i) for i in block_indices[b]]])) for b in blocks
+    ]
+    x.append(float(np.log(theta.get("r_scale", 1.0))))
+    x.append(float(np.log(theta.get("p0_scale", 1.0))))
+    return np.asarray(x, float)
+
+
+def initial_mean(
+    x0: Sequence[float] | None, n: int, bounds: tuple[float, float] = DEFAULT_BOUNDS
+) -> list[float]:
+    """Start vector of the search: ``x0`` clipped into ``bounds``, or the zero vector.
+
+    Clipping keeps a warm start from a wider earlier search legal. A start exactly on a
+    bound is moved slightly inside, because a mean on the boundary wastes about half of
+    the first generation's samples on repaired, out-of-bounds proposals.
+    """
+    if x0 is None:
+        return [0.0] * n
+    x = np.asarray(x0, float)
+    if x.shape != (n,):
+        raise ValueError(f"x0 must have {n} entries (blocks + r + p0), got {x.shape}")
+    lo, hi = bounds
+    eps = 1e-3 * (hi - lo)
+    return list(map(float, np.clip(x, lo + eps, hi - eps)))
+
+
 def q_scales_of(x: Sequence[float], blocks: Sequence[str]) -> dict[str, float]:
     """Human-readable ``{block: factor}`` of a CMA-ES vector, relative to the empirical Q."""
     return {b: round(float(np.exp(t)), 3) for b, t in zip(blocks, x[: len(blocks)])}
@@ -169,6 +216,7 @@ def run_cmaes(
     per_group_train: int = 2,
     per_group_val: int = 2,
     seed: int = 0,
+    x0: Sequence[float] | None = None,
     sigma_eps: Sequence | None = None,
     score_eps: Sequence | None = None,
     popsize: int = 8,
@@ -185,6 +233,7 @@ def run_cmaes(
     out_path: str | Path | None = None,
     objective: Callable[[dict, float], float] | None = None,
     progress: Callable[[dict], None] | None = None,
+    resume: dict | None = None,
 ) -> dict:
     """Stage 1: CMA-ES over per-block Q corrections plus R and P0.
 
@@ -197,6 +246,16 @@ def run_cmaes(
 
     Writes the full search trace to ``out_path`` after every generation, so a crashed run
     keeps everything computed so far. Returns that same dict.
+
+    ``x0`` starts the search elsewhere than at the pure empirical Q, e.g. at an earlier
+    winner re-expressed with :func:`x_from_theta`; ``sigma0`` is the initial step size in
+    the same log space.
+
+    ``resume`` is the trace of an interrupted run with the same settings. Its reference
+    points are reused, and its generations are replayed through ``ask``/``tell``, which
+    restores the optimiser state exactly because CMA-ES is deterministic for a fixed seed.
+    The search then continues with the next generation. Raises ``ValueError`` if the trace
+    belongs to different settings or its candidates do not reproduce.
     """
     import cma  # optional dependency, only needed here
 
@@ -228,7 +287,10 @@ def run_cmaes(
     # A caller that already knows the nominal NRMSE for this horizon can pass it in and
     # save 2 x len(episodes) filter runs — the nominal one is the most expensive candidate
     # there is, because its large Q makes the ODE stiffer.
-    if base_nrmse is None:
+    if resume is not None:
+        base_nrmse = resume["config"]["base_nrmse"]
+        ref = [resume["reference"]["nominal"], resume["reference"]["empirical"]]
+    elif base_nrmse is None:
         ref = ns.evaluate_batch(runner, [{}, {"q_diag": q_emp}], train, val, jobs=jobs)
         base_nrmse = ref[0]["nrmse"] if ref[0] else 1.0
     else:
@@ -265,6 +327,7 @@ def run_cmaes(
             "base_nrmse": base_nrmse,
             "bounds": [lo, hi],
             "sigma0": sigma0,
+            "x0": initial_mean(x0, len(blocks) + 2, (lo, hi)),
             "cma_seed": cma_seed,
             "patience": patience,
             "fostac_every_days": fostac_every_days,
@@ -272,10 +335,13 @@ def run_cmaes(
         "reference": {"nominal": ref[0], "empirical": ref[1]},
         "generations": [],
     }
-    _dump(res, out_path)
+    if resume is not None:
+        _check_resumable(resume["config"], res["config"])
+    else:
+        _dump(res, out_path)
 
     es = cma.CMAEvolutionStrategy(
-        [0.0] * (len(blocks) + 2),
+        res["config"]["x0"],
         sigma0,
         {
             "popsize": popsize,
@@ -286,7 +352,33 @@ def run_cmaes(
         },
     )
     best = None
-    for g in range(generations):
+    start = 0
+    if resume is not None:
+        for entry in resume["generations"]:
+            X = es.ask()
+            stored = [np.asarray(c["x"], float) for c in entry["candidates"]]
+            if len(stored) != len(X) or any(
+                not np.array_equal(np.asarray(a, float), b) for a, b in zip(X, stored)
+            ):
+                raise ValueError(
+                    f"generation {entry['gen']} of the trace does not reproduce, so the "
+                    f"optimiser state cannot be restored"
+                )
+            es.tell(
+                X,
+                [
+                    FAILED_FITNESS if c.get("failed") else -c["score"]
+                    for c in entry["candidates"]
+                ],
+            )
+            res["generations"].append(entry)
+        best = resume.get("best")
+        res["best"] = best
+        start = len(res["generations"])
+        if "stopped_early" in resume:
+            res["stopped_early"] = resume["stopped_early"]
+            start = generations
+    for g in range(start, generations):
         t0 = time.time()
         X = es.ask()
         out = ns.evaluate_batch(
@@ -356,6 +448,29 @@ def run_cmaes(
             }
             break
     return res
+
+
+def _check_resumable(old: dict, new: dict) -> None:
+    """Refuse to continue a trace that was written with different search settings."""
+    keys = (
+        "variant",
+        "days",
+        "popsize",
+        "blocks",
+        "n_train",
+        "n_val",
+        "bounds",
+        "sigma0",
+        "x0",
+        "cma_seed",
+        "fostac_every_days",
+    )
+    diff = [k for k in keys if old.get(k) != new.get(k)]
+    if diff:
+        raise ValueError(
+            "cannot resume: the trace was written with different settings for "
+            + ", ".join(f"{k} ({old.get(k)!r} vs {new.get(k)!r})" for k in diff)
+        )
 
 
 # --------------------------------------------------------------------------- stage 2 ---

@@ -1,6 +1,6 @@
 # SR-UKF Performance — Architecture and Optimisations
 
-The [`UnscentedKalmanFilter`](../../api/index.md) implements the
+The [`UnscentedKalmanFilter`](../api/index.md) implements the
 canonical Square-Root UKF after **Wan & van der Merwe 2001
 (Algorithm 3.1)**, in the variant that re-uses sigma points between
 predict and measurement update. This page documents which optimisations

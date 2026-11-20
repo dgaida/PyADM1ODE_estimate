@@ -1102,12 +1102,28 @@ def ranking_table(
         return h[k][2] and -hl >= rope and rr is not None and rr[0] < 1
 
     group = [best] + [b for b in cands if b != best and not beats(best, b)]
-    ood = {v: np.mean([np.mean(primary(cond, d, v)) for d in SHIFTED]) for v in group}
-    group = sorted(group, key=lambda v: (ood[v], v))
+
+    def shifted_mean(v):
+        # A variant that the plan does not run on the shifted sets in this
+        # condition (U2 in Test B) has no value there and is listed last.
+        vals = [primary(cond, d, v) for d in SHIFTED]
+        if any(x is None for x in vals):
+            return float("nan")
+        return float(np.mean([np.mean(x) for x in vals]))
+
+    ood = {v: shifted_mean(v) for v in group}
+    group = sorted(
+        group,
+        key=lambda v: (
+            not np.isfinite(ood[v]),
+            ood[v] if np.isfinite(ood[v]) else 0.0,
+            v,
+        ),
+    )
     md += [
         "",
         (
-            f"Spitzengruppe, geordnet nach dem Fehler auf den verschobenen Sätzen: {', '.join(f'{v} ({pct(ood[v])} %)' for v in group)}. "
+            f"Spitzengruppe, geordnet nach dem Fehler auf den verschobenen Sätzen (– = dort laut Plan nicht gerechnet): {', '.join(f'{v} ({pct(ood[v])} %)' for v in group)}. "
             f"Niedrigstes Mittel auf `benchmark`: {best} ({pct(float(np.mean(Ec[best])))} %)."
         ),
         "",

@@ -17,6 +17,15 @@ from pyadm1ode_estimation.estimation.pinn.train import (
 )
 
 
+def _initial_state(series) -> np.ndarray:
+    """Start state of a smoke test: the UKF reference while the dataset ships one, else the truth.
+
+    The reference is pending since the dataset was regenerated on 2026-11-06 (NaN placeholders).
+    """
+    x0 = np.asarray(series.ukf_x_hat[0], dtype=float)
+    return x0 if np.all(np.isfinite(x0)) else np.asarray(series.states[0], dtype=float)
+
+
 def test_feed_lookup_is_piecewise_constant_on_the_hour():
     time = np.arange(0.0, 1.0, 1.0 / 24.0)
     feed = np.arange(24.0)[:, None]
@@ -165,7 +174,7 @@ def test_train_on_measurements_with_train_split_prior_smoke():
         ValueError
     ):  # the field setting must not fall back to the series' truth
         train_trajectory(series, ArchConfig(depth=2, width=16), cfg, prior_stats=prior)
-    ic_state = series.ukf_x_hat[0].copy()
+    ic_state = _initial_state(series).copy()
     ic_state[7] = (
         0.0  # a zero entry (S_h2 after the warm-up) must be masked, not log(0)
     )
@@ -189,7 +198,10 @@ def test_train_on_measurements_with_train_split_prior_smoke():
 
 
 def test_kinetic_factors_enter_the_physics_and_get_gradients():
-    from pyadm1ode_estimation.estimation.filter_tuning.filter_runners import build_plant
+    from pyadm1ode_estimation.estimation.filter_tuning.filter_runners import (
+        build_plant,
+        influent_mode,
+    )
     from pyadm1ode_estimation.estimation.pinn.data import load_meta
     from pyadm1ode_estimation.estimation.pinn.influent import InfluentModel
     from pyadm1ode_estimation.estimation.pinn.kinetics import (
@@ -204,13 +216,18 @@ def test_kinetic_factors_enter_the_physics_and_get_gradients():
 
     if not (DEFAULT_BENCHMARK_DIR / "meta.json").exists():
         pytest.skip("benchmark dataset not available")
-    plant = build_plant(load_meta())
+    meta = load_meta()
+    plant = build_plant(meta)
     adm1 = plant.components["primary"].adm1
     adm1.create_influent([4.0, 2.0, 0.5, 0.0, 0.0], 0)
     base = build_params(plant)
     kin = KineticFactors(perturbed_keys(base), sigma_prior=0.25)
     assert len(kin.keys) == 26 and all(k in base.kinetic for k in kin.keys)
-    phys = ADM1Physics(base, InfluentModel.from_adm1(adm1), PhysicsConfig(closure=True))
+    phys = ADM1Physics(
+        base,
+        InfluentModel.from_adm1(adm1, mode=influent_mode(meta)),
+        PhysicsConfig(closure=True),
+    )
     x = torch.tensor(
         np.abs(np.random.default_rng(0).normal(0.1, 0.05, (3, 31))), dtype=torch.float64
     )
@@ -271,7 +288,7 @@ def test_training_variants_smoke():
         ArchConfig(depth=2, width=16, output="blockheads"),
         cfg,
         prior_stats=prior,
-        ic_state=series.ukf_x_hat[0],
+        ic_state=_initial_state(series),
         scale_ref=scale_ref,
     )
     assert "horizon" not in res.metrics and set(res.metrics["benchmark"]) == {

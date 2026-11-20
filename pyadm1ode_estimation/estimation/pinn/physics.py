@@ -13,14 +13,12 @@ physics loss needs on top of it (see ``private_docs/pinn_v2_physics_equations.md
    ODE residuals they would dominate the loss. :func:`close_state` computes
    them from the 31 "core" states (0-30) by solving the charge balance with
    the ions at acid-base equilibrium and the quasi-steady gas phase.
-3. **Conserved sums for S_IC / S_IN.** The core model carries ``+rho_A_co2`` on
-   the S_co2 row and ``-rho_A_co2`` on the S_hco3 row (same for N). With
-   ``k_A_B = 1e8`` the ion tracks its equilibrium and ``rho_A`` is *whatever
-   that tracking needs* - not zero. The clean index-1 reduction adds the two
-   rows: ``d(S_co2 + S_hco3)/dt = f_9 + f_35`` has no ``rho_A`` at all. That
-   is the residual used for rows 9 and 10 (``acid_base="sum"``). In closure
-   mode the time derivative of the closed ion is obtained by forward-mode AD
-   through the closure, so the network still predicts only the 31 core states.
+3. **Totals for S_IC / S_IN.** Rows 9 (``S_co2``) and 10 (``S_nh4``) are the
+   totals of inorganic carbon and nitrogen; bicarbonate and free ammonia are
+   parts of them. An acid-base reaction only shifts between the forms inside a
+   total, so these two rows carry no ``k_A_B`` term and are used as they are
+   (pyadm1 after 0.6.2; before, the term sat on the totals as well and the
+   residual had to be formed on the sums ``S_co2 + S_hco3`` / ``S_nh4 + S_nh3``).
 4. **Residual selection and scaling.** :class:`ADM1Physics.residual` returns
    ``r_i = dx_i/dt - f_i(x, u)`` for the configured rows, divided by a
    per-row rate scale ``sigma_i`` (RMS of ``|f_i|`` over reference data) so a
@@ -93,9 +91,6 @@ CLOSURE_ODE_STATES: tuple[int, ...] = tuple(
 #: Default ODE rows without closure ("DAE mode"): core + the four gas rows.
 FULL_ODE_STATES: tuple[int, ...] = CORE_STATES + GAS_STATES
 
-#: Rows whose residual is formed on the conserved sum ``x_i + x_j`` (``acid_base="sum"``).
-CONSERVED_PAIRS: dict[int, int] = {_IDX_S_CO2: _IDX_S_HCO3, _IDX_S_NH4: _IDX_S_NH3}
-
 #: (ion row, total row, K_a key) of the six acid-base pairs.
 ION_PAIRS: tuple[tuple[int, int, str], ...] = (
     (_IDX_S_VA_ION, _IDX_S_VA, "K_a_va"),
@@ -105,8 +100,6 @@ ION_PAIRS: tuple[tuple[int, int, str], ...] = (
     (_IDX_S_HCO3, _IDX_S_CO2, "K_a_co2"),
     (_IDX_S_NH3, _IDX_S_NH4, "K_a_IN"),
 )
-
-ACID_BASE_MODES = ("sum", "drop", "keep")
 
 # COD-to-mole conversions of the VFA anions in the charge balance [kg COD / kmol].
 _COD_VA, _COD_BU, _COD_PRO, _COD_AC = 208.0, 160.0, 112.0, 64.0
@@ -314,31 +307,6 @@ def ion_equilibrium_residual(x: torch.Tensor, params: Adm1TorchParams) -> torch.
     return torch.stack(out, dim=-1)
 
 
-def acid_base_rates(
-    x: torch.Tensor, params: Adm1TorchParams
-) -> tuple[torch.Tensor, torch.Tensor]:
-    """``(rho_A_co2, rho_A_IN)`` exactly as the core RHS computes them."""
-    ip = params.inhib
-    S_H = _calc_ph(
-        x[..., _IDX_S_NH4],
-        x[..., _IDX_S_NH3],
-        x[..., _IDX_S_HCO3],
-        x[..., _IDX_S_AC_ION],
-        x[..., _IDX_S_PRO_ION],
-        x[..., _IDX_S_BU_ION],
-        x[..., _IDX_S_VA_ION],
-        x[..., _IDX_S_CATION],
-        x[..., _IDX_S_ANION],
-        ip["K_w"],
-    )
-    k_AB = ip["k_A_B"]
-    S_co2, S_hco3 = x[..., _IDX_S_CO2], x[..., _IDX_S_HCO3]
-    S_nh4, S_nh3 = x[..., _IDX_S_NH4], x[..., _IDX_S_NH3]
-    rho_co2 = k_AB * (S_hco3 * S_H - ip["K_a_co2"] * (S_co2 - S_hco3))
-    rho_in = k_AB * (S_nh3 * S_H - ip["K_a_IN"] * (S_nh4 - S_nh3))
-    return rho_co2, rho_in
-
-
 # ---------------------------------------------------------------------------
 # Residual
 # ---------------------------------------------------------------------------
@@ -352,11 +320,6 @@ class PhysicsConfig:
             ("DAE mode").
         ode_indices: State rows carried as ODE residuals. ``None`` (default)
             resolves to :data:`CLOSURE_ODE_STATES` or :data:`FULL_ODE_STATES`.
-        acid_base: How rows 9 (S_co2) and 10 (S_nh4) are formed.
-            ``"sum"`` (default) - residual of the conserved sums
-            ``S_co2 + S_hco3`` / ``S_nh4 + S_nh3`` (exact reduction, no ``rho_A``);
-            ``"drop"`` - raw rows with the ``rho_A`` terms removed (approximate);
-            ``"keep"`` - raw rows as the core model writes them.
         ion_equilibrium: In DAE mode append the six dimensionless
             acid-base equilibrium residuals (:func:`ion_equilibrium_residual`)
             after the ODE rows. Ignored with closure.
@@ -367,7 +330,6 @@ class PhysicsConfig:
 
     closure: bool = True
     ode_indices: tuple[int, ...] | None = None
-    acid_base: str = "sum"
     ion_equilibrium: bool = True
     scale: np.ndarray | None = None
 
@@ -382,10 +344,6 @@ class PhysicsConfig:
         if any(i in ION_STATES for i in self.ode_indices):
             raise ValueError(
                 "ion rows (31-36) are k_A_B-stiff; use ion_equilibrium instead of ODE residuals"
-            )
-        if self.acid_base not in ACID_BASE_MODES:
-            raise ValueError(
-                f"acid_base must be one of {ACID_BASE_MODES}, got {self.acid_base!r}"
             )
         if self.scale is not None:
             self.scale = np.asarray(self.scale, dtype=float)
@@ -461,37 +419,17 @@ class ADM1Physics:
         q_ad, s_in = self.influent(feed)
         return rhs(x_full, self.params, q_ad, s_in)
 
-    def _rows(self, v41: torch.Tensor, model: bool) -> torch.Tensor:
-        """Select the ODE rows from a 41-column rate tensor, applying the acid-base mode.
-
-        ``model=True`` for ``f`` (the ``"drop"`` mode subtracts ``rho_A`` here);
-        ``model=False`` for a state rate ``dx/dt``.
-        """
-        mode = self.config.acid_base
-        idx = list(self.config.ode_indices)
-        out = v41[..., idx]
-        if mode == "sum":
-            for j, i in enumerate(idx):
-                partner = CONSERVED_PAIRS.get(i)
-                if partner is not None:
-                    out = out.clone() if j == 0 else out
-                    out[..., j] = out[..., j] + v41[..., partner]
-        return out
+    def _rows(self, v41: torch.Tensor) -> torch.Tensor:
+        """Select the ODE rows from a 41-column rate tensor."""
+        return v41[..., list(self.config.ode_indices)]
 
     def model_rates(self, x_full: torch.Tensor, feed: torch.Tensor) -> torch.Tensor:
-        """Effective ``f_i`` per configured row, ``(..., n_ode)``."""
-        f = self.rhs(x_full, feed)
-        if self.config.acid_base == "drop":
-            rho_co2, rho_in = acid_base_rates(x_full, self.params)
-            corr = torch.zeros_like(f)
-            corr[..., _IDX_S_CO2] = rho_co2
-            corr[..., _IDX_S_NH4] = rho_in
-            f = f - corr
-        return self._rows(f, model=True)
+        """``f_i`` per configured row, ``(..., n_ode)``."""
+        return self._rows(self.rhs(x_full, feed))
 
     def state_rates(self, dx_full: torch.Tensor) -> torch.Tensor:
-        """Effective ``dx_i/dt`` per configured row, ``(..., n_ode)``."""
-        return self._rows(dx_full, model=False)
+        """``dx_i/dt`` per configured row, ``(..., n_ode)``."""
+        return self._rows(dx_full)
 
     # -- residual ---------------------------------------------------------
     def residual(
@@ -610,6 +548,15 @@ def trajectory_residual(
     (unscaled), ``r_scaled`` (``None`` if no scale is set) and ``ion_eq`` (the
     equilibrium residuals, ``None`` with closure), all on the interior points
     ``1 .. T-2``; the rate arrays are restricted to the configured ODE rows.
+
+    ``feed[k]`` is taken as held over ``[t_k, t_k+1)``, the convention of the
+    benchmark generator. The central difference at ``t_k`` spans the two held
+    intervals ``k-1`` and ``k``, so the model rate is evaluated with the mean of
+    ``feed[k-1]`` and ``feed[k]``. The influent term is linear in the feed, which
+    makes that mean exact for it; pairing ``x_k`` with ``feed[k]`` alone leaves a
+    first-order error at every feed change. That error is small against the
+    gross influent flux but large against a small net rate, e.g. ``S_bu`` when
+    slurries bring in fifty times the butyrate the digester holds.
     """
     states = np.asarray(states, dtype=float)
     feed = np.asarray(feed, dtype=float)
@@ -619,7 +566,7 @@ def trajectory_residual(
     with torch.no_grad():
         xt = torch.as_tensor(x[1:-1], dtype=dtype)
         dt = torch.as_tensor(dxdt, dtype=dtype)
-        ft = torch.as_tensor(feed[1:-1], dtype=dtype)
+        ft = torch.as_tensor(0.5 * (feed[:-2] + feed[1:-1]), dtype=dtype)
         x_full, dx_full = physics.full_state_with_rates(xt, dt)
         f = physics.model_rates(x_full, ft).numpy()
         d = physics.state_rates(dx_full).numpy()

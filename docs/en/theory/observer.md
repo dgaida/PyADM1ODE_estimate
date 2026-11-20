@@ -127,6 +127,12 @@ Two operational details:
 
 ## 4. Strengths and limits
 
+!!! note "Dataset of these numbers"
+    The numbers from here on were measured on the benchmark published before
+    2026-11-06. On the benchmark regenerated on 2026-11-15 all estimators have
+    higher errors and the ranking differs; the current comparison is on the
+    [estimator page](../usage/estimators.md#final-comparison).
+
 **Strengths.** Near-instant inference after the one-time offline cost (well under
 a second per 60-day series, against minutes for the UKF and tens of minutes for
 PINN v2); learns the *full* state structure from the simulator, so it is strong

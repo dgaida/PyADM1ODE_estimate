@@ -93,14 +93,18 @@ Implementierung der Gleichungen bedient also alle Schätzer.
   Array-Algebra $(q_{ad}, s_{in})$. Der Modus `"nominal_mix"` bildet nach, wie
   die Benchmark-Wahrheit erzeugt wurde (Zusammensetzung aus der Nominalmischung,
   Gesamtfluss aus der Fütterung); `"blend"` ist die physikalisch richtige
-  flussgewichtete Mischung für Anlagen mit wirklich wechselnder Zusammensetzung.  
+  flussgewichtete Mischung für Anlagen mit wirklich wechselnder Zusammensetzung.
+  pyadm1 selbst mischt seit der Zulauf-Korrektur vom November 2026. Deshalb
+  heftet `build_plant(meta)` die Fermenter für jeden Datensatz ohne
+  `influent_mode: "blend"` in der `meta.json` an die Nominalmischung;
+  `influent_mode(meta)` liefert den Modus.  
 * `build_params` friert die Anlagenparameter ein, optional mit den wahren  
   Kinetikfaktoren der Reihe (nur zur Verifikation — ein PINN im Feld hat das
   Nominalmodell).  
 * Die Residuumszeilen sind die Kernzustände ohne die schnellen gelösten Gase  
-  $S_{h2}, S_{ch4}$; die Zeilen von $S_{co2}$ und $S_{nh4}$ werden als
-  Erhaltungssummen $S_{co2}+S_{hco3}$ und $S_{nh4}+S_{nh3}$ gebildet, was die
-  steifen Säure-Base-Raten exakt entfernt (`acid_base = "sum"`).
+  $S_{h2}, S_{ch4}$. $S_{co2}$ und $S_{nh4}$ sind die Gesamtmengen an
+  anorganischem Kohlenstoff und Stickstoff; ihre Zeilen tragen keine steife
+  Säure-Base-Rate und werden unverändert verwendet.
 
 `trajectory_residual` verifiziert die Physik am Simulator: Das Residuum der
 Benchmark-Wahrheit mit den wahren Parametern liegt auf dem Niveau des
@@ -161,6 +165,13 @@ bleibt der UKF der operative Schätzer und das PINN ein Studienobjekt.
 ---
 
 ## 6. Ergebnisse der Strukturstudie
+
+!!! note "Datensatz dieser Zahlen"
+    Die Zahlen ab hier wurden auf dem Benchmark gemessen, der vor dem 06.11.2026
+    veröffentlicht war. Auf dem am 15.11.2026 neu erzeugten Benchmark haben alle
+    Schätzer höhere Fehler, und die Rangfolge ist eine andere; der aktuelle
+    Vergleich steht auf der
+    [Schätzer-Seite](../usage/estimators.md#finaler-vergleich).
 
 Zwanzig Testreihen, 60 Tage, Benchmark-Metrik (Median-NRMSE über die
 Zustände). Details und Statistik stehen im Architekturbericht

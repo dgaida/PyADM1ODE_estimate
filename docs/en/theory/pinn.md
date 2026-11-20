@@ -87,14 +87,17 @@ estimators.
   with plain array algebra. Its `"nominal_mix"` mode reproduces how the
   benchmark truth was generated (composition from the nominal mix, total flow
   from the feed); `"blend"` is the physically correct flow-weighted blend for
-  plants whose composition really varies.  
+  plants whose composition really varies. pyadm1 itself blends since the
+  influent fix of November 2026, so `build_plant(meta)` pins the digesters to
+  the nominal mix for every dataset whose `meta.json` carries no
+  `influent_mode: "blend"`; `influent_mode(meta)` returns the mode.  
 * `build_params` snapshots the plant's parameters, optionally with the series'  
   true kinetic factors (for verification only — a field PINN has the nominal
   model).  
 * The residual rows are the core states except the fast dissolved gases  
-  $S_{h2}, S_{ch4}$; the rows of $S_{co2}$ and $S_{nh4}$ are formed as the
-  conserved sums $S_{co2}+S_{hco3}$ and $S_{nh4}+S_{nh3}$, which removes the
-  stiff acid–base rates exactly (`acid_base = "sum"`).
+  $S_{h2}, S_{ch4}$. $S_{co2}$ and $S_{nh4}$ are the totals of inorganic
+  carbon and nitrogen; their rows carry no stiff acid–base rate and are used as
+  they are.
 
 `trajectory_residual` verifies the physics against the simulator: the residual
 of the benchmark truth with the true parameters is at the finite-difference
@@ -154,6 +157,12 @@ remains the operational estimator and the PINN a study object.
 ---
 
 ## 6. What the structure study found
+
+!!! note "Dataset of these numbers"
+    The numbers from here on were measured on the benchmark published before
+    2026-11-06. On the benchmark regenerated on 2026-11-15 all estimators have
+    higher errors and the ranking differs; the current comparison is on the
+    [estimator page](../usage/estimators.md#final-comparison).
 
 Twenty test series, 60 days, benchmark metric (median-over-states NRMSE).
 Details and statistics are in the architecture report

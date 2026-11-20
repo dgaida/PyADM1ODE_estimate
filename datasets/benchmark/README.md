@@ -9,8 +9,8 @@ task for an agricultural biogas plant. Same plant as the internal UKF comparison
 
 Per hourly time step you receive:
 
-- **`measurements` (T, 5)** — noisy sensors: `Q_gas`, `Q_ch4`, `Q_co2` [m³/d],  
-  `pH`, `TS` [% total solids].  
+- **`measurements` (T, 5)** — noisy sensors: `Q_gas`, `Q_ch4`, `Q_co2` [Nm³/d, dry gas  
+  at 0 °C and 1.01325 bar], `pH`, `TS` [% total solids].  
 - **`feed_noisy` (T, 5)** — the substrate feed with 5 % dosing-report noise  
   (maize silage, solid manure, chicken litter, slurry, cereal grain).  
 - **`fostac` (T, 2)** / **`fostac_true` (T, 2)** — the FOS/TAC laboratory  
@@ -53,12 +53,64 @@ actually exhibits its mode's FOS/TAC signature despite that spread.
 
 The **substrate mix varies too**: each phase draws its own composition (2–5 of the
 5 substrates active, biased to 4–5; a load change may also change *which* substrates
-are fed), and it differs per series. Because the substrates differ ~11× in
-degradable COD per m³ (slurry weakest, maize strongest), the load is steered as an
+are fed), and it differs per series. Because the substrates differ ~7× in
+degradable COD per m³ (slurry weakest, cereal silage and maize strongest), the load
+is steered as an
 **organic (COD) load**, not a volume: for every phase the volumetric flows are scaled
 so the COD load hits the target, which keeps the mode's FOS/TAC signature invariant
 to the mix. `feed_true` / `feed_noisy` hold the actual volumetric flows [m³/d]; the
 per-substrate characterisation and the scheme are in `meta.json → feed_composition`.
+
+> **Regenerated on 2026-11-06, 2026-11-07 and 2026-11-08.** Five things changed against the
+> dataset published before. (1) The truth now sees the varying mix: the earlier generator ran on a
+> pyadm1 version that cached the influent composition at initialisation, so its truth
+> obeyed the **nominal mix** at every step. `meta.json` states
+> `"influent_mode": "blend"`; `build_plant(meta)` pins the composition only for
+> datasets without that field. (2) The substrate library was rebuilt from the Phyllis
+> database and the BiomasseV 2012 methane yields (`meta.json → substrate_library`);
+> cattle slurry, for instance, holds 65 % more degradable COD than before, and maize
+> silage puts half of its degradable COD into the slow pool. The load unit barely
+> moved (185.4 → 186.9 gCOD per nominal m³), so the modes and the load band are
+> unchanged. (3) The truth is no longer clipped: the process model that simulates it
+> clips the state to the channel bounds of the filter spec, and the previous truth sat
+> at an upper bound (`X_su` 5 kgCOD/m³, `S_pro` 10 kgCOD/m³) in 9 % of its hours, 37 %
+> in `stable_high`. The upper bounds are now lifted while the truth is simulated
+> (`meta.json → truth_state_bounds`); in the acidified phases the truth now exceeds those
+> bounds (`S_pro` up to ~55 kgCOD/m³, `X_su` up to ~10), which an estimator built on the
+> default spec cannot represent. (4) On 2026-11-07 the storage state of every
+> substrate (pH, ammonium, fermentation acids, alkalinity, temperature) was replaced
+> by published analyses of the material as fed (slurries: Overmeyer et al. 2020;
+> silages: LfL farm means 2018; see the pyadm1 substrate guide); the previous files
+> had carried these values over from the superseded library. The silages now bring
+> their acetic acid and ammonium into the digester, the slurries their measured VFA
+> and bicarbonate. (5) On 2026-11-08 pyadm1 started to split the strong-ion
+> closure of the charge balance by sign: net-cationic material (slurries, solid
+> manure) now carries its excess as `S_cation` instead of a negative `S_anion`. The
+> chemistry is unchanged, but the negative influent `S_anion` had been clipped to the
+> lower state bound of 0 while the truth was simulated, which left the stored
+> states off the ODE. `S_cation` is therefore no longer zero in this dataset.
+> The UKF reference was recomputed (see below);
+> **every other number quoted in this README and in the estimator studies was measured
+> on the previous dataset** and has not been re-measured. The previous files are kept
+> outside the repository.
+
+> **Regenerated on 2026-11-15** with the pyadm1 model as revised against the ADM1da
+> definition of SIMBA# (pyadm1 after 0.6.2; see its validation page). Feed schedules,
+> modes, load band, kinetic perturbations, noise and the operating point
+> (`k_dec_ac = 0.02`) are unchanged; three things differ in the data. (1) The gas
+> channels are **dry gas at standard conditions** (0 °C, 1.01325 bar). Before, they
+> were given at 20 °C with the water vapour of the headspace counted inside `Q_gas`.
+> `Q_gas` is therefore 6 to 9 % lower (median per mode: low_high 2002 → 1819,
+> stable_low 947 → 891, stable_high 2973 → 2729, oscillating 1614 → 1493 Nm³/d), and
+> methane is 50 to 53 % of `Q_gas` instead of 45 to 49 %. (2) `S_co2` and `S_nh4` are
+> the totals of inorganic carbon and nitrogen, with bicarbonate and free ammonia as
+> parts of them; an acid–base reaction no longer changes a total. (3) Decay releases
+> the nitrogen of the biomass, free ammonia leaves with the gas, the headspace vents
+> against the ambient pressure, and the sludge volume lost to the gas follows the
+> composition of what is converted. The acid levels of the modes stay in the same
+> range (largest `S_ac` 78 instead of 87 kgCOD/m³ in `stable_high`). The UKF reference
+> below and the estimator comparison were recomputed on this dataset with unchanged
+> filter settings; the previous files are kept outside the repository.
 
 ## Files
 
@@ -158,11 +210,13 @@ window after each switch. Steady-state and overall NRMSE plus 2σ coverage are
 reported too, always next to the reference UKF.
 
 **The reported NRMSE is a median over the 41 states, not a mean.** A few states are
-numerically ~zero (`S_cation`, `S_h2` and `p_gas_h2` have an RMS around 1e-6), so
-their *relative* error reaches five-digit percentages while the absolute error is
-irrelevant. A mean is dominated by exactly those states (it explodes into the
-thousands of percent while the median stays at a few tens of percent) and would
-reward optimising noise. The mean is still reported as `nrmse_overall_mean_%` for
+small or close to zero in parts of the series, so their *relative* error is far
+above the rest while the absolute error matters little. In the current dataset these
+are `S_hco3`, `S_pro` and its ion (UKF reference 240–340 %, mostly in the acidified
+`stable_high` series); in the dataset before 2026-11-06 `S_cation`, `S_h2` and
+`p_gas_h2` had an RMS around 1e-6 and drove the mean into the thousands of
+percent. A mean is dominated by exactly those states and would reward optimising
+noise. The mean is still reported as `nrmse_overall_mean_%` for
 transparency.
 
 **NRMSE is normalised by a state's magnitude**, so it flatters high-offset states
@@ -201,19 +255,30 @@ known control input (not an estimated/observed state). It does **not** know each
 series' true kinetics — a realistic baseline that carries the model mismatch.
 You never run it yourself; it is provided for comparison.
 
+> **Recomputed on 2026-11-15** for the regenerated dataset with
+> `experiments/estimator_comparison/run_ukf_variants.py --dataset benchmark --variants full`,
+> i.e. the CMA-ES winner `theta` **tuned on the dataset published before 2026-11-06**,
+> not re-tuned. The σ scaling in `ukf_calibration.json` is also the one fitted on that
+> training set.
+
 The reference to beat (median over states, mean over the scoring series):
 
-| Metric | UKF reference |
-|---|---|
-| transient NRMSE | **14 %** |
-| steady NRMSE | 15 % |
-| overall NRMSE | 15 % |
-| 2σ coverage | **97 %** |
+| Metric | UKF reference | dataset of 2026-11-08 | dataset before 2026-11-06 |
+|---|---|---|---|
+| transient NRMSE | **18 %** | 18 % | 14 % |
+| steady NRMSE | 20 % | 19 % | 15 % |
+| overall NRMSE | 20 % | 19 % | 15 % |
+| 2σ coverage | **89 %** | 91 % | 97 % |
 
-Per mode (overall NRMSE): low_high 11 % · oscillating 13 % · stable_low 15 % ·
-**stable_high 21 %** — chronic acidification from a cold healthy start stays the hardest
-case. The acidified VFA states (`S_ac`, `S_pro` and their ions) remain the weak spot, but
-the filter now tracks them well enough to be a demanding baseline.
+Per mode (overall NRMSE): low_high 10 % · oscillating 16 % · stable_low 17 % ·
+**stable_high 39 %** (dataset of 2026-11-08: 10 · 16 · 16 · 35; before 2026-11-06:
+11 · 13 · 15 · 21). The chronic-overload mode is the hard one: its truth is not clipped
+and runs far beyond the filter's state bounds (`S_pro` up to ~53 kgCOD/m³ against an
+upper bound of 10), so the filter's estimate saturates there; its 2σ coverage in that
+mode is 61 %. The three other modes are unchanged against the dataset of 2026-11-08,
+so the model revision of 2026-11-15 did not make the task harder for the filter.
+Re-tuning the filter and widening its bounds for the acidified regime are the obvious
+next steps; both are left to a later study.
 
 > **Replaced on 2026-08-21.** The shipped reference is now the one tuned with an
 > **accuracy-first** objective over 60-day episodes (overall NRMSE 20 % → **15 %**,

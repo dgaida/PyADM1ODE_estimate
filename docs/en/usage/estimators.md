@@ -83,13 +83,27 @@ nominal kinetics:
 
 | Estimator | `benchmark` | substrate swap | swap + load rhythm |
 | --- | --- | --- | --- |
-| Fusion UKF + PINN B | 13.1 % | 15.2 % | 15.5 % |
-| UKF, 41 states | 13.5 % | 16.1 % | 16.2 % |
-| PINN B, kinetics-blind | 13.8 % | 17.5 % | 18.5 % |
-| UKF, A+D core | 16.5 % | 18.2 % | 18.0 % |
-| PINN v2 | 18.4 % | 21.7 % | 20.5 % |
+| UKF, 41 states | 17.3 % | 18.1 % | 18.8 % |
+| Fusion UKF + PINN B | 18.1 % | 22.1 % | 22.8 % |
+| UKF, A+D core | 18.2 % | 21.1 % | 20.3 % |
+| Open loop (model without measurements) | 19.6 % | 21.9 % | 21.6 % |
+| PINN B, kinetics-blind | 21.5 % | 29.8 % | 29.7 % |
+| PINN v2 | 25.5 % | 30.6 % | 29.8 % |
 
-With the true factors of the ten calibratable kinetics the UKF reaches 6.4, 7.8 and
-8.4 %. A calibration of those kinetics from the first 20 days of measurements does
-not recover them and makes every estimator worse, because it compensates the error
-of the estimated start state.
+On `benchmark` the two UKF variants and the fusion are not separated statistically;
+on the two shifted sets the UKF with 41 states has the lowest error. With the true
+factors of the ten calibratable kinetics the UKF reaches 12.1, 11.9 and 11.4 %. A
+calibration of those kinetics from the first 20 days of measurements does not
+recover them and makes every estimator worse (UKF: 20.4, 23.4 and 21.5 %), because
+it compensates the error of the estimated start state.
+
+!!! note "Dataset of these numbers"
+    The table was measured on 2026-11-17 on the benchmark regenerated on
+    2026-11-15 with the revised ADM1da model (see `datasets/benchmark/README.md`).
+    The UKF was not re-tuned for it; its settings are those found on the benchmark
+    published before 2026-11-06. PINN B was retrained. The run of
+    2026-10-20 on that earlier benchmark gave 13.5 % for the UKF with 41 states,
+    13.1 % for the fusion and 13.8 % for PINN B on `benchmark`. Most of the
+    difference comes from the dataset revision of 2026-11-06/08 (varying substrate
+    mix, unclipped truth) and not from the model revision: trained on the dataset
+    of 2026-11-08, PINN B is as far from its earlier value as on the present one.
