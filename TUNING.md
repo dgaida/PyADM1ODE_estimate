@@ -155,13 +155,13 @@ $RUN --variant full $COMMON --sigma0 0.75 \
      --compare current=pyadm1ode_estimation/estimation/reference/cmaes_full_winner.json
 ```
 
-- `--warm-start` re-expresses the winner as block corrections against the stage-0 Q it was
+- `--warm-start` re-expresses the winner as block corrections against the stage-0 Q it was  
   tuned on (`--warm-start-q`) and starts CMA-ES there, on the new Q shape. The start point
-  itself goes into stage 2 as `warm_start`, because CMA-ES only samples around it.
-- `--compare current=...` puts the shipped parameters, unchanged, into stage 2. Its σ is
+  itself goes into stage 2 as `warm_start`, because CMA-ES only samples around it.  
+- `--compare current=...` puts the shipped parameters, unchanged, into stage 2. Its σ is  
   refitted like every other candidate's, so the comparison is on equal terms and answers
-  whether the new search found anything better.
-- `--sigma0` shrinks the first step size. The default 1.5 suits a cold start; a warm start
+  whether the new search found anything better.  
+- `--sigma0` shrinks the first step size. The default 1.5 suits a cold start; a warm start  
   wants to explore its neighbourhood first.
 
 ### What the options mean
