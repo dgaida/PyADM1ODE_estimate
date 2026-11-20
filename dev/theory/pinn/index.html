@@ -29,7 +29,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -2520,14 +2520,18 @@ Implementierung der Gleichungen bedient also alle Schätzer.</p>
   Array-Algebra <span class="arithmatex">\((q_{ad}, s_{in})\)</span>. Der Modus <code>"nominal_mix"</code> bildet nach, wie
   die Benchmark-Wahrheit erzeugt wurde (Zusammensetzung aus der Nominalmischung,
   Gesamtfluss aus der Fütterung); <code>"blend"</code> ist die physikalisch richtige
-  flussgewichtete Mischung für Anlagen mit wirklich wechselnder Zusammensetzung.  </li>
+  flussgewichtete Mischung für Anlagen mit wirklich wechselnder Zusammensetzung.
+  pyadm1 selbst mischt seit der Zulauf-Korrektur vom November 2026. Deshalb
+  heftet <code>build_plant(meta)</code> die Fermenter für jeden Datensatz ohne
+  <code>influent_mode: "blend"</code> in der <code>meta.json</code> an die Nominalmischung;
+  <code>influent_mode(meta)</code> liefert den Modus.  </li>
 <li><code>build_params</code> friert die Anlagenparameter ein, optional mit den wahren<br />
   Kinetikfaktoren der Reihe (nur zur Verifikation — ein PINN im Feld hat das
   Nominalmodell).  </li>
 <li>Die Residuumszeilen sind die Kernzustände ohne die schnellen gelösten Gase<br />
-<span class="arithmatex">\(S_{h2}, S_{ch4}\)</span>; die Zeilen von <span class="arithmatex">\(S_{co2}\)</span> und <span class="arithmatex">\(S_{nh4}\)</span> werden als
-  Erhaltungssummen <span class="arithmatex">\(S_{co2}+S_{hco3}\)</span> und <span class="arithmatex">\(S_{nh4}+S_{nh3}\)</span> gebildet, was die
-  steifen Säure-Base-Raten exakt entfernt (<code>acid_base = "sum"</code>).</li>
+<span class="arithmatex">\(S_{h2}, S_{ch4}\)</span>. <span class="arithmatex">\(S_{co2}\)</span> und <span class="arithmatex">\(S_{nh4}\)</span> sind die Gesamtmengen an
+  anorganischem Kohlenstoff und Stickstoff; ihre Zeilen tragen keine steife
+  Säure-Base-Rate und werden unverändert verwendet.</li>
 </ul>
 <p><code>trajectory_residual</code> verifiziert die Physik am Simulator: Das Residuum der
 Benchmark-Wahrheit mit den wahren Parametern liegt auf dem Niveau des
@@ -2578,6 +2582,14 @@ einen bzw. drei Tage verspätet.</p>
 bleibt der UKF der operative Schätzer und das PINN ein Studienobjekt.</p>
 <hr />
 <h2 id="6-ergebnisse-der-strukturstudie">6. Ergebnisse der Strukturstudie<a class="headerlink" href="#6-ergebnisse-der-strukturstudie" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Datensatz dieser Zahlen</p>
+<p>Die Zahlen ab hier wurden auf dem Benchmark gemessen, der vor dem 06.11.2026
+veröffentlicht war. Auf dem am 15.11.2026 neu erzeugten Benchmark haben alle
+Schätzer höhere Fehler, und die Rangfolge ist eine andere; der aktuelle
+Vergleich steht auf der
+<a href="../../usage/estimators/#finaler-vergleich">Schätzer-Seite</a>.</p>
+</div>
 <p>Zwanzig Testreihen, 60 Tage, Benchmark-Metrik (Median-NRMSE über die
 Zustände). Details und Statistik stehen im Architekturbericht
 (<code>PyADM1ODE_estimate_local/experiments/pinn_architecture_study</code>). Die
@@ -2894,7 +2906,7 @@ window. Two modes:</p>
 
     <div class="doc doc-contents ">
 
-        <p>Effective <code>f_i</code> per configured row, <code>(..., n_ode)</code>.</p>
+        <p><code>f_i</code> per configured row, <code>(..., n_ode)</code>.</p>
 
 
     </div>
@@ -2952,7 +2964,7 @@ rows (scaled by <code>sigma_i</code> when set). In DAE mode with
 
     <div class="doc doc-contents ">
 
-        <p>Effective <code>dx_i/dt</code> per configured row, <code>(..., n_ode)</code>.</p>
+        <p><code>dx_i/dt</code> per configured row, <code>(..., n_ode)</code>.</p>
 
 
     </div>
@@ -3276,7 +3288,7 @@ rows (scaled by <code>sigma_i</code> when set). In DAE mode with
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
         <script src="../../javascripts/mathjax.js"></script>
       

@@ -29,7 +29,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -2316,6 +2316,14 @@ Fenster. Zwei Betriebsdetails:</p>
 <p><strong>Unsicherheit</strong> ist optionaler MC-Dropout (<code>mc_samples &gt; 1</code> mit einem Dropout-trainierten Netz).</p>
 <hr />
 <h2 id="4-starken-und-grenzen">4. Stärken und Grenzen<a class="headerlink" href="#4-starken-und-grenzen" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Datensatz dieser Zahlen</p>
+<p>Die Zahlen ab hier wurden auf dem Benchmark gemessen, der vor dem 06.11.2026
+veröffentlicht war. Auf dem am 15.11.2026 neu erzeugten Benchmark haben alle
+Schätzer höhere Fehler, und die Rangfolge ist eine andere; der aktuelle
+Vergleich steht auf der
+<a href="../../usage/estimators/#finaler-vergleich">Schätzer-Seite</a>.</p>
+</div>
 <p><strong>Stärken:</strong> Nahezu sofortige Inferenz nach den einmaligen Offline-Kosten
 (deutlich unter einer Sekunde je 60-Tage-Reihe, gegen Minuten für den UKF und
 einige zehn Minuten für PINN v2); lernt die <em>volle</em> Zustandsstruktur aus dem
@@ -3118,7 +3126,7 @@ measurement loss); its <code>channel_names</code> order must match the
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tooltips"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
         <script src="../../javascripts/mathjax.js"></script>
       
